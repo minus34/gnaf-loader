@@ -32,6 +32,7 @@
 # - output reference tables to PSV & SHP
 # - check address_alias_lookup record count
 # - QA against alternative method for flattening GNAF
+# - List final record counts
 #
 # *********************************************************************************************************************
 
