@@ -11,8 +11,12 @@
 # Version: 1.0.0
 # Date: 22-02-2016
 #
+# Copyright:
+#  - Code is copyright Hugh Saalmans - licensed under an Apache License, version 2.0
+#  - Data is copyright PSMA - licensed under a Creative Commons (By Attribution) license
+
 # Process:
-#   1. Loads raw GNAF into Postgres from PSV files using COPY
+#   1. Loads raw GNAF into Postgres from PSV files, using COPY
 #   2. Loads raw PSMA Admin Boundaries from Shapefiles into Postgres using shp2pgsql (part of PostGIS)
 #   3. Creates flattened and simplified GNAF tables containing all relevant data
 #   4. Creates a ready to use Locality Boundaries table containing a number of fixes to overcome known data issues

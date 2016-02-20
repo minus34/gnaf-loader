@@ -1,6 +1,10 @@
 # gnaf-loader
 
-A quick way to load GNAF and the PSMA Admin Boundaries into Postgres, preprocessed and ready to use in address validation, geocoding, analysis and visualisation.
+A quick way to load GNAF and the PSMA Admin Boundaries into Postgres, preprocessed and ready to use as a reference address dataset for geocoding, analysis and visualisation.
+
+There are 2 options for loading the data:
+1: Run the load-gnaf.py script and build the database yourself; or
+2: Download the GNAF and/or Admin Bdys Postgres dump files and restore them in your database.
 
 Q: How quick? A: A 32 core Windows server with SSDs loads it in under 15 mins. A MacBook Pro, ~45 mins. An 8 core commodity PC takes just under an hour.
 
