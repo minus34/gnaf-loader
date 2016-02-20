@@ -23,31 +23,31 @@ Q: I don't know Postgres! A: You don't need to be a PG guru, just follow this gu
 ** 2. a single python script **
 
 
-Pre-requisites
+## Pre-requisites
 
 - Postgres 9.x (tested on 9.3, 9.4 & 9.5 on Windows and 9.5 on OSX)
 - PostGIS 2.x
 - Python 2.7.x with Psycopg2 2.6.x
 
-Process
+## Process
 
 1: Download PSMA GNAF from www.data.gov.au
-2: OPTIONAL: Download PSMA Administrative Boundaries
+2: Download PSMA Administrative Boundaries from www.data.gov.au
 2: Unzip them to a directory on your Postgres server
 3: Alter security on the unzipped GNAF files to grant Postgres read access
 
 4: Create the target database
 5: Edit Postgres and GNAF parameters in load-gnaf.py
 6: Run load-gnaf.py
-7: Come back in an hour or so; unless you have a juicy server with SSDs - in which case watch the show unfold before your eyes (takes < 5-10 mins)!
+7: Come back in 45-60 minutes; unless you have a juicy server with SSDs - in which case it could take ~15 mins!
 
-Really important notes:
-- The scripts will DROP ALL TABLES and recreate them using CASCADE. Meanign you'll also LOSE YOUR VIEWS If you want to keep the existing data - you'll need to change the schema names in the script or use a different database
-- All GNAF tables can be created UNLOGGED to speed up the data load.  They will be UNRECOVERABLE if your database is corrupted. Just run these scripts again to recreate them. If you think this sounds good - set the unlogged_tables flag to True
+## WARNING:
+- The scripts will DROP ALL TABLES and recreate them using CASCADE; meaning you'll also LOSE YOUR VIEWS! If you want to keep the existing data - you'll need to change the schema names in the script or use a different database
+- All raw GNAF tables can be created UNLOGGED to speed up the data load.  This will make them UNRECOVERABLE if your database is corrupted. You can run these scripts again to recreate them. If you think this sounds ok - set the unlogged_tables flag to True for a slightly faster load
 
-Not so important notes:
-- If you want to run the Python script locally, you'll need to have a network path to the GNAF files on the database server to create the list of files to process. Otherwise, run the script on the Postgres server
-- The create tables script will add the PostGIS extention to the database in the public schema, 
+## NOTES:
+- If you're running the Python script locally (i.e. not on the Postgres server), you'll need to have access to a network path to the GNAF files on the database server to create the list of files to process. Otherwise, you'll need another copy of the raw files locally.
+- The create tables script will add the PostGIS extension to the database in the public schema 
 
 
 

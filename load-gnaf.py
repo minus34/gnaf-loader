@@ -22,12 +22,12 @@
 #   8. Adds primary and foreign keys to check for PID integrity across the reference tables
 #
 # TO DO:
-# - create clean, web ready locality bdys
 # - create ready-to-use versions of all admin bdys
 # - boundary tag addresses for census bdys
 # - boundary tag addresses for admin bdys
 # - output reference tables to PSV & SHP
 # - check address_alias_lookup record count
+# - QA against alternative method for flattening GNAF
 #
 # *********************************************************************************************************************
 
@@ -47,7 +47,8 @@ from datetime import datetime
 # vacuum database at the start after dropping tables?
 vacuum_db = True
 
-# create primary & foreign keys for raw gnaf? (adds time to data load. Note: final reference tables will have PKs & FKs)
+# create primary & foreign keys for raw gnaf? (adds time to data load)
+# NOTE: final reference tables will have PKs & FKs for data integrity
 primary_foreign_keys = False
 
 # create unlogged raw gnaf tables
@@ -60,12 +61,12 @@ states_to_load = ["ACT", "NSW", "NT", "OT", "QLD", "SA", "TAS", "VIC", "WA"]
 
 # what are the maximum parallel processes you want to use for the data load?
 # (set it to the number of cores on the Postgres server minus 2, limit to 12 if 16+ cores - minimal benefit beyond 12)
-max_concurrent_processes = 4
+max_concurrent_processes = 6
 
 # Postgres parameters
 pg_host = "localhost"
 pg_port = 5433
-pg_db = "gnaf_test"
+pg_db = "gnaf_test2"
 pg_user = "postgres"
 pg_password = "password"
 
@@ -106,9 +107,9 @@ pg_connect_string = "dbname='{0}' host='{1}' port='{2}' user='{3}' password='{4}
 
 # set postgres script directory
 if platform.system() == "Windows":
-    sql_dir = os.path.dirname(os.path.realpath(__file__)) + "\\postgres-scripts\\gnaf-and-admin-bdys\\"
+    sql_dir = os.path.dirname(os.path.realpath(__file__)) + "\\postgres-scripts\\"
 else:  # assume all else use forward slashes
-    sql_dir = os.path.dirname(os.path.realpath(__file__)) + "/postgres-scripts/gnaf-and-admin-bdys/"
+    sql_dir = os.path.dirname(os.path.realpath(__file__)) + "/postgres-scripts/"
 
 
 def main():
