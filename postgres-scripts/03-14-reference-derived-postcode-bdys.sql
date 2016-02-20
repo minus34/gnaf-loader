@@ -5,6 +5,6 @@ SELECT postcode,
        state,
        SUM(address_count),
        ST_Multi(ST_Buffer(ST_Union(ST_Buffer(geom, 0.0000001)), -0.0000001))
-  FROM admin_bdys.locality_boundaries
+  FROM admin_bdys.localities
   GROUP BY postcode,
            state;

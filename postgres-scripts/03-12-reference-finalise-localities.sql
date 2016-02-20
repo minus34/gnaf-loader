@@ -6,7 +6,7 @@
 -- update localities "has_boundary" flag
 UPDATE gnaf.localities AS loc
   SET has_boundary = 'Y'
-  FROM admin_bdys.locality_boundaries AS bdy
+  FROM admin_bdys.localities AS bdy
   WHERE loc.locality_pid = bdy.locality_pid;
 
 -- -- address counts by locality pid without a boundary (201511 GNAF), all have equivalent locality boundaries
@@ -19,7 +19,7 @@ UPDATE gnaf.localities AS loc
 -- addresses - change locality pids from a non-boundary pid to a boundary one -- 282 records
 UPDATE gnaf.temp_addresses AS pnt
   SET locality_pid = bdy.locality_pid
-  FROM admin_bdys.locality_boundaries AS bdy,
+  FROM admin_bdys.localities AS bdy,
   gnaf.localities AS loc
   WHERE pnt.locality_pid = loc.locality_pid
   AND ST_Within(pnt.geom, bdy.geom)
@@ -36,7 +36,7 @@ UPDATE gnaf.temp_addresses AS pnt
 -- streets - change locality pids from a non-boundary pid to a boundary one -- 224 records
 UPDATE gnaf.streets AS pnt
   SET locality_pid = bdy.locality_pid
-  FROM admin_bdys.locality_boundaries AS bdy,
+  FROM admin_bdys.localities AS bdy,
   gnaf.localities AS loc
   WHERE pnt.locality_pid = loc.locality_pid
   AND ST_Within(pnt.geom, bdy.geom)
@@ -138,7 +138,7 @@ UPDATE gnaf.temp_addresses AS adr
 -----------------------------------------------------------------------------------------------
 
 -- get postcodes and street & address counts from gnaf localities table
-UPDATE admin_bdys.locality_boundaries as bdy
+UPDATE admin_bdys.localities as bdy
   SET postcode = loc.postcode,
       address_count = loc.address_count,
       street_count = loc.street_count
@@ -208,7 +208,7 @@ CREATE UNIQUE INDEX localities_gid_idx ON gnaf.localities USING btree (gid);
 --        loc.address_count,
 --        loc.street_count,
 --        ((ST_Dump(ST_Intersection(loc.geom, ste.geom))).geom)
---   FROM admin_bdys.locality_boundaries AS loc
+--   FROM admin_bdys.localities AS loc
 --   INNER JOIN raw_admin_bdys.aus_state_polygon AS ste
 --   ON ST_Intersects(loc.geom, ste.geom)
 --   --WHERE loc.locality_name IN ('SWAN BAY', 'SWAN ISLAND', 'QUEENSCLIFF')

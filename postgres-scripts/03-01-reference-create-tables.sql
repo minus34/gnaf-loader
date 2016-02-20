@@ -218,36 +218,3 @@ CREATE TABLE gnaf.address_secondary_lookup(
 ) WITH (OIDS=FALSE);
 ALTER TABLE gnaf.address_secondary_lookup OWNER TO postgres;
 
-
--- locality boundaries
-DROP TABLE IF EXISTS admin_bdys.locality_boundaries CASCADE;
-CREATE TABLE admin_bdys.locality_boundaries
-(
-  gid SERIAL NOT NULL,
-  locality_pid character varying(16) NOT NULL,
-  locality_name character varying(100) NOT NULL,
-  postcode char(4) NULL,
-  state character varying(3) NOT NULL,
-	locality_class character varying(50) NOT NULL,
-  address_count integer NOT NULL,
-  street_count integer NOT NULL,
-  geom geometry(Multipolygon, 4283, 2) NOT NULL
-)
-WITH (OIDS=FALSE);
-ALTER TABLE admin_bdys.locality_boundaries OWNER TO postgres;
-
-
--- derived postcode boundaries
-DROP TABLE IF EXISTS admin_bdys.postcode_boundaries CASCADE;
-CREATE UNLOGGED TABLE admin_bdys.postcode_boundaries
-(
-  gid SERIAL NOT NULL,
-  postcode character(4),
-  state character varying(3) NOT NULL,
-  address_count integer NOT NULL,
-  geom geometry(Multipolygon,4283) NOT NULL
-)
-WITH (OIDS=FALSE);
-ALTER TABLE admin_bdys.postcode_boundaries OWNER TO postgres;
-
-

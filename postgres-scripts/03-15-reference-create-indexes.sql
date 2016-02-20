@@ -25,7 +25,6 @@ ALTER TABLE ONLY gnaf.locality_neighbour_lookup ADD CONSTRAINT locality_neighbou
 ALTER TABLE ONLY gnaf.address_alias_lookup ADD CONSTRAINT address_alias_lookup_pk PRIMARY KEY (alias_pid);
 ALTER TABLE ONLY gnaf.address_secondary_lookup ADD CONSTRAINT address_secondary_lookup_pk PRIMARY KEY (secondary_pid);
 ALTER TABLE ONLY gnaf.street_aliases ADD CONSTRAINT street_aliases_pk PRIMARY KEY (street_locality_pid, full_alias_street_name);
-ALTER TABLE ONLY admin_bdys.locality_boundaries ADD CONSTRAINT locality_boundaries_pk PRIMARY KEY (locality_pid);
 -- ALTER TABLE ONLY admin_bdys.postcode_boundaries ADD CONSTRAINT postcode_boundaries_pk PRIMARY KEY (postcode, state); -- There are NULL postcodes, this won't work now will it...?
 
 -- foreign keys

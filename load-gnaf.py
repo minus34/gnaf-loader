@@ -33,6 +33,7 @@
 # - check address_alias_lookup record count
 # - QA against alternative method for flattening GNAF
 # - List final record counts
+# - create derived postcodes with address counts
 #
 # *********************************************************************************************************************
 
@@ -136,31 +137,30 @@ def main():
     except psycopg2.Error:
         print "Unable to add PostGIS extension\nACTION: Check your Postgres user privileges or PostGIS install"
         return False
+    #
+    # # PART 1 - load gnaf from PSV files
+    # print ""
+    # start_time = datetime.now()
+    # print "Part 1 of 3 : Start raw GNAF load : {0}".format(start_time)
+    # drop_tables_and_vacuum_db(pg_cur)
+    # create_raw_gnaf_tables(pg_cur)
+    # populate_raw_gnaf()
+    # index_raw_gnaf()
+    # if primary_foreign_keys:
+    #     create_primary_foreign_keys()
+    # else:
+    #     print "\t- Step 6 of 6 : primary & foreign keys NOT created"
+    # # set postgres search path back to the default
+    # pg_cur.execute("SET search_path = public, pg_catalog")
+    # print "Part 1 of 3 : Raw GNAF loaded! : {0}".format(datetime.now() - start_time)
 
-    # PART 1 - load gnaf from PSV files
-    print ""
-    start_time = datetime.now()
-    print "Part 1 of 3 : Start raw GNAF load : {0}".format(start_time)
-    drop_tables_and_vacuum_db(pg_cur)
-    create_raw_gnaf_tables(pg_cur)
-    populate_raw_gnaf()
-    index_raw_gnaf()
-    if primary_foreign_keys:
-        create_primary_foreign_keys()
-    else:
-        print "\t- Step 6 of 6 : primary & foreign keys NOT created"
-    # set postgres search path back to the default
-    pg_cur.execute("SET search_path = public, pg_catalog")
-    print "Part 1 of 3 : Raw GNAF loaded! : {0}".format(datetime.now() - start_time)
-    
     # PART 2 - load raw admin boundaries from Shapefiles
     print ""
     start_time = datetime.now()
     print "Part 2 of 3 : Start raw admin boundary load : {0}".format(start_time)
-    if load_admin_boundaries(pg_cur):
-        print "Part 2 of 3 : Raw admin boundaries loaded! : {0}".format(datetime.now() - start_time)
-    else:
-        print "Part 2 of 3 : Raw admin boundaries load FAILED!"
+    load_admin_boundaries(pg_cur)
+    create_admin_bdys_for_analysis(pg_cur)
+    print "Part 2 of 3 : Raw admin boundaries loaded! : {0}".format(datetime.now() - start_time)
 
     # PART 3 - create flattened and standardised GNAF and Administrative Boundary reference tables
     print ""
@@ -303,6 +303,8 @@ def create_primary_foreign_keys():
 
 # loads the admin bdy shapefiles using the shp2pgsql command line tool (part of PostGIS), using multiprocessing
 def load_admin_boundaries(pg_cur):
+    start_time = datetime.now()
+
     # create schema
     if raw_admin_bdys_schema != "public":
         pg_cur.execute("CREATE SCHEMA IF NOT EXISTS {0} AUTHORIZATION {1}".format(raw_admin_bdys_schema, pg_user))
@@ -363,11 +365,17 @@ def load_admin_boundaries(pg_cur):
     # are there any files to load?
     if len(cmd_list) == 0:
         print "No Admin Boundary files found\nACTION: Check your 'admin_bdys_local_directory' path"
-        return False
     else:
         # load files in separate processes
         multiprocess_list(max_concurrent_processes, "cmd", cmd_list)
-        return True
+        print "\t- Step 1 of 2 : raw admin boundaries loaded : {0}".format(datetime.now() - start_time)
+
+
+def create_admin_bdys_for_analysis(pg_cur):
+    # Step 2 of 2 : create admin bdy tables optimised for spatial analysis
+    start_time = datetime.now()
+    pg_cur.execute(open_sql_file("02-02-create-admin-bdys-tables.sql"))
+    print "\t- Step 2 of 2 : admin boundaries for analysis populated : {0}".format(datetime.now() - start_time)
 
 
 # create gnaf reference tables by flattening raw gnaf address, streets & localities into a usable form
@@ -431,10 +439,10 @@ def create_reference_tables(pg_cur):
     pg_cur.execute(prep_sql("VACUUM ANALYSE gnaf.address_secondary_lookup"))
     print "\t- Step  9 of 15 : primary secondary lookup populated : {0}".format(datetime.now() - start_time)
 
-    # Step 10 of 15 : populate locality boundaries
-    start_time = datetime.now()
-    pg_cur.execute(open_sql_file("03-10-reference-create-locality-bdys.sql"))
-    print "\t- Step 10 of 15 : locality boundaries populated : {0}".format(datetime.now() - start_time)
+    # # Step 10 of 15 : populate locality boundaries
+    # start_time = datetime.now()
+    # pg_cur.execute(open_sql_file("03-10-reference-create-locality-bdys.sql"))
+    # print "\t- Step 10 of 15 : locality boundaries populated : {0}".format(datetime.now() - start_time)
 
     # Step 11 of 15 : split the Melbourne locality into its 2 postcodes (3000, 3004)
     start_time = datetime.now()
