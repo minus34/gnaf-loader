@@ -137,22 +137,22 @@ def main():
     except psycopg2.Error:
         print "Unable to add PostGIS extension\nACTION: Check your Postgres user privileges or PostGIS install"
         return False
-    #
-    # # PART 1 - load gnaf from PSV files
-    # print ""
-    # start_time = datetime.now()
-    # print "Part 1 of 3 : Start raw GNAF load : {0}".format(start_time)
-    # drop_tables_and_vacuum_db(pg_cur)
-    # create_raw_gnaf_tables(pg_cur)
-    # populate_raw_gnaf()
-    # index_raw_gnaf()
-    # if primary_foreign_keys:
-    #     create_primary_foreign_keys()
-    # else:
-    #     print "\t- Step 6 of 6 : primary & foreign keys NOT created"
-    # # set postgres search path back to the default
-    # pg_cur.execute("SET search_path = public, pg_catalog")
-    # print "Part 1 of 3 : Raw GNAF loaded! : {0}".format(datetime.now() - start_time)
+
+    # PART 1 - load gnaf from PSV files
+    print ""
+    start_time = datetime.now()
+    print "Part 1 of 3 : Start raw GNAF load : {0}".format(start_time)
+    drop_tables_and_vacuum_db(pg_cur)
+    create_raw_gnaf_tables(pg_cur)
+    populate_raw_gnaf()
+    index_raw_gnaf()
+    if primary_foreign_keys:
+        create_primary_foreign_keys()
+    else:
+        print "\t- Step 6 of 6 : primary & foreign keys NOT created"
+    # set postgres search path back to the default
+    pg_cur.execute("SET search_path = public, pg_catalog")
+    print "Part 1 of 3 : Raw GNAF loaded! : {0}".format(datetime.now() - start_time)
 
     # PART 2 - load raw admin boundaries from Shapefiles
     print ""
@@ -391,79 +391,79 @@ def create_reference_tables(pg_cur):
         pg_cur.execute("CREATE SCHEMA IF NOT EXISTS {0} AUTHORIZATION {1}"
                        .format(admin_bdys_schema, pg_user))
 
-    # Step 1 of 15 : create reference tables
+    # Step 1 of 14 : create reference tables
     start_time = datetime.now()
     pg_cur.execute(open_sql_file("03-01-reference-create-tables.sql"))
-    print "\t- Step  1 of 15 : create reference tables : {0}".format(datetime.now() - start_time)
+    print "\t- Step  1 of 14 : create reference tables : {0}".format(datetime.now() - start_time)
 
-    # Step 2 of 15 : populate localities
+    # Step 2 of 14 : populate localities
     start_time = datetime.now()
     pg_cur.execute(open_sql_file("03-02-reference-populate-localities.sql"))
-    print "\t- Step  2 of 15 : localities populated : {0}".format(datetime.now() - start_time)
+    print "\t- Step  2 of 14 : localities populated : {0}".format(datetime.now() - start_time)
 
-    # Step 3 of 15 : populate locality aliases
+    # Step 3 of 14 : populate locality aliases
     start_time = datetime.now()
     pg_cur.execute(open_sql_file("03-03-reference-populate-locality-aliases.sql"))
-    print "\t- Step  3 of 15 : locality aliases populated : {0}".format(datetime.now() - start_time)
+    print "\t- Step  3 of 14 : locality aliases populated : {0}".format(datetime.now() - start_time)
 
-    # Step 4 of 15 : populate locality neighbours
+    # Step 4 of 14 : populate locality neighbours
     start_time = datetime.now()
     pg_cur.execute(open_sql_file("03-04-reference-populate-locality-neighbours.sql"))
-    print "\t- Step  4 of 15 : locality neighbours populated : {0}".format(datetime.now() - start_time)
+    print "\t- Step  4 of 14 : locality neighbours populated : {0}".format(datetime.now() - start_time)
 
-    # Step 5 of 15 : populate streets
+    # Step 5 of 14 : populate streets
     start_time = datetime.now()
     pg_cur.execute(open_sql_file("03-05-reference-populate-streets.sql"))
-    print "\t- Step  5 of 15 : streets populated : {0}".format(datetime.now() - start_time)
+    print "\t- Step  5 of 14 : streets populated : {0}".format(datetime.now() - start_time)
 
-    # Step 6 of 15 : populate street aliases
+    # Step 6 of 14 : populate street aliases
     start_time = datetime.now()
     pg_cur.execute(open_sql_file("03-06-reference-populate-street-aliases.sql"))
-    print "\t- Step  6 of 15 : street aliases populated : {0}".format(datetime.now() - start_time)
+    print "\t- Step  6 of 14 : street aliases populated : {0}".format(datetime.now() - start_time)
 
-    # Step 7 of 15 : populate addresses, using multiprocessing
+    # Step 7 of 14 : populate addresses, using multiprocessing
     start_time = datetime.now()
     sql = open_sql_file("03-07-reference-populate-addresses-1.sql")
     split_sql_into_list_and_process(pg_cur, sql, gnaf_schema, "streets", "str", "gid")
     pg_cur.execute(prep_sql("ANALYZE gnaf.temp_addresses;"))
-    print "\t- Step  7 of 15 : addresses populated : {0}".format(datetime.now() - start_time)
+    print "\t- Step  7 of 14 : addresses populated : {0}".format(datetime.now() - start_time)
 
-    # Step 8 of 15 : populate principal alias lookup
+    # Step 8 of 14 : populate principal alias lookup
     start_time = datetime.now()
     pg_cur.execute(open_sql_file("03-08-reference-populate-address-alias-lookup.sql"))
-    print "\t- Step  8 of 15 : principal alias lookup populated : {0}".format(datetime.now() - start_time)
+    print "\t- Step  8 of 14 : principal alias lookup populated : {0}".format(datetime.now() - start_time)
 
-    # Step 9 of 15 : populate primary secondary lookup
+    # Step 9 of 14 : populate primary secondary lookup
     start_time = datetime.now()
     pg_cur.execute(open_sql_file("03-09-reference-populate-address-secondary-lookup.sql"))
     pg_cur.execute(prep_sql("VACUUM ANALYSE gnaf.address_secondary_lookup"))
-    print "\t- Step  9 of 15 : primary secondary lookup populated : {0}".format(datetime.now() - start_time)
+    print "\t- Step  9 of 14 : primary secondary lookup populated : {0}".format(datetime.now() - start_time)
 
-    # # Step 10 of 15 : populate locality boundaries
+    # # Step 10 of 14 : populate locality boundaries
     # start_time = datetime.now()
     # pg_cur.execute(open_sql_file("03-10-reference-create-locality-bdys.sql"))
-    # print "\t- Step 10 of 15 : locality boundaries populated : {0}".format(datetime.now() - start_time)
+    # print "\t- Step 10 of 14 : locality boundaries populated : {0}".format(datetime.now() - start_time)
 
-    # Step 11 of 15 : split the Melbourne locality into its 2 postcodes (3000, 3004)
+    # Step 10 of 14 : split the Melbourne locality into its 2 postcodes (3000, 3004)
     start_time = datetime.now()
     pg_cur.execute(open_sql_file("03-11-reference-split-melbourne.sql"))
-    print "\t- Step 11 of 15 : Melbourne split : {0}".format(datetime.now() - start_time)
+    print "\t- Step 10 of 14 : Melbourne split : {0}".format(datetime.now() - start_time)
 
-    # Step 12 of 15 : finalise localities assigned to streets and addresses
+    # Step 11 of 14 : finalise localities assigned to streets and addresses
     start_time = datetime.now()
     pg_cur.execute(open_sql_file("03-12-reference-finalise-localities.sql"))
     # pg_cur.execute(prep_sql("VACUUM ANALYZE gnaf.localities"))
-    print "\t- Step 12 of 15 : localities finalised : {0}".format(datetime.now() - start_time)
+    print "\t- Step 11 of 14 : localities finalised : {0}".format(datetime.now() - start_time)
 
-    # Step 13 of 15 : finalise addresses, using multiprocessing
+    # Step 12 of 14 : finalise addresses, using multiprocessing
     start_time = datetime.now()
     sql = open_sql_file("03-13-reference-populate-addresses-2.sql")
     split_sql_into_list_and_process(pg_cur, sql, gnaf_schema, "localities", "loc", "gid")
     # turf the temp address table
     # pg_cur.execute(prep_sql("DROP TABLE IF EXISTS gnaf.temp_addresses"))
-    print "\t- Step 13 of 15 : addresses finalised : {0}".format(datetime.now() - start_time)
+    print "\t- Step 12 of 14 : addresses finalised : {0}".format(datetime.now() - start_time)
 
-    # Step 14 of 15 : create almost correct postcode boundaries by aggregating localities, using multiprocessing
+    # Step 13 of 14 : create almost correct postcode boundaries by aggregating localities, using multiprocessing
     start_time = datetime.now()
     sql = open_sql_file("03-14-reference-derived-postcode-bdys.sql")
     sql_list = []
@@ -471,9 +471,9 @@ def create_reference_tables(pg_cur):
         state_sql = sql.replace("GROUP BY ", "WHERE state = '{0}' GROUP BY ".format(state))
         sql_list.append(state_sql)
     multiprocess_list(max_concurrent_processes, "sql", sql_list)
-    print "\t- Step 14 of 15 : postcode boundaries created : {0}".format(datetime.now() - start_time)
+    print "\t- Step 13 of 14 : postcode boundaries created : {0}".format(datetime.now() - start_time)
 
-    # Step 15 of 15 : create indexes, primary and foreign keys, using multiprocessing
+    # Step 14 of 14 : create indexes, primary and foreign keys, using multiprocessing
     start_time = datetime.now()
     raw_sql_list = open_sql_file("03-15-reference-create-indexes.sql").split("\n")
     sql_list = []
@@ -481,7 +481,7 @@ def create_reference_tables(pg_cur):
         if sql[0:2] != "--" and sql[0:2] != "":
             sql_list.append(sql)
     multiprocess_list(max_concurrent_processes, "sql", sql_list)
-    print "\t- Step 14 of 15 : create indexes : {0}".format(datetime.now() - start_time)
+    print "\t- Step 14 of 14 : create indexes : {0}".format(datetime.now() - start_time)
 
 
 # takes a list of sql queries or command lines and runs them using multiprocessing
