@@ -161,7 +161,7 @@ def drop_tables_and_vacuum_db(pg_cur):
     #     pg_cur.execute("VACUUM")
     #     print "\t- Step 2 of 6 : database vacuumed : {0}".format(datetime.now() - start_time)
     # else:
-    #     print "\t- Step 2 of 6 : database NOT vacuumed"
+    print "\t- Step 2 of 6 : database NOT vacuumed"
 
 
 def create_raw_gnaf_tables(pg_cur):
