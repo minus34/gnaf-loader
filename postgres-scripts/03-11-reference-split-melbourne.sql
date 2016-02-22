@@ -155,5 +155,3 @@ SELECT 'VIC1634_2', locality_pid
   FROM admin_bdys.locality_bdys
   WHERE st_intersects((SELECT st_buffer(geom, 0.001) FROM admin_bdys.locality_bdys WHERE locality_pid LIKE 'VIC1634_2'), geom)
   AND locality_pid <> 'VIC1634_2';
-
-

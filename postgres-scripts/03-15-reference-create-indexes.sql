@@ -57,4 +57,3 @@ ALTER TABLE ONLY gnaf.locality_aliases ADD CONSTRAINT locality_aliases_fk1 FOREI
 -- locality_neighbour_lookup
 ALTER TABLE ONLY gnaf.locality_neighbour_lookup ADD CONSTRAINT locality_neighbour_lookup_fk1 FOREIGN KEY (locality_pid) REFERENCES gnaf.localities(locality_pid);
 ALTER TABLE ONLY gnaf.locality_neighbour_lookup ADD CONSTRAINT locality_neighbour_lookup_fk2 FOREIGN KEY (neighbour_locality_pid) REFERENCES gnaf.localities(locality_pid);
-

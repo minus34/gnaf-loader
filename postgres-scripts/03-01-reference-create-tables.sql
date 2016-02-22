@@ -217,4 +217,3 @@ CREATE TABLE gnaf.address_secondary_lookup(
   join_type character varying(50) NOT NULL
 ) WITH (OIDS=FALSE);
 ALTER TABLE gnaf.address_secondary_lookup OWNER TO postgres;
-

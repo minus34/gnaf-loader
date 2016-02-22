@@ -26,6 +26,3 @@ UPDATE gnaf.street_aliases AS als
   WHERE als.street_locality_pid = str.street_locality_pid
   AND als.alias_street_name = str.street_name
   AND str.alias_type_code = aut.code;
-
-
---select * from raw_gnaf.street_locality_alias where street_locality_pid = 'QLD100128'

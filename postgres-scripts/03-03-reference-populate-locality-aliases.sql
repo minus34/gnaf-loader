@@ -61,19 +61,3 @@ FROM (
 WHERE loc.std_alias_name = sqt2.std_alias_name
 AND loc.state = sqt2.state
 AND sqt2.cnt = 1;
-
- 
--- -- update stats
--- ANALYZE gnaf.locality_aliases;
--- 
--- -- qa
--- select (select count(*) from raw_gnaf.locality_alias) - (select count(*) from gnaf.locality_aliases) AS diff; -- 146
-
- 
--- SELECT * FROM gnaf.locality_aliases
--- ORDER BY state,
---          locality_name,
---          postcode,
---          locality_alias_name
---  LIMIT 1000;
-

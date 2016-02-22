@@ -52,5 +52,3 @@ FROM (
 WHERE loc.std_locality_name = sqt2.std_locality_name
 AND loc.state = sqt2.state
 AND sqt2.cnt = 1;
-
-

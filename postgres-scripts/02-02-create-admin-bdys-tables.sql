@@ -272,7 +272,6 @@ ANALYZE admin_bdys.locality_bdys_analysis;
 -- ALTER TABLE admin_bdys.hundreds_sa_only CLUSTER ON hundreds_sa_only_geom_idx;
 
 
-
 --------------------------------------------------------------------------------------
 -- derived postcode boundaries -- insert done using multiprocessing in load.gnaf.py
 --------------------------------------------------------------------------------------
@@ -362,6 +361,8 @@ CREATE INDEX commonwealth_electorates_analysis_geom_idx ON admin_bdys.commonweal
 ALTER TABLE admin_bdys.commonwealth_electorates_analysis CLUSTER ON commonwealth_electorates_analysis_geom_idx;
 
 ANALYZE admin_bdys.commonwealth_electorates_analysis;
+
+
 
 
 

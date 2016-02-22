@@ -113,4 +113,3 @@ SELECT adr.gnaf_pid,
   FROM gnaf.temp_addresses AS adr
   INNER JOIN gnaf.localities AS loc ON adr.locality_pid = loc.locality_pid
   WHERE adr.alias_principal = 'A';
-  
