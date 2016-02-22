@@ -2,8 +2,8 @@
 A quick way to load GNAF and the PSMA Admin Boundaries into Postgres, preprocessed and ready to use as a reference address dataset for geocoding, analysis and visualisation.
 
 There are 2 options for loading the data:
-1: Run a Python script and build the database in a single step; or
-2: (COMING SOON) Download the GNAF and/or Admin Bdys Postgres dump files or text files and restore them in your database.
+1. Run a Python script and build the database in a single step
+2. (COMING SOON) Download the GNAF and/or Admin Bdys Postgres dump files or text files and restore them in your database
 
 ## Option 1 - Run load.gnaf.py
 Running the Python script takes 15-60 minutes an a Postgres server configured for performance. Guidelines are: a 3 year old, 32 core Windows server with SSDs = ~15 mins. A MacBook Pro = ~45 mins. A 3 year old, 8 core commodity PC = ~45 mins.
@@ -16,14 +16,14 @@ To get the good load times you'll need to configure your Postgres server for per
 - Python 2.7 with Psycopg2 2.6
 
 ### Process
-1: Download PSMA GNAF from www.data.gov.au
-2: Download PSMA Administrative Boundaries from www.data.gov.au
-3: Unzip GNAF to a directory on your Postgres server
-4: Alter security on the directory to grant Postgres read access
-5: Unzip Admin Bdys to a local directory
-6: Create the target database (if required)
-7: Edit the Postgres and GNAF parameters at the top of the Python script
-8: Run the script, come back in 15-60 minutes and enjoy!
+1. Download PSMA GNAF from www.data.gov.au
+2. Download PSMA Administrative Boundaries from www.data.gov.au
+3. Unzip GNAF to a directory on your Postgres server
+4. Alter security on the directory to grant Postgres read access
+5. Unzip Admin Bdys to a local directory
+6. Create the target database (if required)
+7. Edit the Postgres and GNAF parameters at the top of the Python script
+8. Run the script, come back in 15-60 minutes and enjoy!
 
 ## (COMING SOON) Option 2 - Load PG_DUMP Files
 This option will be available soon after the data is made open!
@@ -35,10 +35,10 @@ Not sure how long this takes since I haven't tested it thoroughly yet...
 - A knowledge of Postgres pg_restore parameters: see http://www.postgresql.org/docs/9.5/static/app-pgrestore.html
 
 ### Process
-1: Download gnaf.dmp from <url>
-2: Download admin_bdys.dmp from <url>
-3: Edit the pg_restore .bat/.sh script in the Supporting File folder for your database parameters
-8: Run the script, come back in 15-60 minutes and enjoy!
+1. Download gnaf.dmp from <url>
+2. Download admin_bdys.dmp from <url>
+3. Edit the pg_restore .bat/.sh script in the Supporting File folder for your database parameters
+4. Run the script, come back in 15-60 minutes and enjoy!
 
 ## DATA CUSTOMISATION
 GNAF and the Admin Bdys have been customised to remove some of the more common annoyances with the data. The most notable are:
