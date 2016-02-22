@@ -3,8 +3,8 @@
 -- locality boundaries
 --------------------------------------------------------------------------------------
 
-DROP TABLE IF EXISTS admin_bdys.localities CASCADE;
-CREATE TABLE admin_bdys.localities(
+DROP TABLE IF EXISTS admin_bdys.locality_bdys CASCADE;
+CREATE TABLE admin_bdys.locality_bdys(
   gid SERIAL NOT NULL,
   locality_pid character varying(16) NOT NULL,
   locality_name character varying(100) NOT NULL,
@@ -15,10 +15,9 @@ CREATE TABLE admin_bdys.localities(
   street_count integer NOT NULL DEFAULT 0,
   geom geometry(Multipolygon, 4283, 2) NOT NULL
 ) WITH (OIDS=FALSE);
-ALTER TABLE admin_bdys.localities OWNER TO postgres;
+ALTER TABLE admin_bdys.locality_bdys OWNER TO postgres;
 
-
-INSERT INTO admin_bdys.localities (locality_pid, locality_name, postcode, state, locality_class, geom)
+INSERT INTO admin_bdys.locality_bdys (locality_pid, locality_name, postcode, state, locality_class, geom)
 SELECT dat.loc_pid,
        dat.name,
        dat.postcode,
@@ -36,7 +35,7 @@ SELECT dat.loc_pid,
        ste.st_abbrev,
        aut.name;
 
-ANALYZE admin_bdys.localities;
+ANALYZE admin_bdys.locality_bdys;
 
 
 -- cookie cut ACT districts to areas without a gazetted locality; and add to locality bdys table
@@ -85,7 +84,7 @@ INSERT INTO temp_districts
          'XYZ',
          'DUMMY',
          ST_Multi(ST_Union(geom)) AS geom
-  FROM admin_bdys.localities
+  FROM admin_bdys.locality_bdys
   WHERE state = 'ACT';
 
 -- cookie cut the districts up by the merged localities (buffer required to remove slivers)
@@ -105,12 +104,12 @@ SELECT 'SA999999',
        'SA',
        'UNOFFICIAL SUBURB',
        ST_Multi(ST_Buffer(ST_Difference(ST_SetSRID(ST_GeomFromText('POLYGON((128.96007125417 -25.9721745610671,133.1115 -25.9598957395068,133.12 -26.6761603305237,133.797926948924 -26.6925320926041,133.724254019562 -27.5888860665053,133.867506937766 -28.0513883452762,133.892064580886 -29.5739622187522,133.138963525189 -29.5125681109508,133.110312941548 -30.6094761703367,131.645040235353 -30.494873835774,128.98053595677 -30.789565553221,128.96007125417 -25.9721745610671))'), 4283), ST_Union(geom)), 0.0))
-  FROM admin_bdys.localities
+  FROM admin_bdys.locality_bdys
   WHERE ST_Intersects(geom, ST_SetSRID(ST_GeomFromText('POLYGON((128.96007125417 -25.9721745610671,133.1115 -25.9598957395068,133.12 -26.6761603305237,133.797926948924 -26.6925320926041,133.724254019562 -27.5888860665053,133.867506937766 -28.0513883452762,133.892064580886 -29.5739622187522,133.138963525189 -29.5125681109508,133.110312941548 -30.6094761703367,131.645040235353 -30.494873835774,128.98053595677 -30.789565553221,128.96007125417 -25.9721745610671))'), 4283));
 
 
 -- insert the districts into the gazetted localities, whilst ignoring the remaining slivers (Admin boundary topology is not perfect)
-INSERT INTO admin_bdys.localities (locality_pid, locality_name, postcode, state, locality_class, geom)
+INSERT INTO admin_bdys.locality_bdys (locality_pid, locality_name, postcode, state, locality_class, geom)
 SELECT locality_pid,
        locality_name,
        postcode,
@@ -138,7 +137,7 @@ DROP TABLE temp_districts;
 
 
 -- insert the missing boundary for Thistle Island, SA - from a polygon in the raw state boundaries
-INSERT INTO admin_bdys.localities (locality_pid, locality_name, postcode, state, locality_class, geom)
+INSERT INTO admin_bdys.locality_bdys (locality_pid, locality_name, postcode, state, locality_class, geom)
 SELECT '250190776' AS locality_pid,
        'THISTLE ISLAND' AS locality_name,
        null AS postcode,
@@ -168,7 +167,7 @@ select locality_pid,
        state,
        locality_class,
        ST_Multi((ST_Dump(ST_Split(geom, ST_GeomFromText('LINESTRING(144.96691 -37.82135,144.96826 -37.81924,144.97045 -37.81911,144.97235 -37.81921,144.97345 -37.81955,144.97465 -37.82049,144.97734 -37.82321,144.97997 -37.82602,144.98154 -37.82696,144.98299 -37.82735,144.98499 -37.82766,144.9866 -37.82985)', 4283)))).geom) AS geom
-  from admin_bdys.localities
+  from admin_bdys.locality_bdys
   where locality_pid = 'VIC1634';
 
 -- update the locality_pids of the 2 new boundaries
@@ -182,7 +181,7 @@ UPDATE temp_bdys
   WHERE postcode = '3000';
 
 -- insert the new boundaries into the main table, the old record doesn't get deleted yet!
-INSERT INTO admin_bdys.localities (locality_pid, locality_name, postcode, state, locality_class, geom)
+INSERT INTO admin_bdys.locality_bdys (locality_pid, locality_name, postcode, state, locality_class, geom)
 SELECT locality_pid,
        locality_name,
        postcode,
@@ -194,39 +193,39 @@ SELECT locality_pid,
 DROP TABLE temp_bdys;
 
 -- delete the replaced Melbourne locality
-DELETE FROM admin_bdys.localities WHERE locality_pid = 'VIC1634';
+DELETE FROM admin_bdys.locality_bdys WHERE locality_pid = 'VIC1634';
 
 
 -- update stats
-ANALYZE admin_bdys.localities;
+ANALYZE admin_bdys.locality_bdys;
 
 -- create indexes for later use
-ALTER TABLE admin_bdys.localities ADD CONSTRAINT localities_pk PRIMARY KEY (locality_pid);
-CREATE UNIQUE INDEX localities_gid_idx ON admin_bdys.localities USING btree(gid);
-CREATE INDEX localities_geom_idx ON admin_bdys.localities USING gist(geom);
-ALTER TABLE admin_bdys.localities CLUSTER ON localities_geom_idx;
+ALTER TABLE admin_bdys.locality_bdys ADD CONSTRAINT locality_bdys_pk PRIMARY KEY (locality_pid);
+CREATE UNIQUE INDEX localities_gid_idx ON admin_bdys.locality_bdys USING btree(gid);
+CREATE INDEX locality_bdys_geom_idx ON admin_bdys.locality_bdys USING gist(geom);
+ALTER TABLE admin_bdys.locality_bdys CLUSTER ON locality_bdys_geom_idx;
 
 
 -- create data processing table
-DROP TABLE IF EXISTS admin_bdys.localities_analysis CASCADE;
-CREATE TABLE admin_bdys.localities_analysis (
+DROP TABLE IF EXISTS admin_bdys.locality_bdys_analysis CASCADE;
+CREATE TABLE admin_bdys.locality_bdys_analysis (
   gid SERIAL NOT NULL PRIMARY KEY,
   locality_pid character varying(15) NOT NULL,
   state character varying(3) NOT NULL,
   geom geometry(Polygon, 4283, 2) NOT NULL
 ) WITH (OIDS=FALSE);
-ALTER TABLE admin_bdys.localities_analysis OWNER TO postgres;
+ALTER TABLE admin_bdys.locality_bdys_analysis OWNER TO postgres;
 
-INSERT INTO admin_bdys.localities_analysis (locality_pid, state, geom)
+INSERT INTO admin_bdys.locality_bdys_analysis (locality_pid, state, geom)
 SELECT locality_pid,
        state, 
        ST_Subdivide((ST_Dump(ST_Buffer(geom, 0.0))).geom, 512)
-  FROM admin_bdys.localities;
+  FROM admin_bdys.locality_bdys;
 
-CREATE INDEX localities_analysis_geom_idx ON admin_bdys.localities_analysis USING gist(geom);
-ALTER TABLE admin_bdys.localities_analysis CLUSTER ON localities_analysis_geom_idx;
+CREATE INDEX localities_analysis_geom_idx ON admin_bdys.locality_bdys_analysis USING gist(geom);
+ALTER TABLE admin_bdys.locality_bdys_analysis CLUSTER ON localities_analysis_geom_idx;
 
-ANALYZE admin_bdys.localities_analysis;
+ANALYZE admin_bdys.locality_bdys_analysis;
 
 
 -- uncomment this if your want an SA Hundreds boundary table (historical bdys)
@@ -274,39 +273,29 @@ ANALYZE admin_bdys.localities_analysis;
 
 
 
--- --------------------------------------------------------------------------------------
--- -- derived postcode boundaries
--- --------------------------------------------------------------------------------------
--- 
--- DROP TABLE IF EXISTS admin_bdys.postcodes CASCADE;
--- CREATE UNLOGGED TABLE admin_bdys.postcodes
--- (
---   gid SERIAL NOT NULL,
---   postcode character(4),
---   state character varying(3) NOT NULL,
---   address_count integer NOT NULL DEFAULT 0,
---   geom geometry(Multipolygon,4283) NOT NULL
--- )
--- WITH (OIDS=FALSE);
--- ALTER TABLE admin_bdys.postcodes OWNER TO postgres;
--- 
--- -- merge locality bdys into postcodes -- 15 mins
--- INSERT INTO admin_bdys.postcode_boundaries (postcode, state, geom)
--- SELECT postcode,
---        state,
--- --       ST_Multi(ST_Buffer(ST_Union(ST_Buffer(geom, 0.0000001)), -0.0000001))
---        ST_Multi(ST_Union(geom))
---   FROM admin_bdys.localities
---   GROUP BY postcode,
---            state;
+--------------------------------------------------------------------------------------
+-- derived postcode boundaries -- insert done using multiprocessing in load.gnaf.py
+--------------------------------------------------------------------------------------
+
+DROP TABLE IF EXISTS admin_bdys.postcode_bdys CASCADE;
+CREATE UNLOGGED TABLE admin_bdys.postcode_bdys
+(
+  gid SERIAL NOT NULL,
+  postcode character(4),
+  state character varying(3) NOT NULL,
+  address_count integer NOT NULL DEFAULT 0,
+  geom geometry(Multipolygon,4283) NOT NULL
+)
+WITH (OIDS=FALSE);
+ALTER TABLE admin_bdys.postcode_bdys OWNER TO postgres;
 
 
 --------------------------------------------------------------------------------------
 -- states
 --------------------------------------------------------------------------------------
 
-DROP VIEW IF EXISTS admin_bdys.states CASCADE;
-CREATE VIEW admin_bdys.states AS
+DROP VIEW IF EXISTS admin_bdys.state_bdys CASCADE;
+CREATE VIEW admin_bdys.state_bdys AS
 SELECT tab.state_pid,
        tab.state_name AS name,
        tab.st_abbrev AS state,
@@ -315,25 +304,25 @@ SELECT tab.state_pid,
   INNER JOIN raw_admin_bdys.aus_state_polygon AS bdy ON tab.state_pid = bdy.state_pid;
 
 -- create data processing table
-DROP TABLE IF EXISTS admin_bdys.states_analysis CASCADE;
-CREATE TABLE admin_bdys.states_analysis (
+DROP TABLE IF EXISTS admin_bdys.state_bdys_analysis CASCADE;
+CREATE TABLE admin_bdys.state_bdys_analysis (
   gid SERIAL NOT NULL PRIMARY KEY,
   state_pid character varying(15) NOT NULL,
   state character varying(3) NOT NULL,
   geom geometry(Polygon, 4283, 2) NOT NULL
 ) WITH (OIDS=FALSE);
-ALTER TABLE admin_bdys.states_analysis OWNER TO postgres;
+ALTER TABLE admin_bdys.state_bdys_analysis OWNER TO postgres;
 
-INSERT INTO admin_bdys.states_analysis (state_pid, state, geom)
+INSERT INTO admin_bdys.state_bdys_analysis (state_pid, state, geom)
 SELECT state_pid,
        state,
        ST_Subdivide((ST_Dump(ST_Buffer(geom, 0.0))).geom, 512)
-  FROM admin_bdys.states;
+  FROM admin_bdys.state_bdys;
 
-CREATE INDEX states_analysis_geom_idx ON admin_bdys.states_analysis USING gist(geom);
-ALTER TABLE admin_bdys.states_analysis CLUSTER ON states_analysis_geom_idx;
+CREATE INDEX states_analysis_geom_idx ON admin_bdys.state_bdys_analysis USING gist(geom);
+ALTER TABLE admin_bdys.state_bdys_analysis CLUSTER ON states_analysis_geom_idx;
 
-ANALYZE admin_bdys.states_analysis;
+ANALYZE admin_bdys.state_bdys_analysis;
 
 
 --------------------------------------------------------------------------------------
@@ -376,8 +365,15 @@ ANALYZE admin_bdys.commonwealth_electorates_analysis;
 
 
 
+--TO DO:
+--  - Do the above for all admin bdy types
 
-select * from admin_bdys.states_analysis where NOT ST_IsValid(geom);
+
+
+-- IGNORE THE CODE BELOW - IT'S A JUNKYEARD OF CREATE TABLE STATEMENTS FOR CUTTING AND PASTING THE GOOD BITS FROM...
+
+
+
 
 
 

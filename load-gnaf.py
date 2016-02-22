@@ -8,12 +8,12 @@
 # GitHub: minus34
 # Twitter: @minus34
 #
-# Version: 1.0.0
+# Version: 0.9
 # Date: 22-02-2016
 #
 # Copyright:
 #  - Code is copyright Hugh Saalmans - licensed under an Apache License, version 2.0
-#  - Data is copyright PSMA - licensed under a Creative Commons (By Attribution) license
+#  - Data is copyright PSMA - SOON TO BE licensed under a Creative Commons (By Attribution) license
 
 # Process:
 #   1. Loads raw GNAF into Postgres from PSV files, using COPY
@@ -23,17 +23,7 @@
 #   5. Splits the locality boundary for Melbourne into 2, one for each of its postcodes (3000 & 3004)
 #   6. Creates final principal & alias address tables containing fixes based on the above locality customisations
 #   7. Creates an almost correct Postcode Boundary table from locality boundary aggregates with address based postcodes
-#   8. Adds primary and foreign keys to check for PID integrity across the reference tables
-#
-# TO DO:
-# - create ready-to-use versions of all admin bdys
-# - boundary tag addresses for census bdys
-# - boundary tag addresses for admin bdys
-# - output reference tables to PSV & SHP
-# - check address_alias_lookup record count
-# - QA against alternative method for flattening GNAF
-# - List final record counts
-# - create derived postcodes with address counts
+#   8. Adds primary and foreign keys to confirm data integrity across the reference tables
 #
 # *********************************************************************************************************************
 
@@ -50,8 +40,8 @@ from datetime import datetime
 # Edit these parameters to taste - START
 # *********************************************************************************************************************
 
-# vacuum database at the start after dropping tables?
-vacuum_db = True
+# # vacuum database at the start after dropping tables?
+# vacuum_db = False
 
 # create primary & foreign keys for raw gnaf? (adds time to data load)
 # NOTE: final reference tables will have PKs & FKs for data integrity
@@ -63,7 +53,6 @@ unlogged_tables = False
 
 # which states do you want to load the gnaf data for?
 states_to_load = ["ACT", "NSW", "NT", "OT", "QLD", "SA", "TAS", "VIC", "WA"]
-# states_to_load = ["ACT", "NSW"]
 
 # what are the maximum parallel processes you want to use for the data load?
 # (set it to the number of cores on the Postgres server minus 2, limit to 12 if 16+ cores - minimal benefit beyond 12)
@@ -71,8 +60,8 @@ max_concurrent_processes = 6
 
 # Postgres parameters
 pg_host = "localhost"
-pg_port = 5433
-pg_db = "gnaf_test2"
+pg_port = 5432
+pg_db = "psma_201602"
 pg_user = "postgres"
 pg_password = "password"
 
@@ -83,25 +72,10 @@ gnaf_schema = "gnaf"
 admin_bdys_schema = "admin_bdys"
 
 # raw data directories
-# gnaf_network_directory = r"\\l10-geosdi\h$\zzz_todelete"
-# gnaf_pg_server_local_directory = r"h:\zzz_todelete"
-# admin_bdys_local_directory = r"C:\temp\psma_201511"
-# # psv_output_directory = r"C:\temp"
-
-gnaf_network_directory = r"C:\temp\psma_201511"
-gnaf_pg_server_local_directory = r"C:\temp\psma_201511"
-admin_bdys_local_directory = r"C:\temp\psma_201511"
-# psv_output_directory = r"C:\temp"
-
-# gnaf_network_directory = r"C:\temp\psma_201511"
-# gnaf_pg_server_local_directory = "/home/vagrant/sync"
-# admin_bdys_local_directory = r"C:\temp\psma_201511"
-# psv_output_directory = r"C:\temp"
-
-# gnaf_network_directory = "/Users/Hugh/tmp"
-# gnaf_pg_server_local_directory = "/Users/Hugh/tmp"
-# admin_bdys_local_directory = "/Users/Hugh/tmp"
-# psv_output_directory = "/Users/Hugh/tmp"
+gnaf_network_directory = r"C:\temp\psma_201602"
+gnaf_pg_server_local_directory = r"C:\temp\psma_201602"
+admin_bdys_local_directory = r"C:\temp\psma_201602"
+# psv_output_directory = r"C:\temp\psma_201602"
 
 # *********************************************************************************************************************
 # Edit these parameters to taste - END
@@ -181,13 +155,13 @@ def drop_tables_and_vacuum_db(pg_cur):
     pg_cur.execute(open_sql_file("01-01-drop-tables.sql"))
     print "\t- Step 1 of 6 : tables dropped : {0}".format(datetime.now() - start_time)
 
-    # Step 2 of 6 : vacuum database (if requested)
-    start_time = datetime.now()
-    if vacuum_db:
-        pg_cur.execute("VACUUM")
-        print "\t- Step 2 of 6 : database vacuumed : {0}".format(datetime.now() - start_time)
-    else:
-        print "\t- Step 2 of 6 : database NOT vacuumed : {0}"
+    # # Step 2 of 6 : vacuum database (if requested)
+    # start_time = datetime.now()
+    # if vacuum_db:
+    #     pg_cur.execute("VACUUM")
+    #     print "\t- Step 2 of 6 : database vacuumed : {0}".format(datetime.now() - start_time)
+    # else:
+    #     print "\t- Step 2 of 6 : database NOT vacuumed"
 
 
 def create_raw_gnaf_tables(pg_cur):
@@ -374,6 +348,11 @@ def load_admin_boundaries(pg_cur):
 def create_admin_bdys_for_analysis(pg_cur):
     # Step 2 of 2 : create admin bdy tables optimised for spatial analysis
     start_time = datetime.now()
+
+    if admin_bdys_schema != "public":
+        pg_cur.execute("CREATE SCHEMA IF NOT EXISTS {0} AUTHORIZATION {1}"
+                       .format(admin_bdys_schema, pg_user))
+
     pg_cur.execute(open_sql_file("02-02-create-admin-bdys-tables.sql"))
     print "\t- Step 2 of 2 : admin boundaries for analysis populated : {0}".format(datetime.now() - start_time)
 
@@ -387,9 +366,6 @@ def create_reference_tables(pg_cur):
     # create schemas
     if gnaf_schema != "public":
         pg_cur.execute("CREATE SCHEMA IF NOT EXISTS {0} AUTHORIZATION {1}".format(gnaf_schema, pg_user))
-    if admin_bdys_schema != "public":
-        pg_cur.execute("CREATE SCHEMA IF NOT EXISTS {0} AUTHORIZATION {1}"
-                       .format(admin_bdys_schema, pg_user))
 
     # Step 1 of 14 : create reference tables
     start_time = datetime.now()
@@ -439,11 +415,6 @@ def create_reference_tables(pg_cur):
     pg_cur.execute(prep_sql("VACUUM ANALYSE gnaf.address_secondary_lookup"))
     print "\t- Step  9 of 14 : primary secondary lookup populated : {0}".format(datetime.now() - start_time)
 
-    # # Step 10 of 14 : populate locality boundaries
-    # start_time = datetime.now()
-    # pg_cur.execute(open_sql_file("03-10-reference-create-locality-bdys.sql"))
-    # print "\t- Step 10 of 14 : locality boundaries populated : {0}".format(datetime.now() - start_time)
-
     # Step 10 of 14 : split the Melbourne locality into its 2 postcodes (3000, 3004)
     start_time = datetime.now()
     pg_cur.execute(open_sql_file("03-11-reference-split-melbourne.sql"))
@@ -452,7 +423,6 @@ def create_reference_tables(pg_cur):
     # Step 11 of 14 : finalise localities assigned to streets and addresses
     start_time = datetime.now()
     pg_cur.execute(open_sql_file("03-12-reference-finalise-localities.sql"))
-    # pg_cur.execute(prep_sql("VACUUM ANALYZE gnaf.localities"))
     print "\t- Step 11 of 14 : localities finalised : {0}".format(datetime.now() - start_time)
 
     # Step 12 of 14 : finalise addresses, using multiprocessing
@@ -481,7 +451,7 @@ def create_reference_tables(pg_cur):
         if sql[0:2] != "--" and sql[0:2] != "":
             sql_list.append(sql)
     multiprocess_list(max_concurrent_processes, "sql", sql_list)
-    print "\t- Step 14 of 14 : create indexes : {0}".format(datetime.now() - start_time)
+    print "\t- Step 14 of 14 : create primary & foreign keys and indexes : {0}".format(datetime.now() - start_time)
 
 
 # takes a list of sql queries or command lines and runs them using multiprocessing

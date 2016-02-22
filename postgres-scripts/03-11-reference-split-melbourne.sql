@@ -11,7 +11,7 @@
 UPDATE gnaf.temp_addresses AS pnt -- 90327 records
   SET locality_pid = bdy.locality_pid,
       postcode = bdy.postcode
-  FROM admin_bdys.localities AS bdy
+  FROM admin_bdys.locality_bdys AS bdy
   WHERE ST_Within(pnt.geom, bdy.geom)
   AND pnt.locality_pid = 'VIC1634'
   AND bdy.locality_pid LIKE 'VIC1634_%';
@@ -20,7 +20,7 @@ UPDATE gnaf.temp_addresses AS pnt -- 90327 records
 UPDATE gnaf.temp_addresses AS pnt -- 7 records
   SET locality_pid = bdy.locality_pid,
       postcode = bdy.postcode
-  FROM admin_bdys.localities AS bdy
+  FROM admin_bdys.locality_bdys AS bdy
   WHERE ST_Within(pnt.geom, ST_Buffer(bdy.geom, 0.0001))
   AND pnt.locality_pid = 'VIC1634'
   AND bdy.locality_pid LIKE 'VIC1634_%';
@@ -28,7 +28,7 @@ UPDATE gnaf.temp_addresses AS pnt -- 7 records
 UPDATE gnaf.temp_addresses AS pnt -- 0 records
   SET locality_pid = bdy.locality_pid,
       postcode = bdy.postcode
-  FROM admin_bdys.localities AS bdy
+  FROM admin_bdys.locality_bdys AS bdy
   WHERE ST_Within(pnt.geom, ST_Buffer(bdy.geom, 0.0002))
   AND pnt.locality_pid = 'VIC1634'
   AND bdy.locality_pid LIKE 'VIC1634_%';
@@ -36,7 +36,7 @@ UPDATE gnaf.temp_addresses AS pnt -- 0 records
 UPDATE gnaf.temp_addresses AS pnt -- 0 records
   SET locality_pid = bdy.locality_pid,
       postcode = bdy.postcode
-  FROM admin_bdys.localities AS bdy
+  FROM admin_bdys.locality_bdys AS bdy
   WHERE ST_Within(pnt.geom, ST_Buffer(bdy.geom, 0.0003))
   AND pnt.locality_pid = 'VIC1634'
   AND bdy.locality_pid LIKE 'VIC1634_%';
@@ -49,7 +49,7 @@ UPDATE gnaf.temp_addresses AS pnt -- 0 records
 UPDATE gnaf.streets AS pnt -- 358 records
   SET locality_pid = bdy.locality_pid,
       postcode = bdy.postcode
-  FROM admin_bdys.localities AS bdy
+  FROM admin_bdys.locality_bdys AS bdy
   WHERE ST_Within(pnt.geom, bdy.geom)
   AND pnt.locality_pid = 'VIC1634'
   AND bdy.locality_pid LIKE 'VIC1634_%';
@@ -58,7 +58,7 @@ UPDATE gnaf.streets AS pnt -- 358 records
 UPDATE gnaf.streets AS pnt -- 41 records
   SET locality_pid = bdy.locality_pid,
       postcode = bdy.postcode
-  FROM admin_bdys.localities AS bdy
+  FROM admin_bdys.locality_bdys AS bdy
   WHERE ST_Within(pnt.geom, ST_Buffer(bdy.geom, 0.0001))
   AND pnt.locality_pid = 'VIC1634'
   AND bdy.locality_pid LIKE 'VIC1634_%';
@@ -66,7 +66,7 @@ UPDATE gnaf.streets AS pnt -- 41 records
 UPDATE gnaf.streets AS pnt -- 30 records
   SET locality_pid = bdy.locality_pid,
       postcode = bdy.postcode
-  FROM admin_bdys.localities AS bdy
+  FROM admin_bdys.locality_bdys AS bdy
   WHERE ST_Within(pnt.geom, ST_Buffer(bdy.geom, 0.0002))
   AND pnt.locality_pid = 'VIC1634'
   AND bdy.locality_pid LIKE 'VIC1634_%';
@@ -74,7 +74,7 @@ UPDATE gnaf.streets AS pnt -- 30 records
 UPDATE gnaf.streets AS pnt -- 1 record
   SET locality_pid = bdy.locality_pid,
       postcode = bdy.postcode
-  FROM admin_bdys.localities AS bdy
+  FROM admin_bdys.locality_bdys AS bdy
   WHERE ST_Within(pnt.geom, ST_Buffer(bdy.geom, 0.0003))
   AND pnt.locality_pid = 'VIC1634'
   AND bdy.locality_pid LIKE 'VIC1634_%';
@@ -146,14 +146,14 @@ DELETE FROM gnaf.locality_neighbour_lookup WHERE neighbour_locality_pid = 'VIC16
 
 INSERT INTO gnaf.locality_neighbour_lookup
 SELECT 'VIC1634_1', locality_pid
-  FROM admin_bdys.localities
-  WHERE st_intersects((SELECT st_buffer(geom, 0.001) FROM admin_bdys.localities WHERE locality_pid LIKE 'VIC1634_1'), geom)
+  FROM admin_bdys.locality_bdys
+  WHERE st_intersects((SELECT st_buffer(geom, 0.001) FROM admin_bdys.locality_bdys WHERE locality_pid LIKE 'VIC1634_1'), geom)
   AND locality_pid <> 'VIC1634_1';
 
 INSERT INTO gnaf.locality_neighbour_lookup
 SELECT 'VIC1634_2', locality_pid
-  FROM admin_bdys.localities
-  WHERE st_intersects((SELECT st_buffer(geom, 0.001) FROM admin_bdys.localities WHERE locality_pid LIKE 'VIC1634_2'), geom)
+  FROM admin_bdys.locality_bdys
+  WHERE st_intersects((SELECT st_buffer(geom, 0.001) FROM admin_bdys.locality_bdys WHERE locality_pid LIKE 'VIC1634_2'), geom)
   AND locality_pid <> 'VIC1634_2';
 
 

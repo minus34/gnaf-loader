@@ -98,9 +98,10 @@ DROP TABLE IF EXISTS gnaf.locality_neighbour_lookup CASCADE;
 DROP TABLE IF EXISTS gnaf.streets CASCADE;
 
 -- drop reference admin boundaries
-DROP TABLE IF EXISTS admin_bdys.localities CASCADE;
-DROP TABLE IF EXISTS admin_bdys.localities_analysis CASCADE;
-DROP TABLE IF EXISTS admin_bdys.states_analysis CASCADE;
+DROP TABLE IF EXISTS admin_bdys.locality_bdys CASCADE;
+DROP TABLE IF EXISTS admin_bdys.locality_bdys_analysis CASCADE;
+DROP TABLE IF EXISTS admin_bdys.postcode_bdys CASCADE;
+DROP TABLE IF EXISTS admin_bdys.state_bdys_analysis CASCADE;
 DROP TABLE IF EXISTS admin_bdys.commonwealth_electorates_analysis CASCADE;
 
 DROP TABLE IF EXISTS admin_bdys.gccsa_2011_analysis CASCADE;

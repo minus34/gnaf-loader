@@ -15,7 +15,7 @@ CREATE INDEX address_principals_geom_idx ON gnaf.address_principals USING gist (
 CREATE INDEX address_aliases_geom_idx ON gnaf.address_aliases USING gist (geom); ALTER TABLE gnaf.address_aliases CLUSTER ON address_aliases_geom_idx
 CREATE INDEX streets_geom_idx ON gnaf.streets USING gist (geom); ALTER TABLE gnaf.streets CLUSTER ON streets_geom_idx
 CREATE INDEX localities_geom_idx ON gnaf.localities USING gist (geom); ALTER TABLE gnaf.localities CLUSTER ON localities_geom_idx
-CREATE INDEX postcode_boundaries_geom_idx ON admin_bdys.postcode_boundaries USING gist (geom); ALTER TABLE admin_bdys.postcode_boundaries CLUSTER ON postcode_boundaries_geom_idx
+CREATE INDEX postcode_bdys_geom_idx ON admin_bdys.postcode_bdys USING gist (geom); ALTER TABLE admin_bdys.postcode_bdys CLUSTER ON postcode_bdys_geom_idx
 
 -- primary keys
 ALTER TABLE ONLY gnaf.address_principals ADD CONSTRAINT address_principals_pk PRIMARY KEY (gnaf_pid);
@@ -25,7 +25,7 @@ ALTER TABLE ONLY gnaf.locality_neighbour_lookup ADD CONSTRAINT locality_neighbou
 ALTER TABLE ONLY gnaf.address_alias_lookup ADD CONSTRAINT address_alias_lookup_pk PRIMARY KEY (alias_pid);
 ALTER TABLE ONLY gnaf.address_secondary_lookup ADD CONSTRAINT address_secondary_lookup_pk PRIMARY KEY (secondary_pid);
 ALTER TABLE ONLY gnaf.street_aliases ADD CONSTRAINT street_aliases_pk PRIMARY KEY (street_locality_pid, full_alias_street_name);
--- ALTER TABLE ONLY admin_bdys.postcode_boundaries ADD CONSTRAINT postcode_boundaries_pk PRIMARY KEY (postcode, state); -- There are NULL postcodes, this won't work now will it...?
+ALTER TABLE ONLY admin_bdys.postcode_bdys ADD CONSTRAINT postcode_bdys_pk PRIMARY KEY (gid);
 
 -- foreign keys
 

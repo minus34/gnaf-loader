@@ -1,79 +1,67 @@
 # gnaf-loader
-
 A quick way to load GNAF and the PSMA Admin Boundaries into Postgres, preprocessed and ready to use as a reference address dataset for geocoding, analysis and visualisation.
 
 There are 2 options for loading the data:
-1: Run the load-gnaf.py script and build the database yourself; or
-2: Download the GNAF and/or Admin Bdys Postgres dump files and restore them in your database.
+1: Run a Python script and build the database in a single step; or
+2: (COMING SOON) Download the GNAF and/or Admin Bdys Postgres dump files or text files and restore them in your database.
 
-Q: How quick? A: A 32 core Windows server with SSDs loads it in under 15 mins. A MacBook Pro, ~45 mins. An 8 core commodity PC takes just under an hour.
+## Option 1 - Run load.gnaf.py
+Running the Python script takes 15-60 minutes an a Postgres server configured for performance. Guidelines are: a 3 year old, 32 core Windows server with SSDs = ~15 mins. A MacBook Pro = ~45 mins. A 3 year old, 8 core commodity PC = ~45 mins.
 
-Q: I like choices! A: You've got 2:
+### Performance
+To get the good load times you'll need to configure your Postgres server for performance. There's a good guide here, noting it's a few years old and some of the memory parameters can be beefed up if you have the RAM: http://revenant.ca/www/postgis/workshop/tuning.html
 
-1: Either run the Python script to load and process the the data from scratch; or
-2: Download the Postgres dump files and restore them to your database
+### Pre-requisites - the 4 P's
+- Postgres 9.3+ with PostGIS 2.2 (tested on 9.3, 9.4 & 9.5 on Windows and 9.5 on OSX)
+- Python 2.7 with Psycopg2 2.6
 
-Note: if you want raw GNAF and Admin boundaries - you'll need to run the Python script
-
-Q: I don't know Postgres! A: You don't need to be a PG guru, just follow this guide...
-
-** 1. postgres dump files **
-
-1: Download the GNAF and/or Admin Bdys pg_dump files here: https://onedrive.live.com/redir?resid=4E1A421BC14CEBDD!4807&authkey=!AG70ANjJE5EfaiM&ithint=folder%2c
-2: Make sure the folder where Postgres is installed is in the system PATH variable
-3: Run this for each dump file:  
-
-
-** 2. a single python script **
-
-
-## Pre-requisites
-
-- Postgres 9.x (tested on 9.3, 9.4 & 9.5 on Windows and 9.5 on OSX)
-- PostGIS 2.x
-- Python 2.7.x with Psycopg2 2.6.x
-
-## Process
-
+### Process
 1: Download PSMA GNAF from www.data.gov.au
 2: Download PSMA Administrative Boundaries from www.data.gov.au
-2: Unzip them to a directory on your Postgres server
-3: Alter security on the unzipped GNAF files to grant Postgres read access
+3: Unzip GNAF to a directory on your Postgres server
+4: Alter security on the directory to grant Postgres read access
+5: Unzip Admin Bdys to a local directory
+6: Create the target database (if required)
+7: Edit the Postgres and GNAF parameters at the top of the Python script
+8: Run the script, come back in 15-60 minutes and enjoy!
 
-4: Create the target database
-5: Edit Postgres and GNAF parameters in load-gnaf.py
-6: Run load-gnaf.py
-7: Come back in 45-60 minutes; unless you have a juicy server with SSDs - in which case it could take ~15 mins!
+## (COMING SOON) Option 2 - Load PG_DUMP Files
+This option will be available soon after the data is made open!
+
+Not sure how long this takes since I haven't tested it thoroughly yet...
+
+### Pre-requisites
+- Postgres 9.5 with PostGIS 2.2 only
+- A knowledge of Postgres pg_restore parameters: see http://www.postgresql.org/docs/9.5/static/app-pgrestore.html
+
+### Process
+1: Download gnaf.dmp from <url>
+2: Download admin_bdys.dmp from <url>
+3: Edit the pg_restore .bat/.sh script in the Supporting File folder for your database parameters
+8: Run the script, come back in 15-60 minutes and enjoy!
+
+## DATA CUSTOMISATION
+GNAF and the Admin Bdys have been customised to remove some of the more common annoyances with the data. The most notable are:
+ - Suburb-Locality bdys have been flattened into a single continuous layer of localities - South Australian Hundreds have been removed and ACT districts have been added where there are no gazetted localities
+ - The Melbourne, VIC locality has been split into Melbourne, 3000 and Melbourne 3004 localities (the new locality PIDs are VIC 1634_1 & VIC 1634_2). The split occurs at the Yarra River (based on the postcodes in the Melbourne addresses)
+ - A postcode boundaries layer has been created using the postcodes in the address tables. Whilst this closely emulates the official PSMA postcode boundaries, there are several hundred addresses that are in the wrong postcode bdy. Do not treat this data as authoritative
 
 ## WARNING:
-- The scripts will DROP ALL TABLES and recreate them using CASCADE; meaning you'll also LOSE YOUR VIEWS! If you want to keep the existing data - you'll need to change the schema names in the script or use a different database
-- All raw GNAF tables can be created UNLOGGED to speed up the data load.  This will make them UNRECOVERABLE if your database is corrupted. You can run these scripts again to recreate them. If you think this sounds ok - set the unlogged_tables flag to True for a slightly faster load
+- The scripts will DROP ALL TABLES and recreate them using CASCADE; meaning you'll LOSE YOUR VIEWS if you have created any! If you want to keep the existing data - you'll need to change the schema names in the script or use a different database
+- All raw GNAF tables can be created UNLOGGED to speed up the data load. This will make them UNRECOVERABLE if your database is corrupted. You can run these scripts again to recreate them. If you think this sounds ok - set the unlogged_tables flag to True for a slightly faster load
 
 ## NOTES:
-- If you're running the Python script locally (i.e. not on the Postgres server), you'll need to have access to a network path to the GNAF files on the database server to create the list of files to process. Otherwise, you'll need another copy of the raw files locally.
-- The create tables script will add the PostGIS extension to the database in the public schema 
+- Whilst you can choose which 4 schemas to load the data into, I haven't QA'd every permutation. Stick with the defaults if you have limited Postgres experience 
+- If you're not running the Python script on the Postgres server, you'll need to have access to a network path to the GNAF files on the database server (to create the list of files to process). The alternative is to have a local copy of the raw files
+- The 'create tables' sql script will add the PostGIS extension to the database in the public schema, you don't need to add it to your database
+- There is an option to VACUUM the database at the start after dropping the existing GNAF/Admin Bdy tables - this doesn't really do anything outside of repeated testing. (I was too lazy to take it out of the code as it meant renumbering all the SQL files and I'd like to go to bed now)  
 
-
-
-VACUUM flag after table drop note
-
-
-Postgres config note - need to beef up default settings
-
-
-----------------------------------------------------------------------------------------------------------
--- Creates a geocoded locality reference table for general purpose partying
---
--- NOTES:
---   * Postcodes are only populated where a locality name is non-unique within a state
---   * You could populate this table with postcodes from the address table, but it has ~200,000 addresses
---     with unofficial and incorrect postcodes on it, so caveat emptor trying that one!
---   * The only localities you should be using in anger are the Gazetted Localities or ACT Districts:
---       * SA Hundreds overlap gazetted localities and are problemetic becasue of this
---       * All other types of localities have no geospatial boundary, and hence can't be mapped
---   * BTW, you'd think in 2015 that all of Australia would have gazetted locality boundaries. Alas!
---     ACT and SA have large areas with no official locality:
---       * This is annoying, but only affects ~3,000 addresses
---   * POstcodes are stings BTW as NT postcodes start with a '0', e.g. '0820'
---
-----------------------------------------------------------------------------------------------------------
+## TO DO:
+- Create bash script for restoring the Postgres dump files
+- Create views and analysis tables for all Admin Bdys (only localities, states and commonwealth electorates are currently done)
+- Output reference tables to PSV & SHP
+- List final record counts
+- Build QA into the Python script
+- Boundary tag addresses for admin bdys
+- Script the creation of pg_dump files
+- Script the copying of pg_dump, PSV & SHP file to Amazon S3
