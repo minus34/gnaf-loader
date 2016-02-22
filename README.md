@@ -3,7 +3,7 @@ A quick way to load GNAF and the PSMA Admin Boundaries into Postgres, preprocess
 
 ### There are 2 options for loading the data
 1. Run a Python script and build the database in a single step
-2. (COMING SOON) Download the GNAF and/or Admin Bdys Postgres dump files or text files and restore them in your database
+2. (COMING SOON) Download the GNAF and/or Admin Bdys Postgres dump or text files & restore them in your database
 
 ## Option 1 - Run load.gnaf.py
 Running the Python script takes 15-60 minutes an a Postgres server configured for performance. Guidelines are: a 3 year old, 32 core Windows server with SSDs = ~15 mins. A MacBook Pro = ~45 mins. A 3 year old, 8 core commodity PC = ~45 mins.
