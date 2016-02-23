@@ -86,11 +86,7 @@ pg_connect_string = "dbname='{0}' host='{1}' port='{2}' user='{3}' password='{4}
     .format(pg_db, pg_host, pg_port, pg_user, pg_password)
 
 # set postgres script directory
-if platform.system() == "Windows":
-    sql_dir = os.path.dirname(os.path.realpath(__file__)) + "\\postgres-scripts\\"
-else:  # assume all else use forward slashes
-    sql_dir = os.path.dirname(os.path.realpath(__file__)) + "/postgres-scripts/"
-
+sql_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), "postgres-scripts" )
 
 def main():
     full_start_time = datetime.now()
@@ -169,7 +165,7 @@ def create_raw_gnaf_tables(pg_cur):
     start_time = datetime.now()
 
     # prep create table sql scripts (note: file doesn't contain any schema prefixes on table names)
-    sql = open(sql_dir + "01-03-raw-gnaf-create-tables.sql", "r").read()
+    sql = open(os.path.join(sql_dir, "01-03-raw-gnaf-create-tables.sql"), "r").read()
 
     # create schema and set as search path
     if raw_gnaf_schema != "public":
@@ -258,7 +254,7 @@ def index_raw_gnaf():
 def create_primary_foreign_keys():
     start_time = datetime.now()
 
-    key_sql = open(sql_dir + "01-06-raw-gnaf-create-primary-foreign-keys.sql", "r").read()
+    key_sql = open(os.path.join(sql_dir, "01-06-raw-gnaf-create-primary-foreign-keys.sql"), "r").read()
     key_sql_list = key_sql.split("--")
     sql_list = []
 
@@ -503,7 +499,7 @@ def run_command_line(cmd):
 
 
 def open_sql_file(file_name):
-    sql = open(sql_dir + file_name, "r").read()
+    sql = open(os.path.join(sql_dir, file_name), "r").read()
     return prep_sql(sql)
 
 
