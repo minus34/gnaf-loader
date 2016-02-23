@@ -13,6 +13,8 @@ My benchmarks are:
 - MacBook Pro = ~45 mins
 - 3 year old, 8 core commodity PC = ~45 mins.
 
+NOTE: There's a current issue with the code that stops it working on OSX (and possibly Linux)  FYI - its due to the os.walk() command behaving differently between the OS's. The issue prevents the raw GNAF and Admin Bdy files from being found. Hopefully will have it fixed in a day
+
 ### Performance
 To get the good load times you'll need to configure your Postgres server for performance. There's a good guide here, noting it's a few years old and some of the memory parameters can be beefed up if you have the RAM: http://revenant.ca/www/postgis/workshop/tuning.html
 
