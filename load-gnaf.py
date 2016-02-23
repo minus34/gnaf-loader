@@ -58,12 +58,12 @@ states_to_load = ["ACT", "NSW", "NT", "OT", "QLD", "SA", "TAS", "VIC", "WA"]
 # (set it to the number of cores on the Postgres server minus 2, limit to 12 if 16+ cores - minimal benefit beyond 12)
 max_concurrent_processes = 6
 
-# Postgres parameters
-pg_host = "localhost"
-pg_port = 5432
-pg_db = "psma_201602"
-pg_user = "postgres"
-pg_password = "password"
+# Postgres parameters. These will also respect the standard PGHOST/PGPORT/etc environment variables if set.
+pg_host = os.getenv("PGHOST", "localhost")
+pg_port = os.getenv("PGPORT", 5432)
+pg_db = os.getenv("PGDATABASE", "psma_201602")
+pg_user = os.getenv("PGUSER", "postgres")
+pg_password = os.getenv("PGPASSWORD", "password")
 
 # schema names for the raw gnaf, flattened reference and admin boundary tables
 raw_gnaf_schema = "raw_gnaf"
