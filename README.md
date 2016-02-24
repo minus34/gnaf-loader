@@ -2,7 +2,7 @@
 A quick way to load the complete GNAF and PSMA Admin Boundaries into Postgres, simplified and ready to use as reference data for geocoding, analysis and visualisation.
 
 ### What's GNAF?
-Have a look at [these intro slides](https://www.dropbox.com/sh/ifsmpla0abklgq7/AAA1gknbBukb3bufFNwixBBFa?dl=0), as well as the [PSMA product page](http://www.psma.com.au/products/g-naf).
+Have a look at [these intro slides](http://minus34.com/opendata/intro-to-gnaf.pptx) [PDF](http://minus34.com/opendata/intro-to-gnaf.pdf), as well as the [PSMA product page](http://www.psma.com.au/products/g-naf).
 
 
 ### There are 2 options for loading the data
