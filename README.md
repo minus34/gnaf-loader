@@ -64,6 +64,7 @@ GNAF and the Admin Bdys have been customised to remove some of the more common a
 - There is an option to VACUUM the database at the start after dropping the existing GNAF/Admin Bdy tables - this doesn't really do anything outside of repeated testing. (I was too lazy to take it out of the code as it meant renumbering all the SQL files and I'd like to go to bed now)  
 
 ## TO DO:
+- Automatically detect the CPU count on the server (for multiprocessing)
 - Create bash script for restoring the Postgres dump files
 - Create views and analysis tables for all Admin Bdys (only localities, states and commonwealth electorates are currently done)
 - Output reference tables to PSV & SHP
