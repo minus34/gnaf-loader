@@ -18,7 +18,7 @@ My benchmarks are:
 - 3 year old, 8 core commodity PC = ~45 mins.
 
 ### Performance
-To get the good load times you'll need to configure your Postgres server for performance. There's a good guide here, noting it's a few years old and some of the memory parameters can be beefed up if you have the RAM: http://revenant.ca/www/postgis/workshop/tuning.html
+To get the good load times you'll need to configure your Postgres server for performance. There's a good guide [here](http://revenant.ca/www/postgis/workshop/tuning.html), noting it's a few years old and some of the memory parameters can be beefed up if you have the RAM.
 
 ### Pre-requisites (the 4 P's)
 - Postgres 9.3+ with PostGIS 2.2 (tested on 9.3, 9.4 & 9.5 on Windows and 9.5 on OSX)
@@ -41,7 +41,7 @@ Not sure how long this takes since I haven't tested it thoroughly yet...
 
 ### Pre-requisites
 - Postgres 9.5 with PostGIS 2.2 only
-- A knowledge of Postgres pg_restore parameters: see http://www.postgresql.org/docs/9.5/static/app-pgrestore.html
+- A knowledge of [Postgres pg_restore parameters](http://www.postgresql.org/docs/9.5/static/app-pgrestore.html)
 
 ### Process
 1. Download gnaf.dmp from <url>
