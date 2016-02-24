@@ -72,10 +72,24 @@ gnaf_schema = "gnaf"
 admin_bdys_schema = "admin_bdys"
 
 # raw data directories
-gnaf_network_directory = r"C:\temp\psma_201602"
-gnaf_pg_server_local_directory = r"C:\temp\psma_201602"
-admin_bdys_local_directory = r"C:\temp\psma_201602"
+
+# Remote Postgres server sample
+# gnaf_network_directory = r"\\l10-geosdi\h$\zzz_todelete"
+# gnaf_pg_server_local_directory = r"h:\zzz_todelete"
+# admin_bdys_local_directory = r"C:\temp\psma_201602"
+# # psv_output_directory = r"C:\temp"
+
+# Everything local sample, Windows
+gnaf_network_directory = r"C:\temp\psma_201511"
+gnaf_pg_server_local_directory = r"C:\temp\psma_201511"
+admin_bdys_local_directory = r"C:\temp\psma_201511"
 # psv_output_directory = r"C:\temp\psma_201602"
+
+# Everything local sample, OSX
+# gnaf_network_directory = "/Users/Hugh/tmp"
+# gnaf_pg_server_local_directory = "/Users/Hugh/tmp"
+# admin_bdys_local_directory = "/Users/Hugh/tmp"
+# psv_output_directory = "/Users/Hugh/tmp"
 
 # *********************************************************************************************************************
 # Edit these parameters to taste - END
