@@ -1,6 +1,10 @@
 # gnaf-loader
 A quick way to load the complete GNAF and PSMA Admin Boundaries into Postgres, simplified and ready to use as reference data for geocoding, analysis and visualisation.
 
+What's GNAF?
+Have a look at the intro in the above powerpoint (or PDF) slides, a well as the PSMA product page: http://www.psma.com.au/products/g-naf
+
+
 ### There are 2 options for loading the data
 1. Run a Python script and build the database in a single step
 2. (COMING SOON) Download the GNAF and/or Admin Bdys Postgres dump or text files & restore them in your database
