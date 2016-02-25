@@ -56,11 +56,11 @@ states_to_load = ["ACT", "NSW", "NT", "OT", "QLD", "SA", "TAS", "VIC", "WA"]
 
 # what are the maximum parallel processes you want to use for the data load?
 # (set it to the number of cores on the Postgres server minus 2, limit to 12 if 16+ cores - minimal benefit beyond 12)
-max_concurrent_processes = 6
+max_concurrent_processes = 4
 
 # Postgres parameters. These will also respect the standard PGHOST/PGPORT/etc environment variables if set.
 pg_host = os.getenv("PGHOST", "localhost")
-pg_port = os.getenv("PGPORT", 5432)
+pg_port = os.getenv("PGPORT", 5434)
 pg_db = os.getenv("PGDATABASE", "psma_201602")
 pg_user = os.getenv("PGUSER", "postgres")
 pg_password = os.getenv("PGPASSWORD", "password")
@@ -440,7 +440,7 @@ def create_reference_tables(pg_cur):
     sql = open_sql_file("03-13-reference-populate-addresses-2.sql")
     split_sql_into_list_and_process(pg_cur, sql, gnaf_schema, "localities", "loc", "gid")
     # turf the temp address table
-    # pg_cur.execute(prep_sql("DROP TABLE IF EXISTS gnaf.temp_addresses"))
+    pg_cur.execute(prep_sql("DROP TABLE IF EXISTS gnaf.temp_addresses"))
     print "\t- Step 12 of 14 : addresses finalised : {0}".format(datetime.now() - start_time)
 
     # Step 13 of 14 : create almost correct postcode boundaries by aggregating localities, using multiprocessing
