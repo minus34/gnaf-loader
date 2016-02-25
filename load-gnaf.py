@@ -54,13 +54,14 @@ unlogged_tables = False
 # which states do you want to load the gnaf data for?
 states_to_load = ["ACT", "NSW", "NT", "OT", "QLD", "SA", "TAS", "VIC", "WA"]
 
+
 # what are the maximum parallel processes you want to use for the data load?
 # (set it to the number of cores on the Postgres server minus 2, limit to 12 if 16+ cores - minimal benefit beyond 12)
-max_concurrent_processes = 4
+max_concurrent_processes = 6
 
 # Postgres parameters. These will also respect the standard PGHOST/PGPORT/etc environment variables if set.
 pg_host = os.getenv("PGHOST", "localhost")
-pg_port = os.getenv("PGPORT", 5434)
+pg_port = os.getenv("PGPORT", 5432)
 pg_db = os.getenv("PGDATABASE", "psma_201602")
 pg_user = os.getenv("PGUSER", "postgres")
 pg_password = os.getenv("PGPASSWORD", "password")
@@ -100,7 +101,8 @@ pg_connect_string = "dbname='{0}' host='{1}' port='{2}' user='{3}' password='{4}
     .format(pg_db, pg_host, pg_port, pg_user, pg_password)
 
 # set postgres script directory
-sql_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), "postgres-scripts" )
+sql_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), "postgres-scripts")
+
 
 def main():
     full_start_time = datetime.now()
@@ -136,22 +138,29 @@ def main():
         print "\t- Step 6 of 6 : primary & foreign keys NOT created"
     # set postgres search path back to the default
     pg_cur.execute("SET search_path = public, pg_catalog")
-    print "Part 1 of 3 : Raw GNAF loaded! : {0}".format(datetime.now() - start_time)
+    print "Part 1 of 4 : Raw GNAF loaded! : {0}".format(datetime.now() - start_time)
 
     # PART 2 - load raw admin boundaries from Shapefiles
     print ""
     start_time = datetime.now()
-    print "Part 2 of 3 : Start raw admin boundary load : {0}".format(start_time)
+    print "Part 2 of 4 : Start raw admin boundary load : {0}".format(start_time)
     load_admin_boundaries(pg_cur)
     create_admin_bdys_for_analysis(pg_cur)
-    print "Part 2 of 3 : Raw admin boundaries loaded! : {0}".format(datetime.now() - start_time)
+    print "Part 2 of 4 : Raw admin boundaries loaded! : {0}".format(datetime.now() - start_time)
 
     # PART 3 - create flattened and standardised GNAF and Administrative Boundary reference tables
     print ""
     start_time = datetime.now()
-    print "Part 3 of 3 : Start create reference tables : {0}".format(start_time)
+    print "Part 3 of 4 : Start create reference tables : {0}".format(start_time)
     create_reference_tables(pg_cur)
-    print "Part 3 of 3 : Reference tables created! : {0}".format(datetime.now() - start_time)
+    print "Part 3 of 4 : Reference tables created! : {0}".format(datetime.now() - start_time)
+
+    # # PART 4 - QA
+    # print ""
+    # start_time = datetime.now()
+    # print "Part 5 of 4 : QA results : {0}".format(start_time)
+    # create_reference_tables(pg_cur)
+    # print "Part 5 of 4 : results QA'd : {0}".format(datetime.now() - start_time)
 
     pg_cur.close()
     pg_conn.close()
@@ -364,6 +373,18 @@ def create_admin_bdys_for_analysis(pg_cur):
                        .format(admin_bdys_schema, pg_user))
 
     pg_cur.execute(open_sql_file("02-02-create-admin-bdys-tables.sql"))
+
+    # Special case - remove custom outback bdy if South Australia not requested
+    sa_included = False
+    for state in states_to_load:
+        if state == "SA":
+            sa_included = True
+    if not sa_included:
+        pg_cur.execute(prep_sql("DELETE FROM admin_bdys.locality_bdys WHERE locality_pid = 'SA999999'"))
+        pg_cur.execute(prep_sql("VACUUM ANALYZE admin_bdys.locality_bdys"))
+        pg_cur.execute(prep_sql("DELETE FROM admin_bdys.locality_bdys_analysis WHERE locality_pid = 'SA999999'"))
+        pg_cur.execute(prep_sql("VACUUM ANALYZE admin_bdys.locality_bdys_analysis"))
+
     print "\t- Step 2 of 2 : admin boundaries for analysis populated : {0}".format(datetime.now() - start_time)
 
 
@@ -468,6 +489,8 @@ def create_reference_tables(pg_cur):
 def multiprocess_list(concurrent_processes, mp_type, work_list):
     pool = multiprocessing.Pool(processes=concurrent_processes)
 
+    num_jobs = len(work_list)
+
     if mp_type == "sql":
         results = pool.imap_unordered(run_sql_multiprocessing, work_list)
     else:
@@ -476,8 +499,14 @@ def multiprocess_list(concurrent_processes, mp_type, work_list):
     pool.close()
     pool.join()
 
-    for result in results:
-        if result is not None:
+    result_list = list(results)
+    num_results = len(result_list)
+
+    if num_jobs > num_results:
+        print "\t- A MULTIPROCESSING PROCESS FAILED WITHOUT AN ERROR\nACTION: Check the record counts"
+
+    for result in result_list:
+        if result != "SUCCESS":
             print result
 
 
@@ -492,13 +521,14 @@ def run_sql_multiprocessing(the_sql):
 
     try:
         pg_cur.execute(the_sql)
+        result = "SUCCESS"
     except psycopg2.Error, e:
-        return "SQL FAILED! : {0} : {1}".format(the_sql, e.message)
+        result = "SQL FAILED! : {0} : {1}".format(the_sql, e.message)
 
     pg_cur.close()
     pg_conn.close()
 
-    return None
+    return result
 
 
 def run_command_line(cmd):
@@ -506,10 +536,11 @@ def run_command_line(cmd):
     try:
         fnull = open(os.devnull, "w")
         subprocess.call(cmd, shell=True, stdout=fnull, stderr=subprocess.STDOUT)
+        result = "SUCCESS"
     except Exception, e:
-        return "COMMAND FAILED! : {0} : {1}".format(cmd, e.message)
+        result = "COMMAND FAILED! : {0} : {1}".format(cmd, e.message)
 
-    return None
+    return result
 
 
 def open_sql_file(file_name):

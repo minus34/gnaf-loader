@@ -48,7 +48,7 @@ CREATE TEMPORARY TABLE temp_districts (
   postcode char(4) NULL,
   state character varying(3) NOT NULL,
 	locality_class character varying(50) NOT NULL,
-  geom geometry(Multipolygon, 4283, 2) NOT NULL
+  geom geometry(Multipolygon, 4283, 2) NULL
 ) WITH (OIDS=FALSE);
 ALTER TABLE temp_districts OWNER TO postgres;
 
@@ -143,8 +143,11 @@ SELECT '250190776' AS locality_pid,
        null AS postcode,
        'SA' AS state,
        'TOPOGRAPHIC LOCALITY' AS locality_class,
-       ST_Multi(ST_Buffer((SELECT geom FROM raw_admin_bdys.aus_state_polygon WHERE ST_Intersects(ST_SetSRID(ST_MakePoint(136.1757, -35.0310), 4283), geom)), 0.0)) as geom;
-
+       ST_Multi(ST_Buffer(geom, 0.0)) AS geom
+       --ST_Multi(ST_Buffer((SELECT geom FROM raw_admin_bdys.aus_state_polygon WHERE ST_Intersects(ST_SetSRID(ST_MakePoint(136.1757, -35.0310), 4283), geom)), 0.0)) as geom;
+  FROM raw_admin_bdys.aus_state_polygon
+  WHERE ST_Intersects(ST_SetSRID(ST_MakePoint(136.1757, -35.0310), 4283), geom);
+  
 
 -- split Melbourne into its 2 postcode areas: 3000 (north of the Yarra River) and 3004 (south)
 DROP TABLE IF EXISTS temp_bdys;
