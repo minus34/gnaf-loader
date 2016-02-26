@@ -4,7 +4,6 @@ A quick way to load the complete GNAF and PSMA Admin Boundaries into Postgres, s
 ### What's GNAF?
 Have a look at [these intro slides](http://minus34.com/opendata/intro-to-gnaf.pptx) ([PDF](http://minus34.com/opendata/intro-to-gnaf.pdf)), as well as the [PSMA product page](http://www.psma.com.au/products/g-naf).
 
-
 ### There are 2 options for loading the data
 1. Run a Python script and build the database in a single step
 2. (COMING SOON) Download the GNAF and/or Admin Bdys Postgres dump or text files & restore them in your database
@@ -25,8 +24,8 @@ To get the good load times you'll need to configure your Postgres server for per
 - Python 2.7 with Psycopg2 2.6
 
 ### Process
-1. Download PSMA GNAF from www.data.gov.au
-2. Download PSMA Administrative Boundaries from www.data.gov.au
+1. Download [PSMA GNAF from data.gov.au](http://data.gov.au/dataset/geocoded-national-address-file-g-naf)
+2. Download [PSMA Administrative Boundaries from data.gov.au](http://data.gov.au/dataset/psma-administrative-boundaries)
 3. Unzip GNAF to a directory on your Postgres server
 4. Alter security on the directory to grant Postgres read access
 5. Unzip Admin Bdys to a local directory
@@ -35,7 +34,7 @@ To get the good load times you'll need to configure your Postgres server for per
 8. Run the script, come back in 15-60 minutes and enjoy!
 
 ## (COMING SOON) Option 2 - Load PG_DUMP Files
-This option will be available soon after the data is made open!
+NOw that the data is opne - this option will be available soon!
 
 Not sure how long this takes since I haven't tested it thoroughly yet...
 
