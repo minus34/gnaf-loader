@@ -81,9 +81,9 @@ admin_bdys_schema = "admin_bdys"
 # # psv_output_directory = r"C:\temp"
 
 # Everything local sample, Windows
-gnaf_network_directory = r"C:\temp\psma_201511"
-gnaf_pg_server_local_directory = r"C:\temp\psma_201511"
-admin_bdys_local_directory = r"C:\temp\psma_201511"
+gnaf_network_directory = r"C:\temp\psma_201602"
+gnaf_pg_server_local_directory = r"C:\temp\psma_201602"
+admin_bdys_local_directory = r"C:\temp\psma_201602"
 # psv_output_directory = r"C:\temp\psma_201602"
 
 # Everything local sample, OSX
