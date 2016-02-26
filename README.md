@@ -34,7 +34,7 @@ To get the good load times you'll need to configure your Postgres server for per
 8. Run the script, come back in 15-60 minutes and enjoy!
 
 ## (COMING SOON) Option 2 - Load PG_DUMP Files
-NOw that the data is opne - this option will be available soon!
+Now that the data is open - this option will be available soon!
 
 Not sure how long this takes since I haven't tested it thoroughly yet...
 
