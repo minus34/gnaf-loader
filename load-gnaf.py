@@ -504,7 +504,7 @@ def create_reference_tables(postgis_version, pg_cur):
 
     print "\t- Step 13 of 14 : postcode boundaries created : {0}".format(datetime.now() - start_time)
 
-    # Step 13 of 14 : create indexes, primary and foreign keys, using multiprocessing
+    # Step 14 of 14 : create indexes, primary and foreign keys, using multiprocessing
     start_time = datetime.now()
     raw_sql_list = open_sql_file("03-14-reference-create-indexes.sql").split("\n")
     sql_list = []
