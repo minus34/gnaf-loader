@@ -54,7 +54,6 @@ unlogged_tables = False
 # which states do you want to load the gnaf data for?
 states_to_load = ["ACT", "NSW", "NT", "OT", "QLD", "SA", "TAS", "VIC", "WA"]
 
-
 # what are the maximum parallel processes you want to use for the data load?
 # (set it to the number of cores on the Postgres server minus 2, limit to 12 if 16+ cores - minimal benefit beyond 12)
 max_concurrent_processes = 6
@@ -124,6 +123,15 @@ def main():
         print "Unable to add PostGIS extension\nACTION: Check your Postgres user privileges or PostGIS install"
         return False
 
+    # get Postgres & PostGIS versions
+    pg_cur.execute("SELECT version()")
+    pg_version = pg_cur.fetchone()[0].replace("PostgreSQL ", "").split(",")[0]
+    pg_cur.execute("SELECT PostGIS_version()")
+    postgis_version = pg_cur.fetchone()[0].split(" ")[0]
+
+    print ""
+    print "Running on Postgres {0} and PostGIS {1}".format(pg_version, postgis_version)
+
     # PART 1 - load gnaf from PSV files
     print ""
     start_time = datetime.now()
@@ -144,15 +152,16 @@ def main():
     print ""
     start_time = datetime.now()
     print "Part 2 of 4 : Start raw admin boundary load : {0}".format(start_time)
-    load_admin_boundaries(pg_cur)
-    create_admin_bdys_for_analysis(pg_cur)
+    load_raw_admin_boundaries(pg_cur)
+    prep_admin_bdys(pg_cur)
+    create_admin_bdys_for_analysis(postgis_version, pg_cur)
     print "Part 2 of 4 : Raw admin boundaries loaded! : {0}".format(datetime.now() - start_time)
 
     # PART 3 - create flattened and standardised GNAF and Administrative Boundary reference tables
     print ""
     start_time = datetime.now()
     print "Part 3 of 4 : Start create reference tables : {0}".format(start_time)
-    create_reference_tables(pg_cur)
+    create_reference_tables(postgis_version, pg_cur)
     print "Part 3 of 4 : Reference tables created! : {0}".format(datetime.now() - start_time)
 
     # # PART 4 - QA
@@ -299,7 +308,7 @@ def create_primary_foreign_keys():
 
 
 # loads the admin bdy shapefiles using the shp2pgsql command line tool (part of PostGIS), using multiprocessing
-def load_admin_boundaries(pg_cur):
+def load_raw_admin_boundaries(pg_cur):
     start_time = datetime.now()
 
     # create schema
@@ -365,18 +374,18 @@ def load_admin_boundaries(pg_cur):
     else:
         # load files in separate processes
         multiprocess_list(max_concurrent_processes, "cmd", cmd_list)
-        print "\t- Step 1 of 2 : raw admin boundaries loaded : {0}".format(datetime.now() - start_time)
+        print "\t- Step 1 of 3 : raw admin boundaries loaded : {0}".format(datetime.now() - start_time)
 
 
-def create_admin_bdys_for_analysis(pg_cur):
-    # Step 2 of 2 : create admin bdy tables optimised for spatial analysis
+def prep_admin_bdys(pg_cur):
+    # Step 2 of 3 : create admin bdy tables read to be used
     start_time = datetime.now()
 
     if admin_bdys_schema != "public":
         pg_cur.execute("CREATE SCHEMA IF NOT EXISTS {0} AUTHORIZATION {1}"
                        .format(admin_bdys_schema, pg_user))
 
-    pg_cur.execute(open_sql_file("02-02-create-admin-bdys-tables.sql"))
+    pg_cur.execute(open_sql_file("02-02-prep-admin-bdys-tables.sql"))
 
     # Special case - remove custom outback bdy if South Australia not requested
     sa_included = False
@@ -386,15 +395,26 @@ def create_admin_bdys_for_analysis(pg_cur):
     if not sa_included:
         pg_cur.execute(prep_sql("DELETE FROM admin_bdys.locality_bdys WHERE locality_pid = 'SA999999'"))
         pg_cur.execute(prep_sql("VACUUM ANALYZE admin_bdys.locality_bdys"))
-        pg_cur.execute(prep_sql("DELETE FROM admin_bdys.locality_bdys_analysis WHERE locality_pid = 'SA999999'"))
-        pg_cur.execute(prep_sql("VACUUM ANALYZE admin_bdys.locality_bdys_analysis"))
 
-    print "\t- Step 2 of 2 : admin boundaries for analysis populated : {0}".format(datetime.now() - start_time)
+    print "\t- Step 2 of 3 : admin boundaries prepped : {0}".format(datetime.now() - start_time)
+
+
+def create_admin_bdys_for_analysis(postgis_version, pg_cur):
+    # Step 4 of 3 : create admin bdy tables optimised for spatial analysis
+    start_time = datetime.now()
+
+    version_check = float(postgis_version[:3])
+
+    if version_check >= 2.2:
+        pg_cur.execute(open_sql_file("02-03-create-admin-bdy-analysis-tables.sql"))
+        print "\t- Step 3 of 3 : admin boundaries for analysis created : {0}".format(datetime.now() - start_time)
+    else:
+        print "\t- Step 3 of 3 : admin boundaries for analysis NOT created - requires PostGIS 2.2"
 
 
 # create gnaf reference tables by flattening raw gnaf address, streets & localities into a usable form
 # also creates all supporting lookup tables and usable admin bdy tables
-def create_reference_tables(pg_cur):
+def create_reference_tables(postgis_version, pg_cur):
     # set postgres search path back to the default
     pg_cur.execute("SET search_path = public, pg_catalog")
 
@@ -452,17 +472,17 @@ def create_reference_tables(pg_cur):
 
     # Step 10 of 14 : split the Melbourne locality into its 2 postcodes (3000, 3004)
     start_time = datetime.now()
-    pg_cur.execute(open_sql_file("03-11-reference-split-melbourne.sql"))
+    pg_cur.execute(open_sql_file("03-10-reference-split-melbourne.sql"))
     print "\t- Step 10 of 14 : Melbourne split : {0}".format(datetime.now() - start_time)
 
     # Step 11 of 14 : finalise localities assigned to streets and addresses
     start_time = datetime.now()
-    pg_cur.execute(open_sql_file("03-12-reference-finalise-localities.sql"))
+    pg_cur.execute(open_sql_file("03-11-reference-finalise-localities.sql"))
     print "\t- Step 11 of 14 : localities finalised : {0}".format(datetime.now() - start_time)
 
     # Step 12 of 14 : finalise addresses, using multiprocessing
     start_time = datetime.now()
-    sql = open_sql_file("03-13-reference-populate-addresses-2.sql")
+    sql = open_sql_file("03-12-reference-populate-addresses-2.sql")
     split_sql_into_list_and_process(pg_cur, sql, gnaf_schema, "localities", "loc", "gid")
     # turf the temp address table
     pg_cur.execute(prep_sql("DROP TABLE IF EXISTS gnaf.temp_addresses"))
@@ -470,17 +490,23 @@ def create_reference_tables(pg_cur):
 
     # Step 13 of 14 : create almost correct postcode boundaries by aggregating localities, using multiprocessing
     start_time = datetime.now()
-    sql = open_sql_file("03-14-reference-derived-postcode-bdys.sql")
+    sql = open_sql_file("03-13-reference-derived-postcode-bdys.sql")
     sql_list = []
     for state in states_to_load:
         state_sql = sql.replace("GROUP BY ", "WHERE state = '{0}' GROUP BY ".format(state))
         sql_list.append(state_sql)
     multiprocess_list(max_concurrent_processes, "sql", sql_list)
+
+    # create analysis table?
+    version_check = float(postgis_version[:3])
+    if version_check >= 2.2:
+        pg_cur.execute(open_sql_file("03-13a-create-postcode-analysis-table.sql"))
+
     print "\t- Step 13 of 14 : postcode boundaries created : {0}".format(datetime.now() - start_time)
 
-    # Step 14 of 14 : create indexes, primary and foreign keys, using multiprocessing
+    # Step 13 of 14 : create indexes, primary and foreign keys, using multiprocessing
     start_time = datetime.now()
-    raw_sql_list = open_sql_file("03-15-reference-create-indexes.sql").split("\n")
+    raw_sql_list = open_sql_file("03-14-reference-create-indexes.sql").split("\n")
     sql_list = []
     for sql in raw_sql_list:
         if sql[0:2] != "--" and sql[0:2] != "":

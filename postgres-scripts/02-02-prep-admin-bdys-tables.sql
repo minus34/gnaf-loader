@@ -209,28 +209,6 @@ CREATE INDEX locality_bdys_geom_idx ON admin_bdys.locality_bdys USING gist(geom)
 ALTER TABLE admin_bdys.locality_bdys CLUSTER ON locality_bdys_geom_idx;
 
 
--- create data processing table
-DROP TABLE IF EXISTS admin_bdys.locality_bdys_analysis CASCADE;
-CREATE TABLE admin_bdys.locality_bdys_analysis (
-  gid SERIAL NOT NULL PRIMARY KEY,
-  locality_pid character varying(15) NOT NULL,
-  state character varying(3) NOT NULL,
-  geom geometry(Polygon, 4283, 2) NOT NULL
-) WITH (OIDS=FALSE);
-ALTER TABLE admin_bdys.locality_bdys_analysis OWNER TO postgres;
-
-INSERT INTO admin_bdys.locality_bdys_analysis (locality_pid, state, geom)
-SELECT locality_pid,
-       state, 
-       ST_Subdivide((ST_Dump(ST_Buffer(geom, 0.0))).geom, 512)
-  FROM admin_bdys.locality_bdys;
-
-CREATE INDEX localities_analysis_geom_idx ON admin_bdys.locality_bdys_analysis USING gist(geom);
-ALTER TABLE admin_bdys.locality_bdys_analysis CLUSTER ON localities_analysis_geom_idx;
-
-ANALYZE admin_bdys.locality_bdys_analysis;
-
-
 -- uncomment this if your want an SA Hundreds boundary table (historical bdys)
 
 -- -- create South Australian Hundreds table -- 1s
@@ -285,7 +263,8 @@ CREATE UNLOGGED TABLE admin_bdys.postcode_bdys
   gid SERIAL NOT NULL,
   postcode character(4),
   state character varying(3) NOT NULL,
-  address_count integer NOT NULL DEFAULT 0,
+  address_count integer NOT NULL,
+  street_count integer NOT NULL,
   geom geometry(Multipolygon,4283) NOT NULL
 )
 WITH (OIDS=FALSE);
@@ -305,27 +284,6 @@ SELECT tab.state_pid,
   FROM raw_admin_bdys.aus_state AS tab
   INNER JOIN raw_admin_bdys.aus_state_polygon AS bdy ON tab.state_pid = bdy.state_pid;
 
--- create data processing table
-DROP TABLE IF EXISTS admin_bdys.state_bdys_analysis CASCADE;
-CREATE TABLE admin_bdys.state_bdys_analysis (
-  gid SERIAL NOT NULL PRIMARY KEY,
-  state_pid character varying(15) NOT NULL,
-  state character varying(3) NOT NULL,
-  geom geometry(Polygon, 4283, 2) NOT NULL
-) WITH (OIDS=FALSE);
-ALTER TABLE admin_bdys.state_bdys_analysis OWNER TO postgres;
-
-INSERT INTO admin_bdys.state_bdys_analysis (state_pid, state, geom)
-SELECT state_pid,
-       state,
-       ST_Subdivide((ST_Dump(ST_Buffer(geom, 0.0))).geom, 512)
-  FROM admin_bdys.state_bdys;
-
-CREATE INDEX states_analysis_geom_idx ON admin_bdys.state_bdys_analysis USING gist(geom);
-ALTER TABLE admin_bdys.state_bdys_analysis CLUSTER ON states_analysis_geom_idx;
-
-ANALYZE admin_bdys.state_bdys_analysis;
-
 
 --------------------------------------------------------------------------------------
 -- commonwealth electoral boundaries
@@ -343,28 +301,6 @@ SELECT tab.ce_pid,
   FROM raw_admin_bdys.aus_comm_electoral AS tab
   INNER JOIN raw_admin_bdys.aus_comm_electoral_polygon AS bdy ON tab.ce_pid = bdy.ce_pid
   INNER JOIN raw_admin_bdys.aus_state AS ste ON tab.state_pid = ste.state_pid;
-
--- create data processing table
-DROP TABLE IF EXISTS admin_bdys.commonwealth_electorates_analysis CASCADE;
-CREATE TABLE admin_bdys.commonwealth_electorates_analysis (
-  gid SERIAL NOT NULL PRIMARY KEY,
-  ce_pid character varying(15) NOT NULL,
-  state character varying(3) NOT NULL,
-  geom geometry(Polygon, 4283, 2) NOT NULL
-) WITH (OIDS=FALSE);
-ALTER TABLE admin_bdys.commonwealth_electorates_analysis OWNER TO postgres;
-
-INSERT INTO admin_bdys.commonwealth_electorates_analysis (ce_pid, state, geom)
-SELECT ce_pid,
-       state,
-       ST_Subdivide((ST_Dump(ST_Buffer(geom, 0.0))).geom, 512)
-  FROM admin_bdys.commonwealth_electorates;
-
-CREATE INDEX commonwealth_electorates_analysis_geom_idx ON admin_bdys.commonwealth_electorates_analysis USING gist(geom);
-ALTER TABLE admin_bdys.commonwealth_electorates_analysis CLUSTER ON commonwealth_electorates_analysis_geom_idx;
-
-ANALYZE admin_bdys.commonwealth_electorates_analysis;
-
 
 
 
