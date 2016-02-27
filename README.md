@@ -33,6 +33,9 @@ To get the good load times you'll need to configure your Postgres server for per
 7. Edit the Postgres and GNAF parameters at the top of the Python script
 8. Run the script, come back in 15-60 minutes and enjoy!
 
+### Attribution
+When using the resulting data from this process - you will need to adhere to the attribution requirements on the data.gov.au pages for [GNAF](http://data.gov.au/dataset/geocoded-national-address-file-g-naf) and the [Admin Bdys](http://data.gov.au/dataset/psma-administrative-boundaries), as part of the open data licensing requirements.
+
 ## (COMING SOON) Option 2 - Load PG_DUMP Files
 Now that the data is open - this option will be available soon!
 
