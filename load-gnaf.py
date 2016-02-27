@@ -409,7 +409,8 @@ def create_admin_bdys_for_analysis(postgis_version, pg_cur):
         pg_cur.execute(open_sql_file("02-03-create-admin-bdy-analysis-tables.sql"))
         print "\t- Step 3 of 3 : admin boundaries for analysis created : {0}".format(datetime.now() - start_time)
     else:
-        print "\t- Step 3 of 3 : admin boundaries for analysis NOT created - requires PostGIS 2.2"
+        print "\t- Step 3 of 3 : admin boundaries for analysis NOT created - requires PostGIS 2.2 ({0} installed)"\
+            .format(version_check)
 
 
 # create gnaf reference tables by flattening raw gnaf address, streets & localities into a usable form
