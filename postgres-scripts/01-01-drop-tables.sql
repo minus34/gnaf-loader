@@ -101,6 +101,7 @@ DROP TABLE IF EXISTS gnaf.streets CASCADE;
 DROP TABLE IF EXISTS admin_bdys.locality_bdys CASCADE;
 DROP TABLE IF EXISTS admin_bdys.locality_bdys_analysis CASCADE;
 DROP TABLE IF EXISTS admin_bdys.postcode_bdys CASCADE;
+DROP TABLE IF EXISTS admin_bdys.postcode_bdys_analysis CASCADE;
 DROP TABLE IF EXISTS admin_bdys.state_bdys_analysis CASCADE;
 DROP TABLE IF EXISTS admin_bdys.commonwealth_electorates_analysis CASCADE;
 
