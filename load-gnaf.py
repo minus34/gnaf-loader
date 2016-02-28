@@ -123,14 +123,32 @@ def main():
         print "Unable to add PostGIS extension\nACTION: Check your Postgres user privileges or PostGIS install"
         return False
 
-    # get Postgres & PostGIS versions
+    # get Postgres, PostGIS & GEOS versions
     pg_cur.execute("SELECT version()")
     pg_version = pg_cur.fetchone()[0].replace("PostgreSQL ", "").split(",")[0]
-    pg_cur.execute("SELECT PostGIS_version()")
-    postgis_version = pg_cur.fetchone()[0].split(" ")[0]
+
+    pg_cur.execute("SELECT PostGIS_full_version()")
+    lib_strings = pg_cur.fetchone()[0].replace("\"", "").split(" ")
+
+    postgis_version = "UNKNOWN"
+    postgis_version_num = 0.0
+    geos_version = "UNKNOWN"
+    geos_version_num = 0.0
+    st_subdivide_supported = False
+
+    for lib_string in lib_strings:
+        if lib_string[:8] == "POSTGIS=":
+            postgis_version = lib_string.replace("POSTGIS=", "")
+            postgis_version_num = float(postgis_version[:3])
+        if lib_string[:5] == "GEOS=":
+            geos_version = lib_string.replace("GEOS=", "")
+            geos_version_num = float(geos_version[:3])
+
+    if postgis_version_num >= 2.2 and geos_version_num >= 3.5:
+        st_subdivide_supported = True
 
     print ""
-    print "Running on Postgres {0} and PostGIS {1}".format(pg_version, postgis_version)
+    print "Running on Postgres {0} and PostGIS {1} (with GEOS {2})".format(pg_version, postgis_version, geos_version)
 
     # PART 1 - load gnaf from PSV files
     print ""
@@ -154,14 +172,14 @@ def main():
     print "Part 2 of 4 : Start raw admin boundary load : {0}".format(start_time)
     load_raw_admin_boundaries(pg_cur)
     prep_admin_bdys(pg_cur)
-    create_admin_bdys_for_analysis(postgis_version, pg_cur)
+    create_admin_bdys_for_analysis(st_subdivide_supported, pg_cur)
     print "Part 2 of 4 : Raw admin boundaries loaded! : {0}".format(datetime.now() - start_time)
 
     # PART 3 - create flattened and standardised GNAF and Administrative Boundary reference tables
     print ""
     start_time = datetime.now()
     print "Part 3 of 4 : Start create reference tables : {0}".format(start_time)
-    create_reference_tables(postgis_version, pg_cur)
+    create_reference_tables(st_subdivide_supported, pg_cur)
     print "Part 3 of 4 : Reference tables created! : {0}".format(datetime.now() - start_time)
 
     # # PART 4 - QA
@@ -345,8 +363,10 @@ def load_raw_admin_boundaries(pg_cur):
                         bdy_table = file_name.lower().replace(state + "_", "aus_", 1).replace("_shp.dbf", "")
 
                         # set command line parameters depending on whether this is the 1st state (for creating tables)
+                        table_list_add = False
+
                         if bdy_table not in table_list:
-                            table_list.append(bdy_table)
+                            table_list_add = True
 
                             if spatial:
                                 params = "-d -D -s 4283 -i"
@@ -364,9 +384,17 @@ def load_raw_admin_boundaries(pg_cur):
                         # if locality file from Towns folder: don't add - it's a duplicate
                         if "town points" not in bdy_file.lower():
                             cmd_list.append(cmd)
+
+                            if table_list_add:
+                                table_list.append(bdy_table)
                         else:
                             if not bdy_file.lower().endswith("_locality_shp.dbf"):
                                 cmd_list.append(cmd)
+
+                                if table_list_add:
+                                    table_list.append(bdy_table)
+
+    # print '\n'.join(cmd_list)
 
     # are there any files to load?
     if len(cmd_list) == 0:
@@ -399,23 +427,20 @@ def prep_admin_bdys(pg_cur):
     print "\t- Step 2 of 3 : admin boundaries prepped : {0}".format(datetime.now() - start_time)
 
 
-def create_admin_bdys_for_analysis(postgis_version, pg_cur):
+def create_admin_bdys_for_analysis(st_subdivide_supported, pg_cur):
     # Step 4 of 3 : create admin bdy tables optimised for spatial analysis
     start_time = datetime.now()
 
-    version_check = float(postgis_version[:3])
-
-    if version_check >= 2.2:
+    if st_subdivide_supported:
         pg_cur.execute(open_sql_file("02-03-create-admin-bdy-analysis-tables.sql"))
         print "\t- Step 3 of 3 : admin boundaries for analysis created : {0}".format(datetime.now() - start_time)
     else:
-        print "\t- Step 3 of 3 : admin boundaries for analysis NOT created - requires PostGIS 2.2 ({0} installed)"\
-            .format(version_check)
+        print "\t- Step 3 of 3 : admin boundaries for analysis NOT created - requires PostGIS 2.2+ with GEOS 3.5.0+"
 
 
 # create gnaf reference tables by flattening raw gnaf address, streets & localities into a usable form
 # also creates all supporting lookup tables and usable admin bdy tables
-def create_reference_tables(postgis_version, pg_cur):
+def create_reference_tables(st_subdivide_supported, pg_cur):
     # set postgres search path back to the default
     pg_cur.execute("SET search_path = public, pg_catalog")
 
@@ -499,8 +524,7 @@ def create_reference_tables(postgis_version, pg_cur):
     multiprocess_list(max_concurrent_processes, "sql", sql_list)
 
     # create analysis table?
-    version_check = float(postgis_version[:3])
-    if version_check >= 2.2:
+    if st_subdivide_supported:
         pg_cur.execute(open_sql_file("03-13a-create-postcode-analysis-table.sql"))
 
     print "\t- Step 13 of 14 : postcode boundaries created : {0}".format(datetime.now() - start_time)
