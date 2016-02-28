@@ -33,6 +33,11 @@ To get the good load times you'll need to configure your Postgres server for per
 7. Edit the Postgres and GNAF parameters at the top of the Python script
 8. Run the script, come back in 15-60 minutes and enjoy!
 
+### Advanced
+You can load the Admin Boundaries without GNAF. To do this: comment out steps 1 and 3 in def main.
+
+Note: you can't load GNAF without the Admin Bdys due to dependances required to split Melbourne and to fix non-boundary locality_pids on addresses.
+
 ### Attribution
 When using the resulting data from this process - you will need to adhere to the attribution requirements on the data.gov.au pages for [GNAF](http://data.gov.au/dataset/geocoded-national-address-file-g-naf) and the [Admin Bdys](http://data.gov.au/dataset/psma-administrative-boundaries), as part of the open data licensing requirements.
 
