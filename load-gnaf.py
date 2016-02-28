@@ -329,6 +329,12 @@ def create_primary_foreign_keys():
 def load_raw_admin_boundaries(pg_cur):
     start_time = datetime.now()
 
+    # drop existing views
+    pg_cur.execute(open_sql_file("02-01-drop-admin-bdy-views.sql"))
+
+    # add locality class authority code table
+    states_to_load.extend(["authority_code"])
+
     # create schema
     if raw_admin_bdys_schema != "public":
         pg_cur.execute("CREATE SCHEMA IF NOT EXISTS {0} AUTHORIZATION {1}".format(raw_admin_bdys_schema, pg_user))

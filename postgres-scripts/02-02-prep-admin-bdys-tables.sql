@@ -22,18 +22,18 @@ SELECT dat.loc_pid,
        dat.name,
        dat.postcode,
        ste.st_abbrev,
-       aut.name,
+       aut.name_aut,
        st_multi(st_union(st_buffer(bdy.geom, 0.0)))
   FROM raw_admin_bdys.aus_locality AS dat
   INNER JOIN raw_admin_bdys.aus_locality_polygon AS bdy ON dat.loc_pid = bdy.loc_pid
   INNER JOIN raw_admin_bdys.aus_state AS ste ON dat.state_pid = ste.state_pid
-  INNER JOIN raw_gnaf.locality_class_aut AS aut ON dat.loccl_code = aut.code
+  INNER JOIN raw_admin_bdys.aus_locality_class_aut AS aut ON dat.loccl_code = aut.code_aut
   WHERE dat.loccl_code = 'G'
   GROUP BY dat.loc_pid,
        dat.name,
        dat.postcode,
        ste.st_abbrev,
-       aut.name;
+       aut.name_aut;
 
 ANALYZE admin_bdys.locality_bdys;
 
@@ -60,19 +60,19 @@ SELECT dat.loc_pid,
        dat.name,
        dat.postcode,
        ste.st_abbrev,
-       aut.name,
+       aut.name_aut,
        ST_Multi(ST_Union(ST_Buffer(bdy.geom, 0.0)))
   FROM raw_admin_bdys.aus_locality AS dat
   INNER JOIN raw_admin_bdys.aus_locality_polygon AS bdy ON dat.loc_pid = bdy.loc_pid
   INNER JOIN raw_admin_bdys.aus_state AS ste ON dat.state_pid = ste.state_pid
-  INNER JOIN raw_gnaf.locality_class_aut AS aut ON dat.loccl_code = aut.code
+  INNER JOIN raw_admin_bdys.aus_locality_class_aut AS aut ON dat.loccl_code = aut.code_aut
   WHERE dat.loccl_code = 'D'
   AND ste.st_abbrev = 'ACT'
   GROUP BY dat.loc_pid,
        dat.name,
        dat.postcode,
        ste.st_abbrev,
-       aut.name;
+       aut.name_aut;
 
 ANALYZE temp_districts;
 
@@ -204,7 +204,7 @@ ANALYZE admin_bdys.locality_bdys;
 
 -- create indexes for later use
 ALTER TABLE admin_bdys.locality_bdys ADD CONSTRAINT locality_bdys_pk PRIMARY KEY (locality_pid);
-CREATE UNIQUE INDEX localities_gid_idx ON admin_bdys.locality_bdys USING btree(gid);
+CREATE UNIQUE INDEX locality_bdys_gid_idx ON admin_bdys.locality_bdys USING btree(gid);
 CREATE INDEX locality_bdys_geom_idx ON admin_bdys.locality_bdys USING gist(geom);
 ALTER TABLE admin_bdys.locality_bdys CLUSTER ON locality_bdys_geom_idx;
 
