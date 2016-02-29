@@ -275,8 +275,8 @@ ALTER TABLE admin_bdys.postcode_bdys OWNER TO postgres;
 -- states
 --------------------------------------------------------------------------------------
 
-DROP VIEW IF EXISTS admin_bdys.state_bdys CASCADE;
-CREATE VIEW admin_bdys.state_bdys AS
+DROP VIEW IF EXISTS raw_admin_bdys.state_bdys CASCADE;
+CREATE VIEW raw_admin_bdys.state_bdys AS
 SELECT tab.state_pid,
        tab.state_name AS name,
        tab.st_abbrev AS state,
@@ -290,8 +290,8 @@ SELECT tab.state_pid,
 --------------------------------------------------------------------------------------
 
 -- create view
-DROP VIEW IF EXISTS admin_bdys.commonwealth_electorates CASCADE;
-CREATE VIEW admin_bdys.commonwealth_electorates AS
+DROP VIEW IF EXISTS raw_admin_bdys.commonwealth_electorates CASCADE;
+CREATE VIEW raw_admin_bdys.commonwealth_electorates AS
 SELECT tab.ce_pid,
        tab.name,
        tab.dt_gazetd,

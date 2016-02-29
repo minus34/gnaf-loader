@@ -41,7 +41,7 @@ INSERT INTO admin_bdys.state_bdys_analysis (state_pid, state, geom)
 SELECT state_pid,
        state,
        ST_Subdivide((ST_Dump(ST_Buffer(geom, 0.0))).geom, 512)
-  FROM admin_bdys.state_bdys;
+  FROM raw_admin_bdys.state_bdys;
 
 CREATE INDEX states_analysis_geom_idx ON admin_bdys.state_bdys_analysis USING gist(geom);
 ALTER TABLE admin_bdys.state_bdys_analysis CLUSTER ON states_analysis_geom_idx;
@@ -66,7 +66,7 @@ INSERT INTO admin_bdys.commonwealth_electorates_analysis (ce_pid, state, geom)
 SELECT ce_pid,
        state,
        ST_Subdivide((ST_Dump(ST_Buffer(geom, 0.0))).geom, 512)
-  FROM admin_bdys.commonwealth_electorates;
+  FROM raw_admin_bdys.commonwealth_electorates;
 
 CREATE INDEX commonwealth_electorates_analysis_geom_idx ON admin_bdys.commonwealth_electorates_analysis USING gist(geom);
 ALTER TABLE admin_bdys.commonwealth_electorates_analysis CLUSTER ON commonwealth_electorates_analysis_geom_idx;
