@@ -74,8 +74,8 @@ admin_bdys_schema = "admin_bdys"
 # raw data directories
 
 # Remote Postgres server sample
-# gnaf_network_directory = r"\\l10-geosdi\h$\zzz_todelete"
-# gnaf_pg_server_local_directory = r"h:\zzz_todelete"
+# gnaf_network_directory = r"\\l10-geosdi\h$\zzz_todelete\psma_201602"
+# gnaf_pg_server_local_directory = r"h:\zzz_todelete\psma_201602"
 # admin_bdys_local_directory = r"C:\temp\psma_201602"
 # # psv_output_directory = r"C:\temp"
 
