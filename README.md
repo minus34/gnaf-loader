@@ -47,14 +47,15 @@ Now that the data is open - this option will be available soon!
 Not sure how long this takes since I haven't tested it thoroughly yet...
 
 ### Pre-requisites
-- Postgres 9.5 with PostGIS 2.2 only
+- Postgres 9.5 with PostGIS 2.2
 - A knowledge of [Postgres pg_restore parameters](http://www.postgresql.org/docs/9.5/static/app-pgrestore.html)
 
 ### Process
 1. Download gnaf.dmp from <url>
 2. Download admin_bdys.dmp from <url>
-3. Edit the pg_restore .bat/.sh script in the Supporting File folder for your database parameters
-4. Run the script, come back in 15-60 minutes and enjoy!
+3. Make sure your Postgres database supports PostGIS (use CREATE EXTENSION IF NOT EXISTS postgis;)
+4. Edit the restore-gnaf-admin-bdys.bat/.sh script in the Supporting File folder for your database parameters and location of pg_restore
+5. Run the script, come back in 15-60 minutes and enjoy!
 
 ## DATA CUSTOMISATION
 GNAF and the Admin Bdys have been customised to remove some of the more common annoyances with the data. The most notable are:
