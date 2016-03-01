@@ -6,7 +6,7 @@ Have a look at [these intro slides](http://minus34.com/opendata/intro-to-gnaf.pp
 
 ### There are 2 options for loading the data
 1. Run a Python script and build the database in a single step
-2. (COMING SOON) Download the GNAF and/or Admin Bdys Postgres dump or text files & restore them in your database
+2. Download the GNAF and/or Admin Bdys Postgres dump or text files & restore them in your database
 
 ## Option 1 - Run load.gnaf.py
 Running the Python script takes 15-60 minutes on a Postgres server configured for performance.
@@ -41,20 +41,19 @@ Note: you can't load GNAF without the Admin Bdys due to dependances required to 
 ### Attribution
 When using the resulting data from this process - you will need to adhere to the attribution requirements on the data.gov.au pages for [GNAF](http://data.gov.au/dataset/geocoded-national-address-file-g-naf) and the [Admin Bdys](http://data.gov.au/dataset/psma-administrative-boundaries), as part of the open data licensing requirements.
 
-## (COMING SOON) Option 2 - Load PG_DUMP Files
-Now that the data is open - this option will be available soon!
+## Option 2 - Load PG_DUMP Files
+Download Postgres dump files and restore them in your database.
 
-Not sure how long this takes since I haven't tested it thoroughly yet...
+Should take 15-60 minutes.
 
 ### Pre-requisites
 - Postgres 9.5 with PostGIS 2.2
 - A knowledge of [Postgres pg_restore parameters](http://www.postgresql.org/docs/9.5/static/app-pgrestore.html)
 
 ### Process
-1. Download gnaf.dmp from <url>
-2. Download admin_bdys.dmp from <url>
-3. Make sure your Postgres database supports PostGIS (use CREATE EXTENSION IF NOT EXISTS postgis;)
-4. Edit the restore-gnaf-admin-bdys.bat/.sh script in the Supporting File folder for your database parameters and location of pg_restore
+1. Download [gnaf.dmp](http://minus34.com/opendata/psma-201602/gnaf.dmp)
+2. Download [admin_bdys.dmp](http://minus34.com/opendata/psma-201602/admin-bdys.dmp)
+3. Edit the restore-gnaf-admin-bdys.bat or .sh script in the supporting-files folder for your database parameters and for the location of pg_restore
 5. Run the script, come back in 15-60 minutes and enjoy!
 
 ## DATA CUSTOMISATION
