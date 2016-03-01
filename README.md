@@ -6,7 +6,7 @@ Have a look at [these intro slides](http://minus34.com/opendata/intro-to-gnaf.pp
 
 ### There are 2 options for loading the data
 1. Run a Python script and build the database in a single step
-2. Download the GNAF and/or Admin Bdys Postgres dump or text files & restore them in your database
+2. Download the GNAF and/or Admin Bdys Postgres dump & restore them in your database
 
 ## Option 1 - Run load.gnaf.py
 Running the Python script takes 15-60 minutes on a Postgres server configured for performance.
