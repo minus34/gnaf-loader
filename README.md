@@ -58,7 +58,7 @@ Not sure how long this takes since I haven't tested it thoroughly yet...
 5. Run the script, come back in 15-60 minutes and enjoy!
 
 ## DATA CUSTOMISATION
-GNAF and the Admin Bdys have been customised to remove some of the more common annoyances with the data. The most notable are:
+GNAF and the Admin Bdys have been customised to remove some of the known, minor limitations with the data. The most notable are:
 - All addresses link to a gazetted locality that has a boundary. Those small number of addresses that don't in raw GNAF have had their locality_pid changed to a gazetted equivalent
 - Localities have had address and street counts added to them
 - Suburb-Locality bdys have been flattened into a single continuous layer of localities - South Australian Hundreds have been removed and ACT districts have been added where there are no gazetted localities
@@ -76,12 +76,10 @@ GNAF and the Admin Bdys have been customised to remove some of the more common a
 - There is an option to VACUUM the database at the start after dropping the existing GNAF/Admin Bdy tables - this doesn't really do anything outside of repeated testing. (I was too lazy to take it out of the code as it meant renumbering all the SQL files and I'd like to go to bed now)  
 
 ## TO DO:
-- Automatically detect the CPU count on the server (for multiprocessing)
-- Create bash script for restoring the Postgres dump files
 - Create views and analysis tables for all Admin Bdys (only localities, states and commonwealth electorates are currently done)
 - Output reference tables to PSV & SHP
 - List final record counts
 - Build QA into the Python script
 - Boundary tag addresses for admin bdys
-- Script the creation of pg_dump files
-- Script the copying of pg_dump, PSV & SHP file to Amazon S3
+- Script the creation of pg_dump files in Python
+- Script the copying of pg_dump, PSV & SHP file to Amazon S3, in Python
