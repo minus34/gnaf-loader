@@ -349,12 +349,14 @@ def load_raw_admin_boundaries(pg_cur, settings):
     # set psql connect string and password
     psql_str = "psql -U {0} -d {1} -h {2} -p {3}".format(settings['pg_user'], settings['pg_db'], settings['pg_host'], settings['pg_port'])
 
-    if platform.system() == "Windows":
-        password_str = "SET"
-    else:
-        password_str = "export"
+    password_str = ''
+    if not os.getenv("PGPASSWORD"):
+        if platform.system() == "Windows":
+            password_str = "SET"
+        else:
+            password_str = "export"
 
-    password_str += " PGPASSWORD={0}&&".format(settings['pg_password'])
+        password_str += " PGPASSWORD={0}&&".format(settings['pg_password'])
 
     # get file list
     table_list = []
