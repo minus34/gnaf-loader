@@ -38,8 +38,8 @@ The behaviour of gnaf-loader can be controlled by specifying various command lin
 
 #### Required Arguments
 
-* `--gnaf-tables-path` specifies the path to the extracted source GNAF tables (eg *.psv files). This should match the extracted directory which contains the subfolders `Authority Code` and `Standard`. __This directory must be accessible by the Postgres server__, and the corresponding local path for the server to this directory must be set via the `local-server-dir` argument
-* `--local-server-dir` specifies the local path on the Postgres server corresponding to `gnaf-tables-path`.
+* `--gnaf-tables-path` specifies the path to the extracted source GNAF tables (eg *.psv files). This should match the extracted directory which contains the subfolders `Authority Code` and `Standard`. __This directory must be accessible by the Postgres server__, and the corresponding local path for the server to this directory may need to be set via the `local-server-dir` argument
+* `--local-server-dir` specifies the local path on the Postgres server corresponding to `gnaf-tables-path`. If the server is running locally this argument can be omitted.
 * `--admin-bdys-path` specifies the path to the extracted source admin boundary files. This path should contain a subfolder named `Administrative Boundaries`. Unlike `gnaf-tables-path`, this path does not necessarily have to be accessible to the remote Postgres server.
 
 #### Postgres Parameters
@@ -66,8 +66,8 @@ primary and foreign keys set.
 
 ### Example Command Line Arguments
 
+* Local Postgres server: `python load-gnaf.py --gnaf-tables-path="C:\temp\psma_201602\G-NAF" --admin-bdys-path="C:\temp\psma_201602\Administrative Boundaries"` Loads the GNAF tables to a Postgres server running locally. GNAF archives have been extracted to the folder `C:\temp\psma_201602\G-NAF`, and admin boundaries have been extracted to the `C:\temp\psma_201602\Administrative Boundaries` folder.
 * Remote Postgres server: `python load-gnaf.py --gnaf-tables-path="\\svr\shared\gnaf" --local-server-dir="f:\shared\gnaf" --admin-bdys-path="c:\temp\unzipped\AdminBounds_ESRI"` Loads the GNAF tables which have been extracted to the shared folder `\\svr\shared\gnaf`. This shared folder corresponds to the local `f:\shared\gnaf` folder on the Postgres server. Admin boundaries have been extracted to the `c:\temp\unzipped\AdminBounds_ESRI` folder.
-* Local Postgres server: `python load-gnaf.py --gnaf-tables-path="C:\temp\psma_201602\G-NAF" --local-server-dir="C:\temp\psma_201602\G-NAF" --admin-bdys-path="C:\temp\psma_201602\Administrative Boundaries"` Loads the GNAF tables to a Postgres server running locally. GNAF archives have been extracted to the folder `C:\temp\psma_201602\G-NAF`, and admin boundaries have been extracted to the `C:\temp\psma_201602\Administrative Boundaries` folder.
 * Loading only selected states: `python load-gnaf.py --states VIC TAS NT ...` Loads only the data for Victoria, Tasmania and Northern Territory
 
 ### Advanced
