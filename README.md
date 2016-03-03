@@ -44,7 +44,8 @@ The behaviour of gnaf-loader can be controlled by specifying various command lin
 
 #### Postgres Parameters
 
-* `--pghost` the host name for the Postgres server. This defaults to the `PGHOST` environment variable if set, otherwise defaults to `localhost`.
+* `--pghost` the host name for the Postgres server.
+** This defaults to the `PGHOST` environment variable if set, otherwise defaults to `localhost`.
 * `--pgport` the port number for the Postgres server. This defaults to the `PGPORT` environment variable if set, otherwise `5432`.
 * `--pgdb` the database name for Postgres server. This defaults to the `PGDATABASE` environment variable if set, otherwise `psma_201602`.
 * `--pguser` the username for accessing the Postgres server. This defaults to the `PGUSER` environment variable if set, otherwise `postgres`.
