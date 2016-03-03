@@ -75,7 +75,7 @@ def main():
     parser.add_argument(
         '--gnaf-tables-path', required=True, help='Path to source GNAF tables (*.psv files). This directory must be accessible by the Postgres server, and the local path to the directory must be set via the local-server-dir argument')
     parser.add_argument(
-        '--local-server-dir', required=True, help='Local path on server corresponding to remote-server-temp-dir.')
+        '--local-server-dir', required=True, help='Local path on server corresponding to gnaf-tables-path.')
     parser.add_argument(
         '--admin-bodies-path', required=True, help='Local path to source admin boundary files.')
 
