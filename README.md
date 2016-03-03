@@ -34,7 +34,7 @@ To get the good load times you'll need to configure your Postgres server for per
 8. Run the script, come back in 15-60 minutes and enjoy!
 
 ### Command Line Options
-The behaviour of gnaf-loader can be controlled by specifying various command line options to the script. Supported optional arguments are:
+The behaviour of gnaf-loader can be controlled by specifying various command line options to the script. Supported arguments are:
 
 #### Required Arguments
 
