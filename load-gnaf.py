@@ -282,6 +282,7 @@ def populate_raw_gnaf(settings):
 
     # add state file lists
     for state in settings['states_to_load']:
+        print "\t\t-Loading state {}".format( state )
         sql_list.extend(get_raw_gnaf_files(state, settings))
 
     # are there any files to load?

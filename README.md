@@ -56,6 +56,7 @@ The behaviour of gnaf-loader can be controlled by specifying various command lin
 * `--raw-admin-schema` schema name to store raw admin boundary tables in. Defaults to `raw_admin_bdys`.
 * `--gnaf-schema` destination schema name to store final GNAF tables in. Defaults to `gnaf`.
 * `--admin-schema` destination schema name to store final admin boundary tables in. Defaults to `admin_bdys`.
+* `--states` space separated list of states to load, eg `--states VIC TAS`. Defaults to loading all states.
 * `--prevacuum` forces the database to be vacuumed after dropping tables. Defaults to off, and specifying this option will slow the import process.
 * `--raw-fk` creates both primary & foreign keys for the raw GNAF tables. Defaults to off, and will slow the import process if specified. Use this option
 if you intend to utilise the raw GNAF tables as anything more then a temporary import step. Note that the final processed tables will always have appropriate
@@ -67,6 +68,7 @@ primary and foreign keys set.
 
 * Remote Postgres server: `python load-gnaf.py --gnaf-tables-path="\\svr\shared\gnaf" --local-server-dir="f:\shared\gnaf" --admin-bdys-path="c:\temp\unzipped\AdminBounds_ESRI"` Loads the GNAF tables which have been extracted to the shared folder `\\svr\shared\gnaf`. This shared folder corresponds to the local `f:\shared\gnaf` folder on the Postgres server. Admin boundaries have been extracted to the `c:\temp\unzipped\AdminBounds_ESRI` folder.
 * Local Postgres server: `python load-gnaf.py --gnaf-tables-path="C:\temp\psma_201602\G-NAF" --local-server-dir="C:\temp\psma_201602\G-NAF" --admin-bdys-path="C:\temp\psma_201602\Administrative Boundaries"` Loads the GNAF tables to a Postgres server running locally. GNAF archives have been extracted to the folder `C:\temp\psma_201602\G-NAF`, and admin boundaries have been extracted to the `C:\temp\psma_201602\Administrative Boundaries` folder.
+* Loading only selected states: `python load-gnaf.py --states VIC TAS NT ...` Loads only the data for Victoria, Tasmania and Northern Territory
 
 ### Advanced
 You can load the Admin Boundaries without GNAF. To do this: comment out steps 1 and 3 in def main.
