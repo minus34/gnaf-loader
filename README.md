@@ -30,13 +30,49 @@ To get the good load times you'll need to configure your Postgres server for per
 4. Alter security on the directory to grant Postgres read access
 5. Unzip Admin Bdys to a local directory
 6. Create the target database (if required)
-7. Edit the Postgres and GNAF parameters at the top of the Python script
+7. Check the available and required arguments by running load-gnaf.py with the `-h` argument (see command line examples below)
 8. Run the script, come back in 15-60 minutes and enjoy!
+
+### Command Line Options
+The behaviour of gnaf-loader can be controlled by specifying various command line options to the script. Supported optional arguments are:
+
+#### Required Arguments
+
+* `--gnaf-tables-path` specifies the path to the extracted source GNAF tables (eg *.psv files). This should match the extracted directory which contains the subfolders `Authority Code` and `Standard`. __This directory must be accessible by the Postgres server__, and the corresponding local path for the server to this directory must be set via the `local-server-dir` argument
+* `--local-server-dir` specifies the local path on the Postgres server corresponding to `gnaf-tables-path`.
+* `--admin-bodies-path` specifies the path to the extracted source admin boundary files. This path should contain a subfolder named `Administrative Boundaries`. Unlike `gnaf-tables-path`, this path does not necessarily have to be accessible to the remote Postgres server.
+
+#### Postgres Parameters
+
+* `--pghost` the host name for the Postgres server. This defaults to the `PGHOST` environment variable if set, otherwise defaults to `localhost`.
+* `--pgport` the port number for the Postgres server. This defaults to the `PGPORT` environment variable if set, otherwise deafults to `5432`.
+* `--pgdb` the database name for Postgres server. This defaults to the `PGDATABASE` environment variable if set, otherwise `psma_201602`.
+* `--pguser` the username for accessing the Postgres server. This defaults to the `PGUSER` environment variable if set, otherwise `postgres`.
+* `--pgpassword` password for accessing the Postgres server. This defaults to the `PGPASSWORD` environment variable if set, otherwise `password`.
+
+#### Optional Arguments
+
+* `--raw-gnaf-schema` schema name to store raw GNAF tables in. Defaults to `raw_gnaf`.
+* `--raw-admin-schema` schema name to store raw admin boundary tables in. Defaults to `raw_admin_bdys`.
+* `--gnaf-schema` destination schema name to store final GNAF tables in. Defaults to `gnaf`.
+* `--admin-schema` destination schema name to store final admin boundary tables in. Defaults to `admin_bdys`.
+* `--prevacuum` forces the database to be vacuumed after dropping tables. Defaults to off, and specifying this option will slow the import process.
+* `--raw-fk` creates both primary & foreign keys for the raw GNAF tables. Defaults to off, and will slow the import process if specified. Use this option
+if you intend to utilise the raw GNAF tables as anything more then a temporary import step. Note that the final processed tables will always have appropriate
+primary and foreign keys set.
+* `--raw-unlogged` creates unlogged raw GNAF tables, speeding up the import. Defaults to off. Only specify this option if you don't care about the raw data tables after the import - they will be lost if the server crashes!
+* `--max-processes` specifies the maximum number of parallel processes to use for the data load. Set this to the number of cores on the Postgres server minus 2, but limit to 12 if 16+ cores - there is minimal benefit beyond 12. Defaults to 6.
+
+### Example Command Line Arguments
+
+* Remote Postgres server: `python load-gnaf.py --gnaf-tables-path="\\svr\shared\gnaf" --local-server-dir="f:\shared\gnaf" --admin-bodies-path="c:\temp\unzipped\AdminBounds_ESRI"` Loads the GNAF tables which have been extracted to the shared folder `\\svr\shared\gnaf`. This shared folder corresponds to the local `f:\shared\gnaf` folder on the Postgres server. Admin boundaries have been extracted
+to the `c:\temp\unzipped\AdminBounds_ESRI` folder.
+* Local Postgres server: `python load-gnaf.py --gnaf-tables-path="c:\temp\G-NAF FEBRUARY 2016" --local-server-dir="c:\temp\G-NAF FEBRUARY 2016" --admin-bodies-path="c:\temp\AdminBounds_ESRI"` Loads the GNAF tables to a Postgres server running locally. GNAF archives have been extracted to the folder `c:\temp\G-NAF FEBRUARY 2016`, and admin boundaries have been extracted to the `c:\temp\AdminBounds_ESRI` folder.
 
 ### Advanced
 You can load the Admin Boundaries without GNAF. To do this: comment out steps 1 and 3 in def main.
 
-Note: you can't load GNAF without the Admin Bdys due to dependances required to split Melbourne and to fix non-boundary locality_pids on addresses.
+Note: you can't load GNAF without the Admin Bdys due to dependancies required to split Melbourne and to fix non-boundary locality_pids on addresses.
 
 ### Attribution
 When using the resulting data from this process - you will need to adhere to the attribution requirements on the data.gov.au pages for [GNAF](http://data.gov.au/dataset/geocoded-national-address-file-g-naf) and the [Admin Bdys](http://data.gov.au/dataset/psma-administrative-boundaries), as part of the open data licensing requirements.
