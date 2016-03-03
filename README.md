@@ -40,7 +40,7 @@ The behaviour of gnaf-loader can be controlled by specifying various command lin
 
 * `--gnaf-tables-path` specifies the path to the extracted source GNAF tables (eg *.psv files). This should match the extracted directory which contains the subfolders `Authority Code` and `Standard`. __This directory must be accessible by the Postgres server__, and the corresponding local path for the server to this directory must be set via the `local-server-dir` argument
 * `--local-server-dir` specifies the local path on the Postgres server corresponding to `gnaf-tables-path`.
-* `--admin-bodies-path` specifies the path to the extracted source admin boundary files. This path should contain a subfolder named `Administrative Boundaries`. Unlike `gnaf-tables-path`, this path does not necessarily have to be accessible to the remote Postgres server.
+* `--admin-bdys-path` specifies the path to the extracted source admin boundary files. This path should contain a subfolder named `Administrative Boundaries`. Unlike `gnaf-tables-path`, this path does not necessarily have to be accessible to the remote Postgres server.
 
 #### Postgres Parameters
 
@@ -65,14 +65,14 @@ primary and foreign keys set.
 
 ### Example Command Line Arguments
 
-* Remote Postgres server: `python load-gnaf.py --gnaf-tables-path="\\svr\shared\gnaf" --local-server-dir="f:\shared\gnaf" --admin-bodies-path="c:\temp\unzipped\AdminBounds_ESRI"` Loads the GNAF tables which have been extracted to the shared folder `\\svr\shared\gnaf`. This shared folder corresponds to the local `f:\shared\gnaf` folder on the Postgres server. Admin boundaries have been extracted
-to the `c:\temp\unzipped\AdminBounds_ESRI` folder.
-* Local Postgres server: `python load-gnaf.py --gnaf-tables-path="c:\temp\G-NAF FEBRUARY 2016" --local-server-dir="c:\temp\G-NAF FEBRUARY 2016" --admin-bodies-path="c:\temp\AdminBounds_ESRI"` Loads the GNAF tables to a Postgres server running locally. GNAF archives have been extracted to the folder `c:\temp\G-NAF FEBRUARY 2016`, and admin boundaries have been extracted to the `c:\temp\AdminBounds_ESRI` folder.
+* Remote Postgres server: `python load-gnaf.py --gnaf-tables-path="\\svr\shared\gnaf" --local-server-dir="f:\shared\gnaf" --admin-bdys-path="c:\temp\unzipped\AdminBounds_ESRI"` Loads the GNAF tables which have been extracted to the shared folder `\\svr\shared\gnaf`. This shared folder corresponds to the local `f:\shared\gnaf` folder on the Postgres server. Admin boundaries have been extracted to the `c:\temp\unzipped\AdminBounds_ESRI` folder.
+* Local Postgres server: `python load-gnaf.py --gnaf-tables-path="C:\temp\psma_201602\G-NAF" --local-server-dir="C:\temp\psma_201602\G-NAF" --admin-bdys-path="C:\temp\psma_201602\Administrative Boundaries"` Loads the GNAF tables to a Postgres server running locally. GNAF archives have been extracted to the folder `C:\temp\psma_201602\G-NAF`, and admin boundaries have been extracted to the `C:\temp\psma_201602\Administrative Boundaries` folder.
+* Local Postgres server ACT/NSW only: `python load-gnaf.py --gnaf-tables-path="C:\temp\psma_201602\G-NAF" --local-server-dir="C:\temp\psma_201602\G-NAF" --admin-bdys-path="C:\temp\psma_201602\Administrative Boundaries" --states=??????????????????????????????????????` Loads the GNAF tables to a Postgres server running locally. GNAF archives have been extracted to the folder `C:\temp\psma_201602\G-NAF`, and admin boundaries have been extracted to the `C:\temp\psma_201602\Administrative Boundaries` folder.
 
 ### Advanced
 You can load the Admin Boundaries without GNAF. To do this: comment out steps 1 and 3 in def main.
 
-Note: you can't load GNAF without the Admin Bdys due to dependancies required to split Melbourne and to fix non-boundary locality_pids on addresses.
+Note: you can't load GNAF without the Admin Bdys due to dependencies required to split Melbourne and to fix non-boundary locality_pids on addresses.
 
 ### Attribution
 When using the resulting data from this process - you will need to adhere to the attribution requirements on the data.gov.au pages for [GNAF](http://data.gov.au/dataset/geocoded-national-address-file-g-naf) and the [Admin Bdys](http://data.gov.au/dataset/psma-administrative-boundaries), as part of the open data licensing requirements.

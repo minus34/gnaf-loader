@@ -8,11 +8,8 @@
 # GitHub: minus34
 # Twitter: @minus34
 #
-# Version: 0.9
-# Date: 22-02-2016
-#
 # Copyright:
-#  - Code is copyright Hugh Saalmans - licensed under an Apache License, version 2.0
+#  - Code is licensed under an Apache License, version 2.0
 #  - Data is copyright PSMA - SOON TO BE licensed under a Creative Commons (By Attribution) license
 
 # Process:
@@ -37,54 +34,76 @@ import argparse
 
 from datetime import datetime
 
+
 def main():
     parser = argparse.ArgumentParser(
-        description='A quick way to load the complete GNAF and PSMA Admin Boundaries into Postgres, simplified and ready to use as reference data for geocoding, analysis and visualisation.')
+        description='A quick way to load the complete GNAF and PSMA Admin Boundaries into Postgres, '
+                    'simplified and ready to use as reference data for geocoding, analysis and visualisation.')
     parser.add_argument(
         '--prevacuum', action='store_true', default=False, help='Forces database to be vacuumed after dropping tables.')
     parser.add_argument(
-        '--raw-fk', action='store_true', default=False, help='Creates primary & foreign keys for the raw GNAF tables (adds time to data load)')
+        '--raw-fk', action='store_true', default=False,
+        help='Creates primary & foreign keys for the raw GNAF tables (adds time to data load)')
     parser.add_argument(
-        '--raw-unlogged', action='store_true', default=False, help='Creates unlogged raw GNAF tables, speeding up the import. Only specify this option if you don\'t care about the raw data afterwards - they will be lost if the server crashes!')
+        '--raw-unlogged', action='store_true', default=False,
+        help='Creates unlogged raw GNAF tables, speeding up the import. Only specify this option if you don\'t care '
+             'about the raw data afterwards - they will be lost if the server crashes!')
     parser.add_argument(
-        '--max-processes', type=int, default=6, help='Maximum number of parallel processes to use for the data load. (Set it to the number of cores on the Postgres server minus 2, limit to 12 if 16+ cores - there is minimal benefit beyond 12). Defaults to 6.')
+        '--max-processes', type=int, default=6,
+        help='Maximum number of parallel processes to use for the data load. (Set it to the number of cores on the '
+             'Postgres server minus 2, limit to 12 if 16+ cores - there is minimal benefit beyond 12). Defaults to 6.')
 
     # PG Options
     parser.add_argument(
-        '--pghost', help='Host name for Postgres server. Defaults to PGHOST environment variable if set, otherwise localhost.')
+        '--pghost',
+        help='Host name for Postgres server. Defaults to PGHOST environment variable if set, otherwise localhost.')
     parser.add_argument(
-        '--pgport', type=int, help='Port number for Postgres server. Defaults to PGPORT environment variable if set, otherwise 5432.')
+        '--pgport', type=int,
+        help='Port number for Postgres server. Defaults to PGPORT environment variable if set, otherwise 5432.')
     parser.add_argument(
-        '--pgdb', help='Database name for Postgres server. Defaults to PGDATABASE environment variable if set, otherwise psma_201602.')
+        '--pgdb',
+        help='Database name for Postgres server. Defaults to PGDATABASE environment variable if set, '
+             'otherwise psma_201602.')
     parser.add_argument(
-        '--pguser', help='Username for Postgres server. Defaults to PGUSER environment variable if set, otherwise postgres.')
+        '--pguser',
+        help='Username for Postgres server. Defaults to PGUSER environment variable if set, otherwise postgres.')
     parser.add_argument(
-        '--pgpassword', help='Password for Postgres server. Defaults to PGPASSWORD environment variable if set, otherwise \'password\'.')
+        '--pgpassword',
+        help='Password for Postgres server. Defaults to PGPASSWORD environment variable if set, '
+             'otherwise \'password\'.')
 
     # schema names for the raw gnaf, flattened reference and admin boundary tables
     parser.add_argument(
-        '--raw-gnaf-schema', default='raw_gnaf', help='Schema name to store raw GNAF tables in. Defaults to \'raw_gnaf\'.')
+        '--raw-gnaf-schema', default='raw_gnaf',
+        help='Schema name to store raw GNAF tables in. Defaults to \'raw_gnaf\'.')
     parser.add_argument(
-        '--raw-admin-schema', default='raw_admin_bdys', help='Schema name to store raw admin boundary tables in. Defaults to \'raw_admin_bdys\'.')
+        '--raw-admin-schema', default='raw_admin_bdys',
+        help='Schema name to store raw admin boundary tables in. Defaults to \'raw_admin_bdys\'.')
     parser.add_argument(
-        '--gnaf-schema', default='gnaf', help='Destination schema name to store final GNAF tables in. Defaults to \'gnaf\'.')
+        '--gnaf-schema', default='gnaf',
+        help='Destination schema name to store final GNAF tables in. Defaults to \'gnaf\'.')
     parser.add_argument(
-        '--admin-schema', default='admin_bdys', help='Destination schema name to store final admin boundary tables in. Defaults to \'admin_bdys\'.')
+        '--admin-schema', default='admin_bdys',
+        help='Destination schema name to store final admin boundary tables in. Defaults to \'admin_bdys\'.')
 
     # directories
     parser.add_argument(
-        '--gnaf-tables-path', required=True, help='Path to source GNAF tables (*.psv files). This directory must be accessible by the Postgres server, and the local path to the directory must be set via the local-server-dir argument')
+        '--gnaf-tables-path', required=True,
+        help='Path to source GNAF tables (*.psv files). This directory must be accessible by the Postgres server, '
+             'and the local path to the directory must be set via the local-server-dir argument')
     parser.add_argument(
         '--local-server-dir', required=True, help='Local path on server corresponding to gnaf-tables-path.')
     parser.add_argument(
-        '--admin-bodies-path', required=True, help='Local path to source admin boundary files.')
+        '--admin-bdys-path', required=True, help='Local path to source admin boundary files.')
 
     # states to load
     parser.add_argument('--states', nargs='+', choices=["ACT", "NSW", "NT", "OT", "QLD", "SA", "TAS", "VIC", "WA"],
-        default=["ACT", "NSW", "NT", "OT", "QLD", "SA", "TAS", "VIC", "WA"],help='List of states to load data for. Defaults to all states.')
+                        default=["ACT", "NSW", "NT", "OT", "QLD", "SA", "TAS", "VIC", "WA"],
+                        help='List of states to load data for. Defaults to all states.')
 
     args = parser.parse_args()
-    settings={}
+
+    settings = dict()
     settings['vacuum_db'] = args.prevacuum
     settings['primary_foreign_keys'] = args.raw_fk
     settings['unlogged_tables'] = args.raw_unlogged
@@ -95,9 +114,10 @@ def main():
     settings['raw_admin_bdys_schema'] = args.raw_admin_schema
     settings['gnaf_schema'] = args.gnaf_schema
     settings['admin_bdys_schema'] = args.admin_schema
-    settings['gnaf_network_directory'] = args.gnaf_tables_path
-    settings['gnaf_pg_server_local_directory'] = args.local_server_dir
-    settings['admin_bdys_local_directory'] = args.admin_bodies_path
+
+    settings['gnaf_network_directory'] = args.gnaf_tables_path.replace("\\", "/")
+    settings['gnaf_pg_server_local_directory'] = args.local_server_dir.replace("\\", "/")
+    settings['admin_bdys_local_directory'] = args.admin_bdys_path.replace("\\", "/")
 
     # create postgres connect string
     settings['pg_host'] = args.pghost or os.getenv("PGHOST", "localhost")
@@ -105,8 +125,9 @@ def main():
     settings['pg_db'] = args.pgdb or os.getenv("PGDATABASE", "psma_201602")
     settings['pg_user'] = args.pguser or os.getenv("PGUSER", "postgres")
     settings['pg_password'] = args.pgpassword or os.getenv("PGPASSWORD", "password")
-    settings['pg_connect_string'] = "dbname='{0}' host='{1}' port='{2}' user='{3}' password='{4}'"\
-    .format(settings['pg_db'], settings['pg_host'], settings['pg_port'], settings['pg_user'], settings['pg_password'])
+
+    settings['pg_connect_string'] = "dbname='{0}' host='{1}' port='{2}' user='{3}' password='{4}'".format(
+        settings['pg_db'], settings['pg_host'], settings['pg_port'], settings['pg_user'], settings['pg_password'])
 
     # set postgres script directory
     settings['sql_dir'] = os.path.join(os.path.dirname(os.path.realpath(__file__)), "postgres-scripts")
@@ -226,7 +247,8 @@ def create_raw_gnaf_tables(pg_cur, settings):
 
     # create schema and set as search path
     if settings['raw_gnaf_schema'] != "public":
-        pg_cur.execute("CREATE SCHEMA IF NOT EXISTS {0} AUTHORIZATION {1}".format(settings['raw_gnaf_schema'], settings['pg_user']))
+        pg_cur.execute("CREATE SCHEMA IF NOT EXISTS {0} AUTHORIZATION {1}"
+                       .format(settings['raw_gnaf_schema'], settings['pg_user']))
         pg_cur.execute("SET search_path = {0}".format(settings['raw_gnaf_schema'],))
 
         # alter create table script to run on chosen schema
@@ -289,7 +311,8 @@ def get_raw_gnaf_files(prefix, settings):
                         file_path = file_path.replace("\\", "/")
                         # print file_path
 
-                    sql = "COPY {0}.{1} FROM '{2}' DELIMITER '|' CSV HEADER;".format(settings['raw_gnaf_schema'], table, file_path)
+                    sql = "COPY {0}.{1} FROM '{2}' DELIMITER '|' CSV HEADER;"\
+                        .format(settings['raw_gnaf_schema'], table, file_path)
 
                     sql_list.append(sql)
 
@@ -344,10 +367,12 @@ def load_raw_admin_boundaries(pg_cur, settings):
 
     # create schema
     if settings['raw_admin_bdys_schema'] != "public":
-        pg_cur.execute("CREATE SCHEMA IF NOT EXISTS {0} AUTHORIZATION {1}".format(settings['raw_admin_bdys_schema'], settings['pg_user']))
+        pg_cur.execute("CREATE SCHEMA IF NOT EXISTS {0} AUTHORIZATION {1}"
+                       .format(settings['raw_admin_bdys_schema'], settings['pg_user']))
 
     # set psql connect string and password
-    psql_str = "psql -U {0} -d {1} -h {2} -p {3}".format(settings['pg_user'], settings['pg_db'], settings['pg_host'], settings['pg_port'])
+    psql_str = "psql -U {0} -d {1} -h {2} -p {3}"\
+        .format(settings['pg_user'], settings['pg_db'], settings['pg_host'], settings['pg_port'])
 
     password_str = ''
     if not os.getenv("PGPASSWORD"):
@@ -394,8 +419,8 @@ def load_raw_admin_boundaries(pg_cur, settings):
                             else:
                                 params = "-a -D -G -n -i"
 
-                        cmd = "{0}shp2pgsql {1} \"{2}\" {3}.{4} | {5}"\
-                            .format(password_str, params, bdy_file, settings['raw_admin_bdys_schema'], bdy_table, psql_str)
+                        cmd = "{0}shp2pgsql {1} \"{2}\" {3}.{4} | {5}".format(
+                            password_str, params, bdy_file, settings['raw_admin_bdys_schema'], bdy_table, psql_str)
 
                         # if locality file from Towns folder: don't add - it's a duplicate
                         if "town points" not in bdy_file.lower():
@@ -414,7 +439,7 @@ def load_raw_admin_boundaries(pg_cur, settings):
 
     # are there any files to load?
     if len(cmd_list) == 0:
-        print "No Admin Boundary files found\nACTION: Check your 'admin-bodies-path' argument"
+        print "No Admin Boundary files found\nACTION: Check your 'admin-bdys-path' argument"
     else:
         # load files in separate processes
         multiprocess_list("cmd", cmd_list, settings)
@@ -432,7 +457,7 @@ def prep_admin_bdys(pg_cur, settings):
     pg_cur.execute(open_sql_file("02-02-prep-admin-bdys-tables.sql", settings))
 
     # Special case - remove custom outback bdy if South Australia not requested
-    if not 'SA' in settings['states_to_load']:
+    if 'SA' not in settings['states_to_load']:
         pg_cur.execute(prep_sql("DELETE FROM admin_bdys.locality_bdys WHERE locality_pid = 'SA999999'", settings))
         pg_cur.execute(prep_sql("VACUUM ANALYZE admin_bdys.locality_bdys", settings))
 
@@ -458,7 +483,8 @@ def create_reference_tables(pg_cur, settings):
 
     # create schemas
     if settings['gnaf_schema'] != "public":
-        pg_cur.execute("CREATE SCHEMA IF NOT EXISTS {0} AUTHORIZATION {1}".format(settings['gnaf_schema'], settings['pg_user']))
+        pg_cur.execute("CREATE SCHEMA IF NOT EXISTS {0} AUTHORIZATION {1}"
+                       .format(settings['gnaf_schema'], settings['pg_user']))
 
     # Step 1 of 14 : create reference tables
     start_time = datetime.now()
@@ -553,7 +579,7 @@ def create_reference_tables(pg_cur, settings):
 
 
 # takes a list of sql queries or command lines and runs them using multiprocessing
-def multiprocess_list( mp_type, work_list, settings):
+def multiprocess_list(mp_type, work_list, settings):
     pool = multiprocessing.Pool(processes=settings['max_concurrent_processes'])
 
     num_jobs = len(work_list)
