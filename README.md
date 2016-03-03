@@ -38,17 +38,17 @@ The behaviour of gnaf-loader can be controlled by specifying various command lin
 
 #### Required Arguments
 
-* `--gnaf-tables-path` specifies the path to the extracted source GNAF tables (eg *.psv files). This should match the extracted directory which contains the subfolders `Authority Code` and `Standard`. **This directory must be accessible by the Postgres server**, and the corresponding local path for the server to this directory must be set via the `local-server-dir` argument
+* `--gnaf-tables-path` specifies the path to the extracted source GNAF tables (eg *.psv files). This should match the extracted directory which contains the subfolders `Authority Code` and `Standard`. __This directory must be accessible by the Postgres server__, and the corresponding local path for the server to this directory must be set via the `local-server-dir` argument
 * `--local-server-dir` specifies the local path on the Postgres server corresponding to `gnaf-tables-path`.
 * `--admin-bodies-path` specifies the path to the extracted source admin boundary files. This path should contain a subfolder named `Administrative Boundaries`. Unlike `gnaf-tables-path`, this path does not necessarily have to be accessible to the remote Postgres server.
 
 #### Postgres Parameters
 
-* `--pghost` the host name for the Postgres server. This defaults to the PGHOST environment variable if set, otherwise defaults to `localhost`.
-* `--pgport` the port number for the Postgres server. This defaults to the PGPORT environment variable if set, otherwise deafults to `5432`.
-* `--pgdb` the database name for Postgres server. This defaults to the PGDATABASE environment variable if set, otherwise `psma_201602`.
-* `--pguser` the username for accessing the Postgres server. This defaults to the PGUSER environment variable if set, otherwise `postgres`.
-* `--pgpassword` password for accessing the Postgres server. This defaults to the PGPASSWORD environment variable if set, otherwise `password`.
+* `--pghost` the host name for the Postgres server. This defaults to the `PGHOST` environment variable if set, otherwise defaults to `localhost`.
+* `--pgport` the port number for the Postgres server. This defaults to the `PGPORT` environment variable if set, otherwise deafults to `5432`.
+* `--pgdb` the database name for Postgres server. This defaults to the `PGDATABASE` environment variable if set, otherwise `psma_201602`.
+* `--pguser` the username for accessing the Postgres server. This defaults to the `PGUSER` environment variable if set, otherwise `postgres`.
+* `--pgpassword` password for accessing the Postgres server. This defaults to the `PGPASSWORD` environment variable if set, otherwise `password`.
 
 #### Optional Arguments
 
