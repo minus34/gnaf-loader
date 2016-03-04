@@ -90,9 +90,10 @@ def main():
     parser.add_argument(
         '--gnaf-tables-path', required=True,
         help='Path to source GNAF tables (*.psv files). This directory must be accessible by the Postgres server, '
-             'and the local path to the directory must be set via the local-server-dir argument')
+             'and the local path to the directory for the server must be set via the local-server-dir argument if it differs '
+             'from this path.')
     parser.add_argument(
-        '--local-server-dir', required=True, help='Local path on server corresponding to gnaf-tables-path.')
+        '--local-server-dir', help='Local path on server corresponding to gnaf-tables-path, if different to gnaf-tables-path.')
     parser.add_argument(
         '--admin-bdys-path', required=True, help='Local path to source admin boundary files.')
 
@@ -116,7 +117,10 @@ def main():
     settings['admin_bdys_schema'] = args.admin_schema
 
     settings['gnaf_network_directory'] = args.gnaf_tables_path.replace("\\", "/")
-    settings['gnaf_pg_server_local_directory'] = args.local_server_dir.replace("\\", "/")
+    if args.local_server_dir:
+        settings['gnaf_pg_server_local_directory'] = args.local_server_dir.replace("\\", "/")
+    else:
+        settings['gnaf_pg_server_local_directory'] = settings['gnaf_network_directory']
     settings['admin_bdys_local_directory'] = args.admin_bdys_path.replace("\\", "/")
 
     # create postgres connect string
