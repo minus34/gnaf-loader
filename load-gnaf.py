@@ -90,10 +90,11 @@ def main():
     parser.add_argument(
         '--gnaf-tables-path', required=True,
         help='Path to source GNAF tables (*.psv files). This directory must be accessible by the Postgres server, '
-             'and the local path to the directory for the server must be set via the local-server-dir argument if it differs '
-             'from this path.')
+             'and the local path to the directory for the server must be set via the local-server-dir argument '
+             'if it differs from this path.')
     parser.add_argument(
-        '--local-server-dir', help='Local path on server corresponding to gnaf-tables-path, if different to gnaf-tables-path.')
+        '--local-server-dir',
+        help='Local path on server corresponding to gnaf-tables-path, if different to gnaf-tables-path.')
     parser.add_argument(
         '--admin-bdys-path', required=True, help='Local path to source admin boundary files.')
 
@@ -286,7 +287,7 @@ def populate_raw_gnaf(settings):
 
     # add state file lists
     for state in settings['states_to_load']:
-        print "\t\t-Loading state {}".format( state )
+        print "\t\t- Loading state {}".format(state)
         sql_list.extend(get_raw_gnaf_files(state, settings))
 
     # are there any files to load?
