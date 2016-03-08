@@ -391,7 +391,9 @@ def load_raw_admin_boundaries(pg_cur, settings):
 
     # get file list
     table_list = []
-    cmd_list = []
+    cmd_list1 = []
+    cmd_list2 = []
+
     for state in settings['states_to_load']:
         state = state.lower()
         # get a dictionary of Shapefiles and DBFs matching the state
@@ -430,25 +432,29 @@ def load_raw_admin_boundaries(pg_cur, settings):
 
                         # if locality file from Towns folder: don't add - it's a duplicate
                         if "town points" not in bdy_file.lower():
-                            cmd_list.append(cmd)
-
                             if table_list_add:
                                 table_list.append(bdy_table)
+                                cmd_list1.append(cmd)
+                            else:
+                                cmd_list2.append(cmd)
                         else:
                             if not bdy_file.lower().endswith("_locality_shp.dbf"):
-                                cmd_list.append(cmd)
-
                                 if table_list_add:
                                     table_list.append(bdy_table)
+                                    cmd_list1.append(cmd)
+                                else:
+                                    cmd_list2.append(cmd)
 
-    # print '\n'.join(cmd_list)
+    # print '\n'.join(cmd_list1)
+    # print '\n'.join(cmd_list2)
 
     # are there any files to load?
-    if len(cmd_list) == 0:
+    if len(cmd_list1) == 0:
         print "No Admin Boundary files found\nACTION: Check your 'admin-bdys-path' argument"
     else:
-        # load files in separate processes
-        multiprocess_list("cmd", cmd_list, settings)
+        # load files in separate processes - do all create table commands first before attempting the insert commands
+        multiprocess_list("cmd", cmd_list1, settings)
+        multiprocess_list("cmd", cmd_list2, settings)
         print "\t- Step 1 of 3 : raw admin boundaries loaded : {0}".format(datetime.now() - start_time)
 
 
