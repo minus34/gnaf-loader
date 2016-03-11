@@ -6,6 +6,7 @@ Have a look at [these intro slides](http://minus34.com/opendata/intro-to-gnaf.pp
 
 ### There are 2 options for loading the data
 1. Run a Python script and build the database in a single step
+2. Build the database in a docker environment
 2. Download the GNAF and/or Admin Bdys Postgres dump files & restore them in your database
 
 ## Option 1 - Run load.gnaf.py
@@ -89,7 +90,17 @@ When using the resulting data from this process - you will need to adhere to the
 - The 'create tables' sql script will add the PostGIS extension to the database in the public schema, you don't need to add it to your database
 - There is an option to VACUUM the database at the start after dropping the existing GNAF/Admin Bdy tables - this doesn't really do anything outside of repeated testing. (I was too lazy to take it out of the code as it meant renumbering all the SQL files and I'd like to go to bed now) 
 
-## Option 2 - Load PG_DUMP Files
+## Option 2 - Build the database in a docker environment
+
+### Process
+
+1. Download [PSMA GNAF from data.gov.au](http://data.gov.au/dataset/geocoded-national-address-file-g-naf)
+2. Download [PSMA Administrative Boundaries from data.gov.au](http://data.gov.au/dataset/psma-administrative-boundaries) (download the ESRI Shapefile version)
+3. Unzip GNAF and the Admin Bdys in the data/ directory of this repository
+4. Run docker-compose: `docker-compose up`. The database will be built.
+5. Use the constructed database as you wish.
+
+## Option 3 - Load PG_DUMP Files
 Download Postgres dump files and restore them in your database.
 
 Should take 15-60 minutes.
