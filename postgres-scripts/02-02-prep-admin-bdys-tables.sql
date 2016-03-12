@@ -383,9 +383,9 @@ SELECT bdy.gid,
        tab.name AS lga_name,
        ste.st_abbrev AS state,
        bdy.geom
-  FROM raw_admin_bdys.aus_lga AS tab
+  FROM raw_admin_bdys.aus_ward AS tab
   INNER JOIN raw_admin_bdys.aus_lga AS lga ON tab.lga_pid = lga.lga_pid
-  INNER JOIN raw_admin_bdys.aus_lga_polygon AS bdy ON tab.ward_pid = bdy.ward_pid
+  INNER JOIN raw_admin_bdys.aus_ward_polygon AS bdy ON tab.ward_pid = bdy.ward_pid
   INNER JOIN raw_admin_bdys.aus_state AS ste ON tab.state_pid = ste.state_pid;
 
 
