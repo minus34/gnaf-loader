@@ -303,6 +303,65 @@ SELECT tab.ce_pid,
   INNER JOIN raw_admin_bdys.aus_state AS ste ON tab.state_pid = ste.state_pid;
 
 
+---------------------------------------------------------------------------------------------------
+-- state electoral boundaries - choose bdys that will be current until at least 3 months from now
+---------------------------------------------------------------------------------------------------
+
+-- create lower house view
+DROP VIEW IF EXISTS raw_admin_bdys.state_lower_house_electorates CASCADE;
+CREATE VIEW raw_admin_bdys.state_lower_house_electorates AS
+SELECT tab.se_pid,
+       tab.name,
+       tab.dt_gazetd,
+       tab.eff_start, 
+       tab.eff_end,
+       aut.name_aut AS electorate_class,
+       ste.st_abbrev AS state,
+       bdy.geom
+  FROM raw_admin_bdys.aus_state_electoral AS tab
+  INNER JOIN raw_admin_bdys.aus_state_electoral_polygon AS bdy ON tab.se_pid = bdy.se_pid
+  INNER JOIN raw_admin_bdys.aus_state AS ste ON tab.state_pid = ste.state_pid
+  INNER JOIN raw_admin_bdys.aus_state_electoral_class_aut AS aut ON tab.secl_code = aut.code_aut
+  WHERE (tab.eff_end > now() + interval '3 months'
+    OR (tab.eff_start <= now() AND tab.eff_end IS NULL))
+  AND tab.secl_code <> '3';
+
+-- create upper house view
+DROP VIEW IF EXISTS raw_admin_bdys.state_upper_house_electorates CASCADE;
+CREATE VIEW raw_admin_bdys.state_upper_house_electorates AS
+SELECT tab.se_pid,
+       tab.name,
+       tab.dt_gazetd,
+       tab.eff_start, 
+       tab.eff_end,
+       aut.name_aut AS electorate_class,
+       ste.st_abbrev AS state,
+       bdy.geom
+  FROM raw_admin_bdys.aus_state_electoral AS tab
+  INNER JOIN raw_admin_bdys.aus_state_electoral_polygon AS bdy ON tab.se_pid = bdy.se_pid
+  INNER JOIN raw_admin_bdys.aus_state AS ste ON tab.state_pid = ste.state_pid
+  INNER JOIN raw_admin_bdys.aus_state_electoral_class_aut AS aut ON tab.secl_code = aut.code_aut
+  WHERE (tab.eff_end > now() + interval '3 months'
+    OR (tab.eff_start <= now() AND tab.eff_end IS NULL))
+  AND tab.secl_code = '3'
+  AND ste.st_abbrev NOT IN ('NSW', 'SA');
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 --TO DO:

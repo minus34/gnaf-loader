@@ -74,6 +74,74 @@ ALTER TABLE admin_bdys.commonwealth_electorates_analysis CLUSTER ON commonwealth
 ANALYZE admin_bdys.commonwealth_electorates_analysis;
 
 
+---------------------------------------------------------------------------------------------------
+-- state electoral boundaries - choose bdys that will be current until at least 3 months from now
+---------------------------------------------------------------------------------------------------
+
+-- lower house
+DROP TABLE IF EXISTS admin_bdys.state_lower_house_electorates_analysis CASCADE;
+CREATE TABLE admin_bdys.state_lower_house_electorates_analysis (
+  gid SERIAL NOT NULL PRIMARY KEY,
+  se_pid character varying(15),
+  name character varying(50),
+  dt_gazetd date,
+  eff_start date,
+  eff_end date,
+  electorate_class character varying(50),
+  state character varying(3),
+  geom geometry(Polygon, 4283, 2)
+) WITH (OIDS=FALSE);
+ALTER TABLE admin_bdys.state_lower_house_electorates_analysis OWNER TO postgres;
+
+INSERT INTO admin_bdys.state_lower_house_electorates_analysis (se_pid, state, geom)
+SELECT se_pid,
+       state,
+       ST_Subdivide((ST_Dump(ST_Buffer(geom, 0.0))).geom, 512)
+  FROM raw_admin_bdys.state_lower_house_electorates;
+
+CREATE INDEX state_lower_house_electorates_analysis_geom_idx ON admin_bdys.state_lower_house_electorates_analysis USING gist(geom);
+ALTER TABLE admin_bdys.state_lower_house_electorates_analysis CLUSTER ON state_lower_house_electorates_analysis_geom_idx;
+
+ANALYZE admin_bdys.state_lower_house_electorates_analysis;
+
+
+-- upper house
+DROP TABLE IF EXISTS admin_bdys.state_upper_house_electorates_analysis CASCADE;
+CREATE TABLE admin_bdys.state_upper_house_electorates_analysis (
+  gid SERIAL NOT NULL PRIMARY KEY,
+  se_pid character varying(15),
+  name character varying(50),
+  dt_gazetd date,
+  eff_start date,
+  eff_end date,
+  electorate_class character varying(50),
+  state character varying(3),
+  geom geometry(Polygon, 4283, 2)
+) WITH (OIDS=FALSE);
+ALTER TABLE admin_bdys.state_upper_house_electorates_analysis OWNER TO postgres;
+
+INSERT INTO admin_bdys.state_upper_house_electorates_analysis (se_pid, state, geom)
+SELECT se_pid,
+       state,
+       ST_Subdivide((ST_Dump(ST_Buffer(geom, 0.0))).geom, 512)
+  FROM raw_admin_bdys.state_upper_house_electorates;
+
+CREATE INDEX state_upper_house_electorates_analysis_geom_idx ON admin_bdys.state_upper_house_electorates_analysis USING gist(geom);
+ALTER TABLE admin_bdys.state_upper_house_electorates_analysis CLUSTER ON state_upper_house_electorates_analysis_geom_idx;
+
+ANALYZE admin_bdys.state_upper_house_electorates_analysis;
+
+
+
+
+
+
+
+
+
+
+
+
 
 --TO DO:
 --  - Do the above for all admin bdy types
