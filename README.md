@@ -5,7 +5,7 @@ A quick way to load the complete GNAF and PSMA Admin Boundaries into Postgres, s
 Have a look at [these intro slides](http://minus34.com/opendata/intro-to-gnaf.pptx) ([PDF](http://minus34.com/opendata/intro-to-gnaf.pdf)), as well as the [data.gov.au page](http://data.gov.au/dataset/geocoded-national-address-file-g-naf).
 
 ### There are 3 options for loading the data
-1. Run the load-gnaf.py Python script and build the database in a single step
+1. Run the load-gnaf Python script and build the database in a single step
 2. Build the database in a docker environment
 3. Download the GNAF and/or Admin Bdys Postgres dump files & restore them in your database
 
