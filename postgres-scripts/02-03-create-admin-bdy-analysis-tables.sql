@@ -147,6 +147,32 @@ ALTER TABLE admin_bdys.local_government_areas_analysis CLUSTER ON local_governme
 ANALYZE admin_bdys.local_government_areas_analysis;
 
 
+--------------------------------------------------------------------------------------
+-- local government wards
+--------------------------------------------------------------------------------------
+
+DROP TABLE IF EXISTS admin_bdys.local_government_wards_analysis CASCADE;
+CREATE TABLE admin_bdys.local_government_wards_analysis (
+  gid SERIAL NOT NULL PRIMARY KEY,
+  ward_pid character varying(15),
+  state character varying(3),
+  geom geometry(Polygon, 4283, 2)
+) WITH (OIDS=FALSE);
+ALTER TABLE admin_bdys.local_government_wards_analysis OWNER TO postgres;
+
+INSERT INTO admin_bdys.local_government_wards_analysis (ward_pid, state, geom)
+SELECT ward_pid,
+       state,
+       ST_Subdivide((ST_Dump(ST_Buffer(geom, 0.0))).geom, 512)
+  FROM raw_admin_bdys.local_government_wards;
+
+CREATE INDEX local_government_wards_analysis_geom_idx ON admin_bdys.local_government_wards_analysis USING gist(geom);
+ALTER TABLE admin_bdys.local_government_wards_analysis CLUSTER ON local_government_wards_analysis_geom_idx;
+
+ANALYZE admin_bdys.local_government_wards_analysis;
+
+
+
 
 --TO DO:
 --  - Do the above for all admin bdy types
