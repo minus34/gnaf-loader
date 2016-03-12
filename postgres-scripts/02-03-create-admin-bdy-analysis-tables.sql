@@ -83,11 +83,6 @@ DROP TABLE IF EXISTS admin_bdys.state_lower_house_electorates_analysis CASCADE;
 CREATE TABLE admin_bdys.state_lower_house_electorates_analysis (
   gid SERIAL NOT NULL PRIMARY KEY,
   se_pid character varying(15),
-  name character varying(50),
-  dt_gazetd date,
-  eff_start date,
-  eff_end date,
-  electorate_class character varying(50),
   state character varying(3),
   geom geometry(Polygon, 4283, 2)
 ) WITH (OIDS=FALSE);
@@ -110,11 +105,6 @@ DROP TABLE IF EXISTS admin_bdys.state_upper_house_electorates_analysis CASCADE;
 CREATE TABLE admin_bdys.state_upper_house_electorates_analysis (
   gid SERIAL NOT NULL PRIMARY KEY,
   se_pid character varying(15),
-  name character varying(50),
-  dt_gazetd date,
-  eff_start date,
-  eff_end date,
-  electorate_class character varying(50),
   state character varying(3),
   geom geometry(Polygon, 4283, 2)
 ) WITH (OIDS=FALSE);
@@ -132,14 +122,29 @@ ALTER TABLE admin_bdys.state_upper_house_electorates_analysis CLUSTER ON state_u
 ANALYZE admin_bdys.state_upper_house_electorates_analysis;
 
 
+--------------------------------------------------------------------------------------
+-- local government areas
+--------------------------------------------------------------------------------------
 
+DROP TABLE IF EXISTS admin_bdys.local_government_areas_analysis CASCADE;
+CREATE TABLE admin_bdys.local_government_areas_analysis (
+  gid SERIAL NOT NULL PRIMARY KEY,
+  lga_pid character varying(15),
+  state character varying(3),
+  geom geometry(Polygon, 4283, 2)
+) WITH (OIDS=FALSE);
+ALTER TABLE admin_bdys.local_government_areas_analysis OWNER TO postgres;
 
+INSERT INTO admin_bdys.local_government_areas_analysis (lga_pid, state, geom)
+SELECT lga_pid,
+       state,
+       ST_Subdivide((ST_Dump(ST_Buffer(geom, 0.0))).geom, 512)
+  FROM raw_admin_bdys.local_government_areas;
 
+CREATE INDEX local_government_areas_analysis_geom_idx ON admin_bdys.local_government_areas_analysis USING gist(geom);
+ALTER TABLE admin_bdys.local_government_areas_analysis CLUSTER ON local_government_areas_analysis_geom_idx;
 
-
-
-
-
+ANALYZE admin_bdys.local_government_areas_analysis;
 
 
 

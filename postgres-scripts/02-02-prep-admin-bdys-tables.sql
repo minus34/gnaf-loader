@@ -277,7 +277,8 @@ ALTER TABLE admin_bdys.postcode_bdys OWNER TO postgres;
 
 DROP VIEW IF EXISTS raw_admin_bdys.state_bdys CASCADE;
 CREATE VIEW raw_admin_bdys.state_bdys AS
-SELECT tab.state_pid,
+SELECT bdy.gid,
+       tab.state_pid,
        tab.state_name AS name,
        tab.st_abbrev AS state,
        bdy.geom
@@ -292,7 +293,8 @@ SELECT tab.state_pid,
 -- create view
 DROP VIEW IF EXISTS raw_admin_bdys.commonwealth_electorates CASCADE;
 CREATE VIEW raw_admin_bdys.commonwealth_electorates AS
-SELECT tab.ce_pid,
+SELECT bdy.gid,
+       tab.ce_pid,
        tab.name,
        tab.dt_gazetd,
        ste.st_abbrev AS state,
@@ -310,7 +312,8 @@ SELECT tab.ce_pid,
 -- create lower house view
 DROP VIEW IF EXISTS raw_admin_bdys.state_lower_house_electorates CASCADE;
 CREATE VIEW raw_admin_bdys.state_lower_house_electorates AS
-SELECT tab.se_pid,
+SELECT bdy.gid,
+       tab.se_pid,
        tab.name,
        tab.dt_gazetd,
        tab.eff_start, 
@@ -329,7 +332,8 @@ SELECT tab.se_pid,
 -- create upper house view
 DROP VIEW IF EXISTS raw_admin_bdys.state_upper_house_electorates CASCADE;
 CREATE VIEW raw_admin_bdys.state_upper_house_electorates AS
-SELECT tab.se_pid,
+SELECT bdy.gid,
+       tab.se_pid,
        tab.name,
        tab.dt_gazetd,
        tab.eff_start, 
@@ -347,6 +351,22 @@ SELECT tab.se_pid,
   AND ste.st_abbrev NOT IN ('NSW', 'SA');
 
 
+--------------------------------------------------------------------------------------
+-- local government areas
+--------------------------------------------------------------------------------------
+
+-- create view
+DROP VIEW IF EXISTS raw_admin_bdys.local_government_areas CASCADE;
+CREATE VIEW raw_admin_bdys.local_government_areas AS
+SELECT bdy.gid,
+       tab.lga_pid,
+       tab.abb_name AS name,
+       tab.lga_name AS full_name,
+       ste.st_abbrev AS state,
+       bdy.geom
+  FROM raw_admin_bdys.aus_lga AS tab
+  INNER JOIN raw_admin_bdys.aus_lga_polygon AS bdy ON tab.lga_pid = bdy.lga_pid
+  INNER JOIN raw_admin_bdys.aus_state AS ste ON tab.state_pid = ste.state_pid;
 
 
 
