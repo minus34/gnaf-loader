@@ -6,7 +6,7 @@
 DROP TABLE IF EXISTS admin_bdys.locality_bdys_analysis CASCADE;
 CREATE TABLE admin_bdys.locality_bdys_analysis (
   gid SERIAL NOT NULL PRIMARY KEY,
-  locality_pid character varying(15) NOT NULL,
+  locality_pid character varying(16) NOT NULL,
   state character varying(3) NOT NULL,
   geom geometry(Polygon, 4283, 2) NOT NULL
 ) WITH (OIDS=FALSE);
@@ -18,8 +18,8 @@ SELECT locality_pid,
        ST_Subdivide((ST_Dump(ST_Buffer(geom, 0.0))).geom, 512)
   FROM admin_bdys.locality_bdys;
 
-CREATE INDEX localities_analysis_geom_idx ON admin_bdys.locality_bdys_analysis USING gist(geom);
-ALTER TABLE admin_bdys.locality_bdys_analysis CLUSTER ON localities_analysis_geom_idx;
+CREATE INDEX locality_bdys_analysis_geom_idx ON admin_bdys.locality_bdys_analysis USING gist(geom);
+ALTER TABLE admin_bdys.locality_bdys_analysis CLUSTER ON locality_bdys_analysis_geom_idx;
 
 ANALYZE admin_bdys.locality_bdys_analysis;
 
@@ -74,9 +74,9 @@ ALTER TABLE admin_bdys.commonwealth_electorates_analysis CLUSTER ON commonwealth
 ANALYZE admin_bdys.commonwealth_electorates_analysis;
 
 
----------------------------------------------------------------------------------------------------
--- state electoral boundaries - choose bdys that will be current until at least 3 months from now
----------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------
+-- state electoral boundaries
+--------------------------------------------------------------------------------------
 
 -- lower house
 DROP TABLE IF EXISTS admin_bdys.state_lower_house_electorates_analysis CASCADE;
