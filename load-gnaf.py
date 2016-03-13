@@ -216,7 +216,7 @@ def main():
     print "Part 2 of 3 : Start raw admin boundary load : {0}".format(start_time)
     load_raw_admin_boundaries(pg_cur, settings)
     prep_admin_bdys(pg_cur, settings)
-    create_admin_bdys_for_analysis(pg_cur, settings)
+    create_admin_bdys_for_analysis(settings)
     print "Part 2 of 3 : Raw admin boundaries loaded! : {0}".format(datetime.now() - start_time)
 
     # PART 3 - create flattened and standardised GNAF and Administrative Boundary reference tables
@@ -226,12 +226,19 @@ def main():
     create_reference_tables(pg_cur, settings)
     print "Part 3 of 3 : Reference tables created! : {0}".format(datetime.now() - start_time)
 
-    # # PART 4 - QA
+    # # PART 4 - Boundary tagging GNAF addresses
     # print ""
     # start_time = datetime.now()
-    # print "Part 4 of 3 : QA results : {0}".format(start_time)
-    # create_reference_tables(pg_cur)
-    # print "Part 4 of 3 : results QA'd : {0}".format(datetime.now() - start_time)
+    # print "Part 4 of 5 : Boundary tagging : {0}".format(start_time)
+    # boundary_tag_gnaf(settings)
+    # print "Part 4 of 5 : Boundary tagging: {0}".format(datetime.now() - start_time)
+
+    # # PART 5 - QA
+    # print ""
+    # start_time = datetime.now()
+    # print "Part 5 of 5 : QA results : {0}".format(start_time)
+    # qa_tables(pg_cur, settings)
+    # print "Part 5 of 5 : results QA'd : {0}".format(datetime.now() - start_time)
 
     pg_cur.close()
     pg_conn.close()
@@ -487,8 +494,8 @@ def prep_admin_bdys(pg_cur, settings):
     print "\t- Step 2 of 3 : admin boundaries prepped : {0}".format(datetime.now() - start_time)
 
 
-def create_admin_bdys_for_analysis(pg_cur, settings):
-    # Step 4 of 3 : create admin bdy tables optimised for spatial analysis
+def create_admin_bdys_for_analysis(settings):
+    # Step 3 of 3 : create admin bdy tables optimised for spatial analysis
     start_time = datetime.now()
 
     if settings['st_subdivide_supported']:
@@ -607,6 +614,20 @@ def create_reference_tables(pg_cur, settings):
             sql_list.append(sql)
     multiprocess_list("sql", sql_list, settings)
     print "\t- Step 14 of 14 : create primary & foreign keys and indexes : {0}".format(datetime.now() - start_time)
+
+
+def boundary_tag_gnaf(settings):
+    # Step 1 of 3 : tag gnaf addresses with admin boundary IDs
+    start_time = datetime.now()
+
+    template_sql = open_sql_file("04-01-bdy-tag-template.sql", settings)
+    sql_list = list()
+
+    for table in settings['analysis_table_list']:
+        sql = template_sql.format(table[0], table[1])
+        sql_list.append(sql)
+    multiprocess_list("sql", sql_list, settings)
+    print "\t- Step 1 of 3 : gnaf addresses tagged with admin boundary IDs : {0}".format(datetime.now() - start_time)
 
 
 # takes a list of sql queries or command lines and runs them using multiprocessing

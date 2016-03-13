@@ -4,9 +4,9 @@ DROP TABLE IF EXISTS gnaf.temp_addresses CASCADE;
 CREATE TABLE gnaf.temp_addresses
 (
   gid SERIAL NOT NULL,
-  gnaf_pid character varying(15) NOT NULL,
-  street_locality_pid character varying(15) NOT NULL,
-  locality_pid character varying(15) NOT NULL,
+  gnaf_pid character varying(16) NOT NULL,
+  street_locality_pid character varying(16) NOT NULL,
+  locality_pid character varying(16) NOT NULL,
   alias_principal character(1) NOT NULL,
   primary_secondary character varying(1) NULL,
   building_name character varying(45) NULL,
@@ -37,9 +37,9 @@ DROP TABLE IF EXISTS gnaf.address_principals CASCADE;
 CREATE TABLE gnaf.address_principals
 (
   gid SERIAL NOT NULL,
-  gnaf_pid character varying(15) NOT NULL,
-  street_locality_pid character varying(15) NOT NULL,
-  locality_pid character varying(15) NOT NULL,
+  gnaf_pid character varying(16) NOT NULL,
+  street_locality_pid character varying(16) NOT NULL,
+  locality_pid character varying(16) NOT NULL,
   alias_principal character(1) NOT NULL,
   primary_secondary character varying(1) NULL,
   building_name character varying(45) NULL,
@@ -74,9 +74,9 @@ DROP TABLE IF EXISTS gnaf.address_aliases CASCADE;
 CREATE TABLE gnaf.address_aliases
 (
   gid SERIAL NOT NULL,
-  gnaf_pid character varying(15) NOT NULL,
-  street_locality_pid character varying(15) NOT NULL,
-  locality_pid character varying(15) NOT NULL,
+  gnaf_pid character varying(16) NOT NULL,
+  street_locality_pid character varying(16) NOT NULL,
+  locality_pid character varying(16) NOT NULL,
   alias_principal character(1) NOT NULL,
   primary_secondary character varying(1) NULL,
   building_name character varying(45) NULL,
@@ -118,8 +118,8 @@ CREATE VIEW gnaf.addresses AS
 DROP TABLE IF EXISTS gnaf.streets CASCADE;
 CREATE TABLE gnaf.streets(
   gid SERIAL NOT NULL,
-  street_locality_pid character varying(15) NOT NULL,
-  locality_pid character varying(15) NOT NULL,
+  street_locality_pid character varying(16) NOT NULL,
+  locality_pid character varying(16) NOT NULL,
   street_name character varying(100) NOT NULL,
   street_type character varying(15),
   street_suffix character varying(15),
@@ -143,7 +143,7 @@ ALTER TABLE gnaf.streets OWNER TO postgres;
 DROP TABLE IF EXISTS gnaf.street_aliases CASCADE;
 CREATE TABLE gnaf.street_aliases(
   gid SERIAL NOT NULL,
-  street_locality_pid character varying(15) NOT NULL,
+  street_locality_pid character varying(16) NOT NULL,
   alias_street_name character varying(100) NOT NULL,
   alias_street_type character varying(15),
   alias_street_suffix character varying(15),
