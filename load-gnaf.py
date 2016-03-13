@@ -137,6 +137,17 @@ def main():
     # set postgres script directory
     settings['sql_dir'] = os.path.join(os.path.dirname(os.path.realpath(__file__)), "postgres-scripts")
 
+    # set the list of admin bdys to create analysis tables for and to boundary tag with
+    analysis_table_list = list()
+    analysis_table_list.append(["locality_bdys", "locality_pid"])
+    analysis_table_list.append(["commonwealth_electorates", "ce_pid"])
+    analysis_table_list.append(["local_government_areas", "lga_pid"])
+    analysis_table_list.append(["local_government_wards", "ward_pid"])
+    analysis_table_list.append(["state_bdys", "state_pid"])
+    analysis_table_list.append(["state_lower_house_electorates", "se_lower_pid"])
+    analysis_table_list.append(["state_upper_house_electorates", "se_upper_pid"])
+    settings['analysis_table_list'] = analysis_table_list
+
     full_start_time = datetime.now()
 
     # connect to Postgres
@@ -183,37 +194,37 @@ def main():
     print ""
     print "Running on Postgres {0} and PostGIS {1} (with GEOS {2})".format(pg_version, postgis_version, geos_version)
 
-    # PART 1 - load gnaf from PSV files
-    print ""
-    start_time = datetime.now()
-    print "Part 1 of 3 : Start raw GNAF load : {0}".format(start_time)
-    drop_tables_and_vacuum_db(pg_cur, settings)
-    create_raw_gnaf_tables(pg_cur, settings)
-    populate_raw_gnaf(settings)
-    index_raw_gnaf(settings)
-    if settings['primary_foreign_keys']:
-        create_primary_foreign_keys(settings)
-    else:
-        print "\t- Step 6 of 6 : primary & foreign keys NOT created"
-    # set postgres search path back to the default
-    pg_cur.execute("SET search_path = public, pg_catalog")
-    print "Part 1 of 3 : Raw GNAF loaded! : {0}".format(datetime.now() - start_time)
+    # # PART 1 - load gnaf from PSV files
+    # print ""
+    # start_time = datetime.now()
+    # print "Part 1 of 3 : Start raw GNAF load : {0}".format(start_time)
+    # drop_tables_and_vacuum_db(pg_cur, settings)
+    # create_raw_gnaf_tables(pg_cur, settings)
+    # populate_raw_gnaf(settings)
+    # index_raw_gnaf(settings)
+    # if settings['primary_foreign_keys']:
+    #     create_primary_foreign_keys(settings)
+    # else:
+    #     print "\t- Step 6 of 6 : primary & foreign keys NOT created"
+    # # set postgres search path back to the default
+    # pg_cur.execute("SET search_path = public, pg_catalog")
+    # print "Part 1 of 3 : Raw GNAF loaded! : {0}".format(datetime.now() - start_time)
 
-    # PART 2 - load raw admin boundaries from Shapefiles
-    print ""
+    # # PART 2 - load raw admin boundaries from Shapefiles
+    # print ""
     start_time = datetime.now()
-    print "Part 2 of 3 : Start raw admin boundary load : {0}".format(start_time)
-    load_raw_admin_boundaries(pg_cur, settings)
-    prep_admin_bdys(pg_cur, settings)
+    # print "Part 2 of 3 : Start raw admin boundary load : {0}".format(start_time)
+    # load_raw_admin_boundaries(pg_cur, settings)
+    # prep_admin_bdys(pg_cur, settings)
     create_admin_bdys_for_analysis(pg_cur, settings)
     print "Part 2 of 3 : Raw admin boundaries loaded! : {0}".format(datetime.now() - start_time)
 
-    # PART 3 - create flattened and standardised GNAF and Administrative Boundary reference tables
-    print ""
-    start_time = datetime.now()
-    print "Part 3 of 3 : Start create reference tables : {0}".format(start_time)
-    create_reference_tables(pg_cur, settings)
-    print "Part 3 of 3 : Reference tables created! : {0}".format(datetime.now() - start_time)
+    # # PART 3 - create flattened and standardised GNAF and Administrative Boundary reference tables
+    # print ""
+    # start_time = datetime.now()
+    # print "Part 3 of 3 : Start create reference tables : {0}".format(start_time)
+    # create_reference_tables(pg_cur, settings)
+    # print "Part 3 of 3 : Reference tables created! : {0}".format(datetime.now() - start_time)
 
     # # PART 4 - QA
     # print ""
@@ -481,7 +492,15 @@ def create_admin_bdys_for_analysis(pg_cur, settings):
     start_time = datetime.now()
 
     if settings['st_subdivide_supported']:
-        pg_cur.execute(open_sql_file("02-03-create-admin-bdy-analysis-tables.sql", settings))
+        template_sql = open_sql_file("02-03-create-admin-bdy-analysis-tables_template.sql", settings)
+        sql_list = list()
+
+        for table in settings['analysis_table_list']:
+            sql = template_sql.format(table[0], table[1])
+            if table[0] == 'locality_bdys':  # special case, need to change schema name
+                sql = sql.replace(settings['raw_admin_bdys_schema'], settings['admin_bdys_schema'])
+            sql_list.append(sql)
+        multiprocess_list("sql", sql_list, settings)
         print "\t- Step 3 of 3 : admin boundaries for analysis created : {0}".format(datetime.now() - start_time)
     else:
         print "\t- Step 3 of 3 : admin boundaries for analysis NOT created - requires PostGIS 2.2+ with GEOS 3.5.0+"

@@ -313,7 +313,7 @@ SELECT bdy.gid,
 DROP VIEW IF EXISTS raw_admin_bdys.state_lower_house_electorates CASCADE;
 CREATE VIEW raw_admin_bdys.state_lower_house_electorates AS
 SELECT bdy.gid,
-       tab.se_pid,
+       tab.se_pid AS se_lower_pid,
        tab.name,
        tab.dt_gazetd,
        tab.eff_start, 
@@ -333,7 +333,7 @@ SELECT bdy.gid,
 DROP VIEW IF EXISTS raw_admin_bdys.state_upper_house_electorates CASCADE;
 CREATE VIEW raw_admin_bdys.state_upper_house_electorates AS
 SELECT bdy.gid,
-       tab.se_pid,
+       tab.se_pid AS se_upper_pid,
        tab.name,
        tab.dt_gazetd,
        tab.eff_start, 

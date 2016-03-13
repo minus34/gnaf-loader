@@ -82,14 +82,14 @@ ANALYZE admin_bdys.commonwealth_electorates_analysis;
 DROP TABLE IF EXISTS admin_bdys.state_lower_house_electorates_analysis CASCADE;
 CREATE TABLE admin_bdys.state_lower_house_electorates_analysis (
   gid SERIAL NOT NULL PRIMARY KEY,
-  se_pid character varying(15),
+  se_lower_pid character varying(15),
   state character varying(3),
   geom geometry(Polygon, 4283, 2)
 ) WITH (OIDS=FALSE);
 ALTER TABLE admin_bdys.state_lower_house_electorates_analysis OWNER TO postgres;
 
-INSERT INTO admin_bdys.state_lower_house_electorates_analysis (se_pid, state, geom)
-SELECT se_pid,
+INSERT INTO admin_bdys.state_lower_house_electorates_analysis (se_lower_pid, state, geom)
+SELECT se_lower_pid,
        state,
        ST_Subdivide((ST_Dump(ST_Buffer(geom, 0.0))).geom, 512)
   FROM raw_admin_bdys.state_lower_house_electorates;
@@ -104,14 +104,14 @@ ANALYZE admin_bdys.state_lower_house_electorates_analysis;
 DROP TABLE IF EXISTS admin_bdys.state_upper_house_electorates_analysis CASCADE;
 CREATE TABLE admin_bdys.state_upper_house_electorates_analysis (
   gid SERIAL NOT NULL PRIMARY KEY,
-  se_pid character varying(15),
+  se_upper_pid character varying(15),
   state character varying(3),
   geom geometry(Polygon, 4283, 2)
 ) WITH (OIDS=FALSE);
 ALTER TABLE admin_bdys.state_upper_house_electorates_analysis OWNER TO postgres;
 
-INSERT INTO admin_bdys.state_upper_house_electorates_analysis (se_pid, state, geom)
-SELECT se_pid,
+INSERT INTO admin_bdys.state_upper_house_electorates_analysis (se_upper_pid, state, geom)
+SELECT se_upper_pid,
        state,
        ST_Subdivide((ST_Dump(ST_Buffer(geom, 0.0))).geom, 512)
   FROM raw_admin_bdys.state_upper_house_electorates;
