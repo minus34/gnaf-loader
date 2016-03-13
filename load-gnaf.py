@@ -194,37 +194,37 @@ def main():
     print ""
     print "Running on Postgres {0} and PostGIS {1} (with GEOS {2})".format(pg_version, postgis_version, geos_version)
 
-    # # PART 1 - load gnaf from PSV files
-    # print ""
-    # start_time = datetime.now()
-    # print "Part 1 of 3 : Start raw GNAF load : {0}".format(start_time)
-    # drop_tables_and_vacuum_db(pg_cur, settings)
-    # create_raw_gnaf_tables(pg_cur, settings)
-    # populate_raw_gnaf(settings)
-    # index_raw_gnaf(settings)
-    # if settings['primary_foreign_keys']:
-    #     create_primary_foreign_keys(settings)
-    # else:
-    #     print "\t- Step 6 of 6 : primary & foreign keys NOT created"
-    # # set postgres search path back to the default
-    # pg_cur.execute("SET search_path = public, pg_catalog")
-    # print "Part 1 of 3 : Raw GNAF loaded! : {0}".format(datetime.now() - start_time)
-
-    # # PART 2 - load raw admin boundaries from Shapefiles
-    # print ""
+    # PART 1 - load gnaf from PSV files
+    print ""
     start_time = datetime.now()
-    # print "Part 2 of 3 : Start raw admin boundary load : {0}".format(start_time)
-    # load_raw_admin_boundaries(pg_cur, settings)
-    # prep_admin_bdys(pg_cur, settings)
+    print "Part 1 of 3 : Start raw GNAF load : {0}".format(start_time)
+    drop_tables_and_vacuum_db(pg_cur, settings)
+    create_raw_gnaf_tables(pg_cur, settings)
+    populate_raw_gnaf(settings)
+    index_raw_gnaf(settings)
+    if settings['primary_foreign_keys']:
+        create_primary_foreign_keys(settings)
+    else:
+        print "\t- Step 6 of 6 : primary & foreign keys NOT created"
+    # set postgres search path back to the default
+    pg_cur.execute("SET search_path = public, pg_catalog")
+    print "Part 1 of 3 : Raw GNAF loaded! : {0}".format(datetime.now() - start_time)
+
+    # PART 2 - load raw admin boundaries from Shapefiles
+    print ""
+    start_time = datetime.now()
+    print "Part 2 of 3 : Start raw admin boundary load : {0}".format(start_time)
+    load_raw_admin_boundaries(pg_cur, settings)
+    prep_admin_bdys(pg_cur, settings)
     create_admin_bdys_for_analysis(pg_cur, settings)
     print "Part 2 of 3 : Raw admin boundaries loaded! : {0}".format(datetime.now() - start_time)
 
-    # # PART 3 - create flattened and standardised GNAF and Administrative Boundary reference tables
-    # print ""
-    # start_time = datetime.now()
-    # print "Part 3 of 3 : Start create reference tables : {0}".format(start_time)
-    # create_reference_tables(pg_cur, settings)
-    # print "Part 3 of 3 : Reference tables created! : {0}".format(datetime.now() - start_time)
+    # PART 3 - create flattened and standardised GNAF and Administrative Boundary reference tables
+    print ""
+    start_time = datetime.now()
+    print "Part 3 of 3 : Start create reference tables : {0}".format(start_time)
+    create_reference_tables(pg_cur, settings)
+    print "Part 3 of 3 : Reference tables created! : {0}".format(datetime.now() - start_time)
 
     # # PART 4 - QA
     # print ""
