@@ -15,10 +15,10 @@ Running the Python script takes 30-120 minutes on a Postgres server configured f
 My benchmarks are:
 - 3 year old, 32 core Windows server with SSDs = ~45 mins
 - MacBook Pro = ~75 mins
-- 3 year old, 8 core commodity PC = ~90 mins.
+- 3 year old, 8 core commodity PC = ~75 mins.
 
 ### Performance
-To get the good load times you'll need to configure your Postgres server for performance. There's a good guide [here](http://revenant.ca/www/postgis/workshop/tuning.html), noting it's a few years old and some of the memory parameters can be beefed up if you have the RAM.
+To get a good load time you'll need to configure your Postgres server for performance. There's a good guide [here](http://revenant.ca/www/postgis/workshop/tuning.html), noting it's a few years old and some of the memory parameters can be beefed up if you have the RAM.
 
 ### Pre-requisites (the 4 P's)
 - Postgres 9.3+ with PostGIS 2.2 (tested on 9.3, 9.4 & 9.5 on Windows and 9.5 on OSX)
@@ -61,7 +61,7 @@ if you intend to utilise the raw GNAF tables as anything more then a temporary i
 primary and foreign keys set.
 * `--raw-unlogged` creates unlogged raw GNAF tables, speeding up the import. Defaults to off. Only specify this option if you don't care about the raw data tables after the import - they will be lost if the server crashes!
 * `--max-processes` specifies the maximum number of parallel processes to use for the data load. Set this to the number of cores on the Postgres server minus 2, but limit to 12 if 16+ cores - there is minimal benefit beyond 12. Defaults to 6.
-* `--boundary-tag` tags all addresses with admin boundary IDs for creating aggregates and choropleth maps.
+* `--boundary-tag` tags all addresses with some of the key admin boundary IDs for creating aggregates and choropleth maps.
 
 ### Example Command Line Arguments
 * Local Postgres server: `python load-gnaf.py --gnaf-tables-path="C:\temp\psma_201602\G-NAF" --admin-bdys-path="C:\temp\psma_201602\Administrative Boundaries"` Loads the GNAF tables to a Postgres server running locally. GNAF archives have been extracted to the folder `C:\temp\psma_201602\G-NAF`, and admin boundaries have been extracted to the `C:\temp\psma_201602\Administrative Boundaries` folder.
@@ -108,8 +108,8 @@ Should take 15-60 minutes.
 - A knowledge of [Postgres pg_restore parameters](http://www.postgresql.org/docs/9.5/static/app-pgrestore.html)
 
 ### Process
-1. Download [gnaf.dmp](http://minus34.com/opendata/psma-201602/gnaf.dmp) (~1Gb)
-2. Download [admin_bdys.dmp](http://minus34.com/opendata/psma-201602/admin-bdys.dmp) (~2Gb)
+1. Download [gnaf.dmp](http://minus34.com/opendata/psma-201602/gnaf.dmp) (~1.3Gb)
+2. Download [admin_bdys.dmp](http://minus34.com/opendata/psma-201602/admin-bdys.dmp) (~1.5Gb)
 3. Edit the restore-gnaf-admin-bdys.bat or .sh script in the supporting-files folder for your database parameters and for the location of pg_restore
 5. Run the script, come back in 15-60 minutes and enjoy!
 
