@@ -109,7 +109,7 @@ Should take 15-60 minutes.
 
 ### Process
 1. Download [gnaf.dmp](http://minus34.com/opendata/psma-201602/gnaf.dmp) (~1.3Gb)
-2. Download [admin_bdys.dmp](http://minus34.com/opendata/psma-201602/admin-bdys.dmp) (~1.5Gb)
+2. Download [admin_bdys.dmp](http://minus34.com/opendata/psma-201602/admin-bdys.dmp) (~1.9Gb)
 3. Edit the restore-gnaf-admin-bdys.bat or .sh script in the supporting-files folder for your database parameters and for the location of pg_restore
 5. Run the script, come back in 15-60 minutes and enjoy!
 
