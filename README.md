@@ -1,9 +1,5 @@
 # gnaf-loader
-<<<<<<< HEAD
 A quick way to load the complete Geocoded National Address File of Australia (GNAF) and Australian Administrative Boundaries into Postgres, simplified and ready to use as reference data for geocoding, analysis, visualisation and aggregation.
-=======
-A quick way to load the complete Geocoded National Address File of Australia (GNAF) and Australian Administrative Boundaries into Postgres, simplified and ready to use as reference data for geocoding, analysis and visualisation.
->>>>>>> origin/master
 
 ### What's GNAF?
 Have a look at [these intro slides](http://minus34.com/opendata/intro-to-gnaf.pptx) ([PDF](http://minus34.com/opendata/intro-to-gnaf.pdf)), as well as the [data.gov.au page](http://data.gov.au/dataset/geocoded-national-address-file-g-naf).
