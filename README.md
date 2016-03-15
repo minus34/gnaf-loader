@@ -1,5 +1,5 @@
 # gnaf-loader
-A quick way to load the complete GNAF and PSMA Admin Boundaries into Postgres, simplified and ready to use as reference data for geocoding, analysis and visualisation.
+A quick way to load the complete Geocoded National Address File of Australia (GNAF) and Australian Administrative Boundaries into Postgres, simplified and ready to use as reference data for geocoding, analysis, visualisation and aggregation.
 
 ### What's GNAF?
 Have a look at [these intro slides](http://minus34.com/opendata/intro-to-gnaf.pptx) ([PDF](http://minus34.com/opendata/intro-to-gnaf.pdf)), as well as the [data.gov.au page](http://data.gov.au/dataset/geocoded-national-address-file-g-naf).
@@ -10,12 +10,12 @@ Have a look at [these intro slides](http://minus34.com/opendata/intro-to-gnaf.pp
 3. Download the GNAF and/or Admin Bdys Postgres dump files & restore them in your database
 
 ## Option 1 - Run load.gnaf.py
-Running the Python script takes 15-60 minutes on a Postgres server configured for performance.
+Running the Python script takes 30-120 minutes on a Postgres server configured for performance.
 
 My benchmarks are:
-- 3 year old, 32 core Windows server with SSDs = ~15 mins
-- MacBook Pro = ~45 mins
-- 3 year old, 8 core commodity PC = ~45 mins.
+- 3 year old, 32 core Windows server with SSDs = ~45 mins
+- MacBook Pro = ~75 mins
+- 3 year old, 8 core commodity PC = ~90 mins.
 
 ### Performance
 To get the good load times you'll need to configure your Postgres server for performance. There's a good guide [here](http://revenant.ca/www/postgis/workshop/tuning.html), noting it's a few years old and some of the memory parameters can be beefed up if you have the RAM.
@@ -38,13 +38,11 @@ To get the good load times you'll need to configure your Postgres server for per
 The behaviour of gnaf-loader can be controlled by specifying various command line options to the script. Supported arguments are:
 
 #### Required Arguments
-
 * `--gnaf-tables-path` specifies the path to the extracted source GNAF tables (eg *.psv files). This should match the extracted directory which contains the subfolders `Authority Code` and `Standard`. __This directory must be accessible by the Postgres server__, and the corresponding local path for the server to this directory may need to be set via the `local-server-dir` argument
 * `--local-server-dir` specifies the local path on the Postgres server corresponding to `gnaf-tables-path`. If the server is running locally this argument can be omitted.
 * `--admin-bdys-path` specifies the path to the extracted source admin boundary files. This path should contain a subfolder named `Administrative Boundaries`. Unlike `gnaf-tables-path`, this path does not necessarily have to be accessible to the remote Postgres server.
 
 #### Postgres Parameters
-
 * `--pghost` the host name for the Postgres server. This defaults to the `PGHOST` environment variable if set, otherwise defaults to `localhost`.
 * `--pgport` the port number for the Postgres server. This defaults to the `PGPORT` environment variable if set, otherwise `5432`.
 * `--pgdb` the database name for Postgres server. This defaults to the `PGDATABASE` environment variable if set, otherwise `psma_201602`.
@@ -52,7 +50,6 @@ The behaviour of gnaf-loader can be controlled by specifying various command lin
 * `--pgpassword` password for accessing the Postgres server. This defaults to the `PGPASSWORD` environment variable if set, otherwise `password`.
 
 #### Optional Arguments
-
 * `--raw-gnaf-schema` schema name to store raw GNAF tables in. Defaults to `raw_gnaf`.
 * `--raw-admin-schema` schema name to store raw admin boundary tables in. Defaults to `raw_admin_bdys`.
 * `--gnaf-schema` destination schema name to store final GNAF tables in. Defaults to `gnaf`.
@@ -64,15 +61,15 @@ if you intend to utilise the raw GNAF tables as anything more then a temporary i
 primary and foreign keys set.
 * `--raw-unlogged` creates unlogged raw GNAF tables, speeding up the import. Defaults to off. Only specify this option if you don't care about the raw data tables after the import - they will be lost if the server crashes!
 * `--max-processes` specifies the maximum number of parallel processes to use for the data load. Set this to the number of cores on the Postgres server minus 2, but limit to 12 if 16+ cores - there is minimal benefit beyond 12. Defaults to 6.
+* `--boundary-tag` tags all addresses with admin boundary IDs for creating aggregates and choropleth maps.
 
 ### Example Command Line Arguments
-
 * Local Postgres server: `python load-gnaf.py --gnaf-tables-path="C:\temp\psma_201602\G-NAF" --admin-bdys-path="C:\temp\psma_201602\Administrative Boundaries"` Loads the GNAF tables to a Postgres server running locally. GNAF archives have been extracted to the folder `C:\temp\psma_201602\G-NAF`, and admin boundaries have been extracted to the `C:\temp\psma_201602\Administrative Boundaries` folder.
 * Remote Postgres server: `python load-gnaf.py --gnaf-tables-path="\\svr\shared\gnaf" --local-server-dir="f:\shared\gnaf" --admin-bdys-path="c:\temp\unzipped\AdminBounds_ESRI"` Loads the GNAF tables which have been extracted to the shared folder `\\svr\shared\gnaf`. This shared folder corresponds to the local `f:\shared\gnaf` folder on the Postgres server. Admin boundaries have been extracted to the `c:\temp\unzipped\AdminBounds_ESRI` folder.
 * Loading only selected states: `python load-gnaf.py --states VIC TAS NT ...` Loads only the data for Victoria, Tasmania and Northern Territory
 
 ### Advanced
-You can load the Admin Boundaries without GNAF. To do this: comment out steps 1 and 3 in def main.
+You can load the Admin Boundaries without GNAF. To do this: comment out steps 1, 3 & 4 in def main.
 
 Note: you can't load GNAF without the Admin Bdys due to dependencies required to split Melbourne and to fix non-boundary locality_pids on addresses.
 
@@ -82,6 +79,7 @@ When using the resulting data from this process - you will need to adhere to the
 ### WARNING:
 - The scripts will DROP ALL TABLES and recreate them using CASCADE; meaning you'll LOSE YOUR VIEWS if you have created any! If you want to keep the existing data - you'll need to change the schema names in the script or use a different database
 - All raw GNAF tables can be created UNLOGGED to speed up the data load. This will make them UNRECOVERABLE if your database is corrupted. You can run these scripts again to recreate them. If you think this sounds ok - set the unlogged_tables flag to True for a slightly faster load
+- Boundary tagging (on by default) will add 15-60 minutes to the process if you have PostGIS 2.2. If you have PostGIS 2.1 or lower - it can take HOURS as the boundary tables aren't optimised!
 
 ### IMPORTANT:
 - Whilst you can choose which 4 schemas to load the data into, I haven't QA'd every permutation. Stick with the defaults if you have limited Postgres experience 
@@ -111,7 +109,7 @@ Should take 15-60 minutes.
 
 ### Process
 1. Download [gnaf.dmp](http://minus34.com/opendata/psma-201602/gnaf.dmp) (~1Gb)
-2. Download [admin_bdys.dmp](http://minus34.com/opendata/psma-201602/admin-bdys.dmp) (~800Mb)
+2. Download [admin_bdys.dmp](http://minus34.com/opendata/psma-201602/admin-bdys.dmp) (~2Gb)
 3. Edit the restore-gnaf-admin-bdys.bat or .sh script in the supporting-files folder for your database parameters and for the location of pg_restore
 5. Run the script, come back in 15-60 minutes and enjoy!
 
@@ -129,11 +127,9 @@ GNAF and the Admin Bdys have been customised to remove some of the known, minor 
 - The Melbourne, VIC locality has been split into Melbourne, 3000 and Melbourne 3004 localities (the new locality PIDs are VIC 1634_1 & VIC 1634_2). The split occurs at the Yarra River (based on the postcodes in the Melbourne addresses)
 - A postcode boundaries layer has been created using the postcodes in the address tables. Whilst this closely emulates the official PSMA postcode boundaries, there are several hundred addresses that are in the wrong postcode bdy. Do not treat this data as authoritative
 
-## TO DO:
-- Create views and analysis tables for all Admin Bdys (only localities, states and commonwealth electorates are currently done)
+## TO DO
 - Output reference tables to PSV & SHP
 - List final record counts
 - Build QA into the Python script
-- Boundary tag addresses for admin bdys
 - Script the creation of pg_dump files in Python
 - Script the copying of pg_dump, PSV & SHP file to Amazon S3, in Python

@@ -52,6 +52,11 @@ def main():
         '--max-processes', type=int, default=6,
         help='Maximum number of parallel processes to use for the data load. (Set it to the number of cores on the '
              'Postgres server minus 2, limit to 12 if 16+ cores - there is minimal benefit beyond 12). Defaults to 6.')
+    parser.add_argument(
+        '--boundary-tag', action='store_true', default=True,
+        help='Tags all addresses with admin boundary IDs for creating aggregates and choropleth maps. '
+             'IMPORTANT: this will add 15-60 minutes to the process if you have PostGIS 2.2. '
+             'WARNING: if you have PostGIS 2.1 or lower - this process can take hours')
 
     # PG Options
     parser.add_argument(
@@ -111,6 +116,7 @@ def main():
     settings['unlogged_tables'] = args.raw_unlogged
     settings['max_concurrent_processes'] = args.max_processes
     settings['states_to_load'] = args.states
+    settings['boundary_tag'] = args.boundary_tag
 
     settings['raw_gnaf_schema'] = args.raw_gnaf_schema
     settings['raw_admin_bdys_schema'] = args.raw_admin_schema
@@ -138,15 +144,15 @@ def main():
     settings['sql_dir'] = os.path.join(os.path.dirname(os.path.realpath(__file__)), "postgres-scripts")
 
     # set the list of admin bdys to create analysis tables for and to boundary tag with
-    analysis_table_list = list()
-    analysis_table_list.append(["locality_bdys", "locality_pid"])
-    analysis_table_list.append(["commonwealth_electorates", "ce_pid"])
-    analysis_table_list.append(["local_government_areas", "lga_pid"])
-    analysis_table_list.append(["local_government_wards", "ward_pid"])
-    analysis_table_list.append(["state_bdys", "state_pid"])
-    analysis_table_list.append(["state_lower_house_electorates", "se_lower_pid"])
-    analysis_table_list.append(["state_upper_house_electorates", "se_upper_pid"])
-    settings['analysis_table_list'] = analysis_table_list
+    admin_bdy_list = list()
+    admin_bdy_list.append(["locality_bdys", "locality_pid"])
+    admin_bdy_list.append(["commonwealth_electorates", "ce_pid"])
+    admin_bdy_list.append(["local_government_areas", "lga_pid"])
+    admin_bdy_list.append(["local_government_wards", "ward_pid"])
+    admin_bdy_list.append(["state_bdys", "state_pid"])
+    admin_bdy_list.append(["state_lower_house_electorates", "se_lower_pid"])
+    admin_bdy_list.append(["state_upper_house_electorates", "se_upper_pid"])
+    settings['admin_bdy_list'] = admin_bdy_list
 
     full_start_time = datetime.now()
 
@@ -226,14 +232,17 @@ def main():
     create_reference_tables(pg_cur, settings)
     print "Part 3 of 3 : Reference tables created! : {0}".format(datetime.now() - start_time)
 
-    # # PART 4 - Boundary tagging GNAF addresses
-    # print ""
-    # start_time = datetime.now()
-    # print "Part 4 of 5 : Boundary tagging : {0}".format(start_time)
-    # boundary_tag_gnaf(settings)
-    # print "Part 4 of 5 : Boundary tagging: {0}".format(datetime.now() - start_time)
+    # PART 4 - Boundary tag GNAF addresses
+    print ""
+    if settings['boundary_tag']:
+        start_time = datetime.now()
+        print "Part 4 of 5 : Start boundary tagging addresses : {0}".format(start_time)
+        boundary_tag_gnaf(pg_cur, settings)
+        print "Part 4 of 5 : Addresses boundary tagged: {0}".format(datetime.now() - start_time)
+    else:
+        print "Part 4 of 5 : Addresses NOT boundary tagged"
 
-    # # PART 5 - QA
+    # # PART 5 - QA - CODE NOT STARTED!
     # print ""
     # start_time = datetime.now()
     # print "Part 5 of 5 : QA results : {0}".format(start_time)
@@ -470,7 +479,8 @@ def load_raw_admin_boundaries(pg_cur, settings):
     if len(cmd_list1) == 0:
         print "No Admin Boundary files found\nACTION: Check your 'admin-bdys-path' argument"
     else:
-        # load files in separate processes - do all create table commands first before attempting the insert commands
+        # load files in separate processes -
+        # do the commands that create the tables first before attempting the subsequent insert commands
         multiprocess_list("cmd", cmd_list1, settings)
         multiprocess_list("cmd", cmd_list2, settings)
         print "\t- Step 1 of 3 : raw admin boundaries loaded : {0}".format(datetime.now() - start_time)
@@ -484,7 +494,9 @@ def prep_admin_bdys(pg_cur, settings):
         pg_cur.execute("CREATE SCHEMA IF NOT EXISTS {0} AUTHORIZATION {1}"
                        .format(settings['admin_bdys_schema'], settings['pg_user']))
 
-    pg_cur.execute(open_sql_file("02-02-prep-admin-bdys-tables.sql", settings))
+    # create table using multiprocessing - using flag in file to split file up into sets of statements
+    sql_list = open_sql_file("02-02-prep-admin-bdys-tables.sql", settings).split("-- # --")
+    multiprocess_list("sql", sql_list, settings)
 
     # Special case - remove custom outback bdy if South Australia not requested
     if 'SA' not in settings['states_to_load']:
@@ -502,10 +514,11 @@ def create_admin_bdys_for_analysis(settings):
         template_sql = open_sql_file("02-03-create-admin-bdy-analysis-tables_template.sql", settings)
         sql_list = list()
 
-        for table in settings['analysis_table_list']:
+        for table in settings['admin_bdy_list']:
             sql = template_sql.format(table[0], table[1])
             if table[0] == 'locality_bdys':  # special case, need to change schema name
-                sql = sql.replace(settings['raw_admin_bdys_schema'], settings['admin_bdys_schema'])
+                # sql = sql.replace(settings['raw_admin_bdys_schema'], settings['admin_bdys_schema'])
+                sql = sql.replace("name", "locality_name")
             sql_list.append(sql)
         multiprocess_list("sql", sql_list, settings)
         print "\t- Step 3 of 3 : admin boundaries for analysis created : {0}".format(datetime.now() - start_time)
@@ -557,7 +570,8 @@ def create_reference_tables(pg_cur, settings):
     # Step 7 of 14 : populate addresses, using multiprocessing
     start_time = datetime.now()
     sql = open_sql_file("03-07-reference-populate-addresses-1.sql", settings)
-    split_sql_into_list_and_process(pg_cur, sql, settings['gnaf_schema'], "streets", "str", "gid", settings)
+    sql_list = split_sql_into_list(pg_cur, sql, settings['gnaf_schema'], "streets", "str", "gid", settings)
+    multiprocess_list('sql', sql_list, settings)
     pg_cur.execute(prep_sql("ANALYZE gnaf.temp_addresses;", settings))
     print "\t- Step  7 of 14 : addresses populated : {0}".format(datetime.now() - start_time)
 
@@ -585,8 +599,9 @@ def create_reference_tables(pg_cur, settings):
     # Step 12 of 14 : finalise addresses, using multiprocessing
     start_time = datetime.now()
     sql = open_sql_file("03-12-reference-populate-addresses-2.sql", settings)
-    split_sql_into_list_and_process(pg_cur, sql, settings['gnaf_schema'], "localities", "loc", "gid", settings)
-    # turf the temp address table
+    sql_list = split_sql_into_list(pg_cur, sql, settings['gnaf_schema'], "localities", "loc", "gid", settings)
+    multiprocess_list('sql', sql_list, settings)
+# turf the temp address table
     pg_cur.execute(prep_sql("DROP TABLE IF EXISTS gnaf.temp_addresses", settings))
     print "\t- Step 12 of 14 : addresses finalised : {0}".format(datetime.now() - start_time)
 
@@ -616,18 +631,109 @@ def create_reference_tables(pg_cur, settings):
     print "\t- Step 14 of 14 : create primary & foreign keys and indexes : {0}".format(datetime.now() - start_time)
 
 
-def boundary_tag_gnaf(settings):
-    # Step 1 of 3 : tag gnaf addresses with admin boundary IDs
+def boundary_tag_gnaf(pg_cur, settings):
+    # Step 1 of 3 : tag gnaf addresses with admin boundary IDs, using multiprocessing
     start_time = datetime.now()
 
-    template_sql = open_sql_file("04-01-bdy-tag-template.sql", settings)
-    sql_list = list()
+    # remove localities, postcodes and states as these IDs are already assigned to GNAF addresses
+    table_list = list()
+    for table in settings['admin_bdy_list']:
+        if table[0] not in ["locality_bdys", "state_bdys"]:
+            table_list.append([table[0], table[1]])
 
-    for table in settings['analysis_table_list']:
+    # create temp tables
+    template_sql = open_sql_file("04-01a-bdy-tag-create-table-template.sql", settings)
+    for table in table_list:
+        pg_cur.execute(template_sql.format(table[0],))
+
+    # create temp tables of bdy tagged gnaf_pids
+    template_sql = open_sql_file("04-01b-bdy-tag-template.sql", settings)
+    sql_list = list()
+    for table in table_list:
         sql = template_sql.format(table[0], table[1])
+
+        # if no analysis tables created - use the full tables instead of the subdivided ones
+        # WARNING: this can add hours to the processing
+        if settings['st_subdivide_supported']:
+            table_name = "{0}_analysis".format(table[0],)
+        else:
+            table_name = table[0]
+        sql_list.extend(
+            split_sql_into_list(pg_cur, sql, settings['admin_bdys_schema'], table_name, "bdys", "gid", settings))
+
+    multiprocess_list("sql", sql_list, settings)
+
+    print "\t- Step 1 of 3 : gnaf addresses tagged with admin boundary IDs: {0}".format(datetime.now() - start_time)
+    start_time = datetime.now()
+
+    # Step 2 of 3 : delete invalid matches, create indexes and analyse tables
+    sql_list = list()
+    for table in table_list:
+        sql = "DELETE FROM {0}.temp_{1}_tags WHERE gnaf_state <> bdy_state AND gnaf_state <> 'OT';" \
+              "CREATE INDEX temp_{1}_tags_gnaf_pid_idx ON {0}.temp_{1}_tags USING btree(gnaf_pid);" \
+              "ANALYZE {0}.temp_{1}_tags".format(settings['gnaf_schema'], table[0])
         sql_list.append(sql)
     multiprocess_list("sql", sql_list, settings)
-    print "\t- Step 1 of 3 : gnaf addresses tagged with admin boundary IDs : {0}".format(datetime.now() - start_time)
+
+    print "\t- Step 2 of 3 : invalid matches deleted & bdy tag indexes created : {0}"\
+        .format(datetime.now() - start_time)
+    start_time = datetime.now()
+
+    # Step 3 of 3 : create boundary tag table
+
+    # create final table
+    pg_cur.execute("DROP TABLE IF EXISTS {0}.address_admin_boundaries CASCADE".format(settings['gnaf_schema'],))
+    create_table_list = list()
+    create_table_list.append("CREATE TABLE {0}.address_admin_boundaries (gid serial NOT NULL,"
+                             "gnaf_pid character varying(16) NOT NULL,"
+                             "alias_principal character(1) NOT NULL,"
+                             "locality_pid character varying(16) NOT NULL,"
+                             "locality_name character varying(100) NOT NULL,"
+                             "postcode character varying(4),"
+                             "state character varying(3) NOT NULL"
+                             .format(settings['gnaf_schema'],))
+    for table in table_list:
+        pid_field = table[1]
+        name_field = pid_field. replace("_pid", "_name")
+        create_table_list.append(", {0} character varying(15), {1} character varying(100)"
+                                 .format(pid_field, name_field))
+    create_table_list.append(") WITH (OIDS=FALSE);ALTER TABLE {0}.address_admin_boundaries OWNER TO postgres"
+                             .format(settings['gnaf_schema'],))
+    pg_cur.execute("".join(create_table_list))
+
+    # create insert statement for multiprocessing
+    insert_field_list = list()
+    insert_field_list.append("(gnaf_pid, alias_principal, locality_pid, locality_name, postcode, state")
+
+    insert_join_list = list()
+    insert_join_list.append("FROM {0}.address_principals AS pnts ".format(settings['gnaf_schema']))
+
+    select_field_list = list()
+    select_field_list.append("SELECT pnts.gnaf_pid, pnts.alias_principal, pnts.locality_pid, "
+                             "pnts.locality_name, pnts.postcode, pnts.state")
+
+    for table in table_list:
+        pid_field = table[1]
+        name_field = pid_field. replace("_pid", "_name")
+        insert_field_list.append(", {0}, {1}".format(pid_field, name_field))
+        select_field_list.append(", temp_{0}_tags.bdy_pid, temp_{0}_tags.bdy_name ".format(table[0]))
+        insert_join_list.append("LEFT OUTER JOIN {0}.temp_{1}_tags ON pnts.gnaf_pid = temp_{1}_tags.gnaf_pid "
+                                .format(settings['gnaf_schema'], table[0]))
+    insert_field_list.append(") ")
+
+    insert_statement_list = list()
+    insert_statement_list.append("INSERT INTO {0}.address_admin_boundaries ".format(settings['gnaf_schema'],))
+    insert_statement_list.append("".join(insert_field_list))
+    insert_statement_list.append("".join(select_field_list))
+    insert_statement_list.append("".join(insert_join_list))
+
+    sql = "".join(insert_statement_list) + ";"
+    sql_list = split_sql_into_list(pg_cur, sql, settings['gnaf_schema'], "address_principals", "pnts", "gid", settings)
+    # print "\n".join(sql_list)
+
+    multiprocess_list("sql", sql_list, settings)
+
+    print "\t- Step 3 of 3 : gnaf bdy tag table created : {0}".format(datetime.now() - start_time)
 
 
 # takes a list of sql queries or command lines and runs them using multiprocessing
@@ -716,7 +822,7 @@ def prep_sql(sql, settings):
     return sql
 
 
-def split_sql_into_list_and_process(pg_cur, the_sql, table_schema, table_name, table_alias, table_gid, settings):
+def split_sql_into_list(pg_cur, the_sql, table_schema, table_name, table_alias, table_gid, settings):
     # get min max gid values from the table to split
     min_max_sql = "SELECT MIN({2}) AS min, MAX({2}) AS max FROM {0}.{1}".format(table_schema, table_name, table_gid)
 
@@ -737,7 +843,6 @@ def split_sql_into_list_and_process(pg_cur, the_sql, table_schema, table_name, t
         print "\t\t- running {0} processes (adjusted due to low row count in table to split)".format(processes)
     else:
         processes = settings['max_concurrent_processes']
-        # print "\t\t- running {0} processes".format(processes)
 
     # create list of sql statements to run with multiprocessing
     sql_list = []
@@ -755,13 +860,17 @@ def split_sql_into_list_and_process(pg_cur, the_sql, table_schema, table_name, t
         elif "ORDER BY " in the_sql:
             mp_sql = the_sql.replace("ORDER BY ", where_clause + " ORDER BY ")
         else:
-            mp_sql = the_sql.replace(";", where_clause + ";")
+            if ";" in the_sql:
+                mp_sql = the_sql.replace(";", where_clause + ";")
+            else:
+                mp_sql = the_sql + where_clause
+                print "\t\t- NOTICE: no ; found at the end of the SQL statement"
 
         sql_list.append(mp_sql)
         start_pkey = end_pkey
 
     # print '\n'.join(sql_list)
-    multiprocess_list('sql', sql_list, settings)
+    return sql_list
 
 
 if __name__ == '__main__':
