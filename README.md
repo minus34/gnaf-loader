@@ -79,7 +79,7 @@ When using the resulting data from this process - you will need to adhere to the
 ### WARNING:
 - The scripts will DROP ALL TABLES and recreate them using CASCADE; meaning you'll LOSE YOUR VIEWS if you have created any! If you want to keep the existing data - you'll need to change the schema names in the script or use a different database
 - All raw GNAF tables can be created UNLOGGED to speed up the data load. This will make them UNRECOVERABLE if your database is corrupted. You can run these scripts again to recreate them. If you think this sounds ok - set the unlogged_tables flag to True for a slightly faster load
-- Boundary tagging (on by default) will add 15-60 minutes to the process if you have PostGIS 2.2. If you have PostGIS 2.1 or lower - it can take HOURS as the boundary tables aren't optimised!
+- Boundary tagging (on by default) will add 15-60 minutes to the process if you have PostGIS 2.2. If you have PostGIS 2.1 or lower - it can take HOURS as the boundary tables can't be optimised!
 
 ### IMPORTANT:
 - Whilst you can choose which 4 schemas to load the data into, I haven't QA'd every permutation. Stick with the defaults if you have limited Postgres experience 
