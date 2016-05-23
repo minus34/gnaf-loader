@@ -10,7 +10,8 @@
 #
 # Copyright:
 #  - Code is licensed under an Apache License, version 2.0
-#  - Data is copyright PSMA - SOON TO BE licensed under a Creative Commons (By Attribution) license
+#  - Data is copyright PSMA - licensed under a Creative Commons (By Attribution) license.
+#    See http://data.gov.au for the correct attribution to use
 
 # Process:
 #   1. Loads raw GNAF into Postgres from PSV files, using COPY
@@ -68,7 +69,7 @@ def main():
     parser.add_argument(
         '--pgdb',
         help='Database name for Postgres server. Defaults to PGDATABASE environment variable if set, '
-             'otherwise psma_201602.')
+             'otherwise psma.')
     parser.add_argument(
         '--pguser',
         help='Username for Postgres server. Defaults to PGUSER environment variable if set, otherwise postgres.')
@@ -133,7 +134,7 @@ def main():
     # create postgres connect string
     settings['pg_host'] = args.pghost or os.getenv("PGHOST", "localhost")
     settings['pg_port'] = args.pgport or os.getenv("PGPORT", 5432)
-    settings['pg_db'] = args.pgdb or os.getenv("PGDATABASE", "psma_201602")
+    settings['pg_db'] = args.pgdb or os.getenv("PGDATABASE", "psma")
     settings['pg_user'] = args.pguser or os.getenv("PGUSER", "postgres")
     settings['pg_password'] = args.pgpassword or os.getenv("PGPASSWORD", "password")
 
