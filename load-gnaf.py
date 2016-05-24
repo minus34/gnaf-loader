@@ -713,6 +713,8 @@ def boundary_tag_gnaf(pg_cur, settings):
     select_field_list.append("SELECT pnts.gnaf_pid, pnts.alias_principal, pnts.locality_pid, "
                              "pnts.locality_name, pnts.postcode, pnts.state")
 
+    drop_table_list = list()
+
     for table in table_list:
         pid_field = table[1]
         name_field = pid_field. replace("_pid", "_name")
@@ -720,6 +722,8 @@ def boundary_tag_gnaf(pg_cur, settings):
         select_field_list.append(", temp_{0}_tags.bdy_pid, temp_{0}_tags.bdy_name ".format(table[0]))
         insert_join_list.append("LEFT OUTER JOIN {0}.temp_{1}_tags ON pnts.gnaf_pid = temp_{1}_tags.gnaf_pid "
                                 .format(settings['gnaf_schema'], table[0]))
+        drop_table_list.append("DROP TABLE IF EXISTS {0}.temp_{1}_tags;".format(settings['gnaf_schema'], table[0]))
+
     insert_field_list.append(") ")
 
     insert_statement_list = list()
@@ -733,6 +737,9 @@ def boundary_tag_gnaf(pg_cur, settings):
     # print "\n".join(sql_list)
 
     multiprocess_list("sql", sql_list, settings)
+
+    #drop tamp tables
+    pg_cur.execute("".join(drop_table_list))
 
     print "\t- Step 3 of 3 : gnaf bdy tag table created : {0}".format(datetime.now() - start_time)
 
