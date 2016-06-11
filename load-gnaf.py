@@ -602,7 +602,8 @@ def create_reference_tables(pg_cur, settings):
     sql = open_sql_file("03-12-reference-populate-addresses-2.sql", settings)
     sql_list = split_sql_into_list(pg_cur, sql, settings['gnaf_schema'], "localities", "loc", "gid", settings)
     multiprocess_list('sql', sql_list, settings)
-# turf the temp address table
+
+    # turf the temp address table
     pg_cur.execute(prep_sql("DROP TABLE IF EXISTS gnaf.temp_addresses", settings))
     print "\t- Step 12 of 14 : addresses finalised : {0}".format(datetime.now() - start_time)
 
@@ -639,8 +640,15 @@ def boundary_tag_gnaf(pg_cur, settings):
     # remove localities, postcodes and states as these IDs are already assigned to GNAF addresses
     table_list = list()
     for table in settings['admin_bdy_list']:
-        if table[0] not in ["locality_bdys", "state_bdys"]:
-            table_list.append([table[0], table[1]])
+        if table[0] not in ["locality_bdys", "postcode_bdys", "state_bdys"]:
+            # if no analysis tables created - use the full tables instead of the subdivided ones
+            # WARNING: this can add hours to the processing
+            if settings['st_subdivide_supported']:
+                table_name = "{0}_analysis".format(table[0], )
+            else:
+                table_name = table[0]
+
+            table_list.append([table_name, table[1]])
 
     # create temp tables
     template_sql = open_sql_file("04-01a-bdy-tag-create-table-template.sql", settings)
@@ -653,15 +661,11 @@ def boundary_tag_gnaf(pg_cur, settings):
     for table in table_list:
         sql = template_sql.format(table[0], table[1])
 
-        # if no analysis tables created - use the full tables instead of the subdivided ones
-        # WARNING: this can add hours to the processing
-        if settings['st_subdivide_supported']:
-            table_name = "{0}_analysis".format(table[0],)
-        else:
-            table_name = table[0]
         sql_list.extend(
-            split_sql_into_list(pg_cur, sql, settings['admin_bdys_schema'], table_name, "bdys", "gid", settings))
+            split_sql_into_list(pg_cur, sql, settings['admin_bdys_schema'], table[0], "bdys", "gid", settings))
 
+    # print '\n'.join(sql_list)
+    
     multiprocess_list("sql", sql_list, settings)
 
     print "\t- Step 1 of 3 : gnaf addresses tagged with admin boundary IDs: {0}".format(datetime.now() - start_time)
@@ -738,7 +742,7 @@ def boundary_tag_gnaf(pg_cur, settings):
 
     multiprocess_list("sql", sql_list, settings)
 
-    #drop tamp tables
+    # drop tamp tables
     pg_cur.execute("".join(drop_table_list))
 
     print "\t- Step 3 of 3 : gnaf bdy tag table created : {0}".format(datetime.now() - start_time)

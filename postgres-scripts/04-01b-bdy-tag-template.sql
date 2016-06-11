@@ -6,7 +6,7 @@ SELECT pnts.gnaf_pid,
        bdys.name,
        bdys.state
   FROM gnaf.address_principals AS pnts
-  INNER JOIN admin_bdys.{0}_analysis AS bdys
+  INNER JOIN admin_bdys.{0} AS bdys
   ON ST_Within(pnts.geom, bdys.geom);
 
 INSERT INTO gnaf.temp_{0}_tags (gnaf_pid, gnaf_state, alias_principal, bdy_pid, bdy_name, bdy_state)
@@ -17,7 +17,7 @@ SELECT pnts.gnaf_pid,
        bdys.name,
        bdys.state
   FROM gnaf.address_aliases AS pnts
-  INNER JOIN admin_bdys.{0}_analysis AS bdys
+  INNER JOIN admin_bdys.{0} AS bdys
   ON ST_Within(pnts.geom, bdys.geom);
 
 
