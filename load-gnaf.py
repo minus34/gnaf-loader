@@ -54,10 +54,13 @@ def main():
         help='Maximum number of parallel processes to use for the data load. (Set it to the number of cores on the '
              'Postgres server minus 2, limit to 12 if 16+ cores - there is minimal benefit beyond 12). Defaults to 6.')
     parser.add_argument(
-        '--boundary-tag', action='store_true', default=True,
+        '--boundary-tag', action='store_true', dest='boundary_tag', default=True,
         help='Tags all addresses with admin boundary IDs for creating aggregates and choropleth maps. '
-             'IMPORTANT: this will add 15-60 minutes to the process if you have PostGIS 2.2. '
+             'IMPORTANT: this will contribute 15-60 minutes to the process if you have PostGIS 2.2. '
              'WARNING: if you have PostGIS 2.1 or lower - this process can take hours')
+    parser.add_argument(
+        '--no-boundary-tag', action='store_false', dest='boundary_tag',
+        help='Do not tag all addresses with admin boundary IDs for creating aggregates and choropleth maps. ')
 
     # PG Options
     parser.add_argument(
