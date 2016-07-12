@@ -22,6 +22,7 @@ To get a good load time you'll need to configure your Postgres server for perfor
 
 ### Pre-requisites (the 4 P's)
 - Postgres 9.3+ with PostGIS 2.2 (tested on 9.3, 9.4 & 9.5 on Windows and 9.5 on OSX)
+-- Add the PostgreSQL bin directory to your system PATH
 - Python 2.7 with Psycopg2 2.6
 
 ### Process
