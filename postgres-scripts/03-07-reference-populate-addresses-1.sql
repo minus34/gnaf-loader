@@ -3,7 +3,7 @@
 INSERT INTO gnaf.temp_addresses (gnaf_pid, street_locality_pid, locality_pid, alias_principal, 
                                  primary_secondary, building_name, lot_number, flat_number, level_number, 
                                  number_first, number_last, street_name, street_type, street_suffix, 
-                                 postcode, confidence, legal_parcel_id, mb_2011_code, latitude, 
+                                 postcode, confidence, legal_parcel_id, mb_2011_code, mb_2016_code, latitude,
                                  longitude, geocode_type, reliability, geom)
 SELECT adr.address_detail_pid AS gnaf_pid,
        adr.street_locality_pid,
@@ -37,7 +37,8 @@ SELECT adr.address_detail_pid AS gnaf_pid,
        adr.postcode,
        adr.confidence::smallint,
        adr.legal_parcel_id,
-       mb.mb_2011_code::bigint,
+       mb11.mb_2011_code::bigint,
+       mb16.mb_2016_code::bigint,
        pnt.latitude,
        pnt.longitude,
        gty.name AS geocode_type,
@@ -58,5 +59,10 @@ SELECT adr.address_detail_pid AS gnaf_pid,
   SELECT mb1.address_detail_pid, mb2.mb_2011_code
     FROM raw_gnaf.address_mesh_block_2011 AS mb1
     INNER JOIN raw_gnaf.mb_2011 AS mb2 ON mb1.mb_2011_pid = mb2.mb_2011_pid
-  ) AS mb ON adr.address_detail_pid = mb.address_detail_pid
+  ) AS mb11 ON adr.address_detail_pid = mb11.address_detail_pid
+  LEFT OUTER JOIN (
+  SELECT mb1.address_detail_pid, mb2.mb_2016_code
+    FROM raw_gnaf.address_mesh_block_2016 AS mb1
+    INNER JOIN raw_gnaf.mb_2016 AS mb2 ON mb1.mb_2016_pid = mb2.mb_2016_pid
+  ) AS mb16 ON adr.address_detail_pid = mb16.address_detail_pid
   WHERE adr.confidence > -1;

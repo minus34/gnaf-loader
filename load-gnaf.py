@@ -149,13 +149,21 @@ def main():
 
     # set the list of admin bdys to create analysis tables for and to boundary tag with
     admin_bdy_list = list()
-    admin_bdy_list.append(["locality_bdys", "locality_pid"])
-    admin_bdy_list.append(["commonwealth_electorates", "ce_pid"])
-    admin_bdy_list.append(["local_government_areas", "lga_pid"])
-    admin_bdy_list.append(["local_government_wards", "ward_pid"])
     admin_bdy_list.append(["state_bdys", "state_pid"])
-    admin_bdy_list.append(["state_lower_house_electorates", "se_lower_pid"])
-    admin_bdy_list.append(["state_upper_house_electorates", "se_upper_pid"])
+    admin_bdy_list.append(["locality_bdys", "locality_pid"])
+    # only process bdys if states to load have them
+    if settings['states_to_load'] != ['OT']:
+        admin_bdy_list.append(["commonwealth_electorates", "ce_pid"])
+    if settings['states_to_load'] != ['ACT']:
+        admin_bdy_list.append(["local_government_areas", "lga_pid"])
+    if 'NT' in settings['states_to_load'] or 'SA' in settings['states_to_load'] \
+            or 'VIC' in settings['states_to_load'] or 'WA' in settings['states_to_load']:
+        admin_bdy_list.append(["local_government_wards", "ward_pid"])
+    if settings['states_to_load'] != ['OT']:
+        admin_bdy_list.append(["state_lower_house_electorates", "se_lower_pid"])
+    if 'TAS' in settings['states_to_load'] or 'VIC' in settings['states_to_load'] or 'WA' in settings['states_to_load']:
+        admin_bdy_list.append(["state_upper_house_electorates", "se_upper_pid"])
+
     settings['admin_bdy_list'] = admin_bdy_list
 
     full_start_time = datetime.now()
@@ -500,6 +508,29 @@ def prep_admin_bdys(pg_cur, settings):
 
     # create table using multiprocessing - using flag in file to split file up into sets of statements
     sql_list = open_sql_file("02-02-prep-admin-bdys-tables.sql", settings).split("-- # --")
+
+    # # Account for bdys that are not in states to load - not yet working
+    # for sql in sql_list:
+    #     if settings['states_to_load'] == ['OT'] and '.commonwealth_electorates ' in sql:
+    #         sql_list.remove(sql)
+    #
+    #     if settings['states_to_load'] == ['ACT'] and '.local_government_areas ' in sql:
+    #         sql_list.remove(sql)
+    #
+    #     print settings['states_to_load']
+    #
+    #     if not ('NT' in settings['states_to_load'] or 'SA' in settings['states_to_load']
+    #             or 'VIC' in settings['states_to_load'] or 'WA' in settings['states_to_load']) \
+    #             and '.local_government_wards ' in sql:
+    #         sql_list.remove(sql)
+    #
+    #     if settings['states_to_load'] == ['OT'] and '.state_lower_house_electorates ' in sql:
+    #         sql_list.remove(sql)
+    #
+    #     if not ('TAS' in settings['states_to_load'] or 'VIC' in settings['states_to_load']
+    #             or 'WA' in settings['states_to_load']) and '.state_upper_house_electorates ' in sql:
+    #         sql_list.remove(sql)
+
     multiprocess_list("sql", sql_list, settings)
 
     # Special case - remove custom outback bdy if South Australia not requested

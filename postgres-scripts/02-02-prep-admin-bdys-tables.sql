@@ -333,7 +333,7 @@ SELECT bdy.gid,
   INNER JOIN raw_admin_bdys.aus_state AS ste ON tab.state_pid = ste.state_pid
   INNER JOIN raw_admin_bdys.aus_state_electoral_class_aut AS aut ON tab.secl_code = aut.code_aut
   WHERE (tab.eff_end > now() + interval '3 months'
-    OR (tab.eff_start <= now() AND tab.eff_end IS NULL))
+    OR (tab.eff_start <= now() + interval '3 months' AND tab.eff_end IS NULL))
   AND tab.secl_code <> '3';
 
 ALTER TABLE admin_bdys.state_lower_house_electorates ADD CONSTRAINT state_lower_house_electorates_pk PRIMARY KEY (gid);
@@ -438,12 +438,47 @@ SELECT bdy.gid,
        bdy.geom
   FROM raw_admin_bdys.aus_mb_2011 AS tab
   INNER JOIN raw_admin_bdys.aus_mb_2011_polygon AS bdy ON tab.mb_11pid = bdy.mb_11pid
-  INNER JOIN raw_admin_bdys.aus_mb_category_class_aut AS aut ON tab.mb_cat_cd = aut.code
+  INNER JOIN (SELECT DISTINCT code, name FROM raw_admin_bdys.aus_mb_category_class_aut) AS aut ON tab.mb_cat_cd = aut.code
   INNER JOIN raw_admin_bdys.aus_state AS ste ON tab.state_pid = ste.state_pid;
 
 ALTER TABLE admin_bdys.abs_2011_mb ADD CONSTRAINT abs_2011_mb_pk PRIMARY KEY (gid);
 CREATE INDEX abs_2011_mb_geom_idx ON admin_bdys.abs_2011_mb USING gist(geom);
 ALTER TABLE admin_bdys.abs_2011_mb CLUSTER ON abs_2011_mb_geom_idx;
+
+
+-- # ---------------------------------------------------------------------------------
+-- ABS census 2016 - meshblocks
+--------------------------------------------------------------------------------------
+
+DROP TABLE IF EXISTS admin_bdys.abs_2016_mb CASCADE;
+CREATE TABLE admin_bdys.abs_2016_mb AS
+SELECT bdy.gid,
+       tab.mb_16code,
+       aut.name AS mb_category,
+       tab.sa1_16main,
+       tab.sa1_16_7cd,
+       tab.sa2_16main,
+       tab.sa2_16_5cd,
+       tab.sa2_16name,
+       tab.sa3_16code,
+       tab.sa3_16name,
+       tab.sa4_16code,
+       tab.sa4_16name,
+       tab.gcc_16code,
+       tab.gcc_16name,
+       ste.st_abbrev AS state,
+       tab.area_sqm,
+       tab.mb16_pop,
+       tab.mb16_dwell,
+       bdy.geom
+  FROM raw_admin_bdys.aus_mb_2016 AS tab
+  INNER JOIN raw_admin_bdys.aus_mb_2016_polygon AS bdy ON tab.mb_16pid = bdy.mb_16pid
+  INNER JOIN (SELECT DISTINCT code, name FROM raw_admin_bdys.aus_mb_category_class_aut) AS aut ON tab.mb_cat_cd = aut.code
+  INNER JOIN raw_admin_bdys.aus_state AS ste ON tab.state_pid = ste.state_pid;
+
+ALTER TABLE admin_bdys.abs_2016_mb ADD CONSTRAINT abs_2016_mb_pk PRIMARY KEY (gid);
+CREATE INDEX abs_2016_mb_geom_idx ON admin_bdys.abs_2016_mb USING gist(geom);
+ALTER TABLE admin_bdys.abs_2016_mb CLUSTER ON abs_2016_mb_geom_idx;
 
 
 -- # ---------------------------------------------------------------------------------

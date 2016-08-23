@@ -108,6 +108,22 @@ CREATE TABLE address_detail (
 ALTER TABLE address_detail OWNER TO postgres;
 
 --
+-- Name: address_mesh_block_2016; Type: TABLE; Schema: public; Owner: postgres; Tablespace:
+--
+
+CREATE TABLE address_mesh_block_2016 (
+    address_mesh_block_2016_pid character varying(15) NOT NULL,
+    date_created date NOT NULL,
+    date_retired date,
+    address_detail_pid character varying(15) NOT NULL,
+    mb_match_code character varying(15) NOT NULL,
+    mb_2016_pid character varying(15) NOT NULL
+);
+
+
+ALTER TABLE address_mesh_block_2016 OWNER TO postgres;
+
+--
 -- Name: address_mesh_block_2011; Type: TABLE; Schema: public; Owner: postgres; Tablespace: 
 --
 
@@ -333,6 +349,21 @@ CREATE TABLE locality_point (
 
 
 ALTER TABLE locality_point OWNER TO postgres;
+
+--
+-- Name: mb_2016; Type: TABLE; Schema: public; Owner: postgres; Tablespace:
+--
+
+CREATE TABLE mb_2016 (
+    mb_2016_pid character varying(15) NOT NULL,
+    date_created date NOT NULL,
+    date_retired date,
+    mb_2016_code character varying(15) NOT NULL
+);
+
+
+ALTER TABLE mb_2016 OWNER TO postgres;
+
 
 --
 -- Name: mb_2011; Type: TABLE; Schema: public; Owner: postgres; Tablespace: 

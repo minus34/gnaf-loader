@@ -40,6 +40,14 @@ ALTER TABLE ONLY address_mesh_block_2011
 
 
 --
+-- Name: address_mesh_block_2016_pk; Type: CONSTRAINT; Schema: public; Owner: postgres; Tablespace:
+--
+
+ALTER TABLE ONLY address_mesh_block_2016
+    ADD CONSTRAINT address_mesh_block_2016_pk PRIMARY KEY (address_mesh_block_2016_pid);
+
+
+--
 -- Name: address_site_geocode_pk; Type: CONSTRAINT; Schema: public; Owner: postgres; Tablespace: 
 --
 
@@ -157,6 +165,14 @@ ALTER TABLE ONLY locality_point
 
 ALTER TABLE ONLY mb_2011
     ADD CONSTRAINT mb_2011_pk PRIMARY KEY (mb_2011_pid);
+
+
+--
+-- Name: mb_2016_pk; Type: CONSTRAINT; Schema: public; Owner: postgres; Tablespace:
+--
+
+ALTER TABLE ONLY mb_2016
+    ADD CONSTRAINT mb_2016_pk PRIMARY KEY (mb_2016_pid);
 
 
 --
@@ -357,6 +373,30 @@ ALTER TABLE ONLY address_mesh_block_2011
 
 ALTER TABLE ONLY address_mesh_block_2011
     ADD CONSTRAINT address_mesh_block_2011_fk3 FOREIGN KEY (mb_match_code) REFERENCES mb_match_code_aut(code);
+
+
+--
+-- Name: address_mesh_block_2016_fk1; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY address_mesh_block_2016
+    ADD CONSTRAINT address_mesh_block_2016_fk1 FOREIGN KEY (address_detail_pid) REFERENCES address_detail(address_detail_pid);
+
+
+--
+-- Name: address_mesh_block_2016_fk2; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY address_mesh_block_2016
+    ADD CONSTRAINT address_mesh_block_2016_fk2 FOREIGN KEY (mb_2016_pid) REFERENCES mb_2016(mb_2016_pid);
+
+
+--
+-- Name: address_mesh_block_2016_fk3; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY address_mesh_block_2016
+    ADD CONSTRAINT address_mesh_block_2016_fk3 FOREIGN KEY (mb_match_code) REFERENCES mb_match_code_aut(code);
 
 
 --
