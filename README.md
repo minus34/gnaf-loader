@@ -129,7 +129,7 @@ GNAF and the Admin Bdys have been customised to remove some of the known, minor 
 - A postcode boundaries layer has been created using the postcodes in the address tables. Whilst this closely emulates the official PSMA postcode boundaries, there are several hundred addresses that are in the wrong postcode bdy. Do not treat this data as authoritative
 
 ## KNOWN ISSUES
- - If you only want to load certain states - you may get an error in Part 2 stating a table doesn't exist - this can be ignored. e.g. loading ACT only will reutnr an erro saying "local_government_wards" does not exist.
+ - If you only want to load certain states - you may get an error in Part 2 stating a table doesn't exist - this can be ignored. e.g. loading ACT only will return an error saying "local_government_wards" does not exist.
 
 ## TO DO
 - Output reference tables to PSV & SHP
