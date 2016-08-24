@@ -109,8 +109,8 @@ Should take 15-60 minutes.
 - A knowledge of [Postgres pg_restore parameters](http://www.postgresql.org/docs/9.5/static/app-pgrestore.html)
 
 ### Process
-1. Download [gnaf.dmp](http://minus34.com/opendata/psma-201605/gnaf.dmp) (~1.3Gb)
-2. Download [admin_bdys.dmp](http://minus34.com/opendata/psma-201605/admin-bdys.dmp) (~1.9Gb)
+1. Download [gnaf.dmp](http://minus34.com/opendata/psma-201608/gnaf.dmp) (~0.9Gb)
+2. Download [admin_bdys.dmp](http://minus34.com/opendata/psma-201608/admin-bdys.dmp) (~2.1Gb)
 3. Edit the restore-gnaf-admin-bdys.bat or .sh script in the supporting-files folder for your database parameters and for the location of pg_restore
 5. Run the script, come back in 15-60 minutes and enjoy!
 
@@ -127,6 +127,9 @@ GNAF and the Admin Bdys have been customised to remove some of the known, minor 
 - Suburb-Locality bdys have been flattened into a single continuous layer of localities - South Australian Hundreds have been removed and ACT districts have been added where there are no gazetted localities
 - The Melbourne, VIC locality has been split into Melbourne, 3000 and Melbourne 3004 localities (the new locality PIDs are VIC 1634_1 & VIC 1634_2). The split occurs at the Yarra River (based on the postcodes in the Melbourne addresses)
 - A postcode boundaries layer has been created using the postcodes in the address tables. Whilst this closely emulates the official PSMA postcode boundaries, there are several hundred addresses that are in the wrong postcode bdy. Do not treat this data as authoritative
+
+## KNOWN ISSUES
+ - If you only want to load certain states - you may get an error in Part 2 stating a table doesn't exist - this can be ignored. e.g. loading ACT only will reutnr an erro saying "local_government_wards" does not exist.
 
 ## TO DO
 - Output reference tables to PSV & SHP
