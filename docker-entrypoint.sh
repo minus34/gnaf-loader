@@ -6,4 +6,4 @@ while ! PGPASSWORD=gnaf psql -h db -U gnaf -l >/dev/null; do
 done
 
 echo "** Launching loader **"
-python load-gnaf.py --gnaf-tables-path /data/*GNAF_PipeSeparatedValue*/ --admin-bdys-path /data/ --pghost db --pgdb gnaf --pguser gnaf --pgpassword gnaf
+python load-gnaf-27.py --gnaf-tables-path /data/*GNAF_PipeSeparatedValue*/ --admin-bdys-path /data/ --pghost db --pgdb gnaf --pguser gnaf --pgpassword gnaf
