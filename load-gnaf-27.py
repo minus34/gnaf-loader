@@ -254,7 +254,7 @@ def main():
         boundary_tag_gnaf(pg_cur, settings)
         logger.info("Part 4 of 4 : Addresses boundary tagged: {0}".format(datetime.now() - start_time))
     else:
-        logger.warn("Part 4 of 4 : Addresses NOT boundary tagged")
+        logger.warning("Part 4 of 4 : Addresses NOT boundary tagged")
 
     # # PART 5 - QA - CODE NOT STARTED!
     # logger.info(""
@@ -560,8 +560,8 @@ def create_admin_bdys_for_analysis(settings):
         multiprocess_list("sql", sql_list, settings)
         logger.info("\t- Step 3 of 3 : admin boundaries for analysis created : {0}".format(datetime.now() - start_time))
     else:
-        logger.warn("\t- Step 3 of 3 : admin boundaries for analysis NOT created - "
-                    "requires PostGIS 2.2+ with GEOS 3.5.0+")
+        logger.warning("\t- Step 3 of 3 : admin boundaries for analysis NOT created - "
+                       "requires PostGIS 2.2+ with GEOS 3.5.0+")
 
 
 # create gnaf reference tables by flattening raw gnaf address, streets & localities into a usable form
@@ -805,7 +805,7 @@ def multiprocess_list(mp_type, work_list, settings):
     num_results = len(result_list)
 
     if num_jobs > num_results:
-        logger.warn("\t- A MULTIPROCESSING PROCESS FAILED WITHOUT AN ERROR\nACTION: Check the record counts")
+        logger.warning("\t- A MULTIPROCESSING PROCESS FAILED WITHOUT AN ERROR\nACTION: Check the record counts")
 
     for result in result_list:
         if result != "SUCCESS":
@@ -915,7 +915,7 @@ def split_sql_into_list(pg_cur, the_sql, table_schema, table_name, table_alias, 
                 mp_sql = the_sql.replace(";", where_clause + ";")
             else:
                 mp_sql = the_sql + where_clause
-                logger.warn("\t\t- NOTICE: no ; found at the end of the SQL statement")
+                logger.warning("\t\t- NOTICE: no ; found at the end of the SQL statement")
 
         sql_list.append(mp_sql)
         start_pkey = end_pkey
