@@ -275,6 +275,8 @@ def main():
 
     logger.info("Total time : : {0}".format(datetime.now() - full_start_time))
 
+    return True
+
 
 def drop_tables_and_vacuum_db(pg_cur, settings):
     # Step 1 of 6 : drop tables
@@ -833,8 +835,8 @@ def run_sql_multiprocessing(args):
     try:
         pg_cur.execute(the_sql)
         result = "SUCCESS"
-    except psycopg2.Error, e:
-        result = "SQL FAILED! : {0} : {1}".format(the_sql, e.message)
+    except psycopg2.Error as ex:
+        result = "SQL FAILED! : {0} : {1}".format(the_sql, ex.message)
 
     pg_cur.close()
     pg_conn.close()
@@ -848,8 +850,8 @@ def run_command_line(cmd):
         fnull = open(os.devnull, "w")
         subprocess.call(cmd, shell=True, stdout=fnull, stderr=subprocess.STDOUT)
         result = "SUCCESS"
-    except Exception, e:
-        result = "COMMAND FAILED! : {0} : {1}".format(cmd, e.message)
+    except Exception as ex:
+        result = "COMMAND FAILED! : {0} : {1}".format(cmd, ex.message)
 
     return result
 
