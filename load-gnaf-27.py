@@ -83,18 +83,25 @@ def main():
              'otherwise \'password\'.')
 
     # schema names for the raw gnaf, flattened reference and admin boundary tables
+    psma_version = get_psma_version(datetime.today())
+
     parser.add_argument(
-        '--raw-gnaf-schema', default='raw_gnaf',
-        help='Schema name to store raw GNAF tables in. Defaults to \'raw_gnaf\'.')
+        '--psma-version', default='psma_version',
+        help='PSMA Version number as YYYYMM. Defaults to last release year and month \'' + psma_version + '\'.')
+
     parser.add_argument(
-        '--raw-admin-schema', default='raw_admin_bdys',
-        help='Schema name to store raw admin boundary tables in. Defaults to \'raw_admin_bdys\'.')
+        '--raw-gnaf-schema', default='raw_gnaf_' + psma_version,
+        help='Schema name to store raw GNAF tables in. Defaults to \'raw_gnaf_' + psma_version + '\'.')
     parser.add_argument(
-        '--gnaf-schema', default='gnaf',
-        help='Destination schema name to store final GNAF tables in. Defaults to \'gnaf\'.')
+        '--raw-admin-schema', default='raw_admin_bdys_' + psma_version,
+        help='Schema name to store raw admin boundary tables in. Defaults to \'raw_admin_bdys_' + psma_version + '\'.')
     parser.add_argument(
-        '--admin-schema', default='admin_bdys',
-        help='Destination schema name to store final admin boundary tables in. Defaults to \'admin_bdys\'.')
+        '--gnaf-schema', default='gnaf_' + psma_version,
+        help='Destination schema name to store final GNAF tables in. Defaults to \'gnaf_' + psma_version + '\'.')
+    parser.add_argument(
+        '--admin-schema', default='admin_bdys_' + psma_version,
+        help='Destination schema name to store final admin boundary tables in. Defaults to \'admin_bdys_'
+             + psma_version + '\'.')
 
     # directories
     parser.add_argument(
@@ -860,16 +867,21 @@ def prep_sql_list(sql_list, settings):
     return output_list
 
 
-# change schema names in the SQL script if not the default
+# set schema names in the SQL script
 def prep_sql(sql, settings):
-    if settings['raw_gnaf_schema'] != "raw_gnaf":
-        sql = sql.replace(" raw_gnaf.", " {0}.".format(settings['raw_gnaf_schema'],))
-    if settings['gnaf_schema'] != "gnaf":
-        sql = sql.replace(" gnaf.", " {0}.".format(settings['gnaf_schema'],))
-    if settings['raw_admin_bdys_schema'] != "raw_admin_bdys":
-        sql = sql.replace(" raw_admin_bdys.", " {0}.".format(settings['raw_admin_bdys_schema'],))
-    if settings['admin_bdys_schema'] != "admin_bdys":
-        sql = sql.replace(" admin_bdys.", " {0}.".format(settings['admin_bdys_schema'],))
+    # if settings['raw_gnaf_schema'] != "raw_gnaf":
+    #     sql = sql.replace(" raw_gnaf.", " {0}.".format(settings['raw_gnaf_schema'],))
+    # if settings['gnaf_schema'] != "gnaf":
+    #     sql = sql.replace(" gnaf.", " {0}.".format(settings['gnaf_schema'],))
+    # if settings['raw_admin_bdys_schema'] != "raw_admin_bdys":
+    #     sql = sql.replace(" raw_admin_bdys.", " {0}.".format(settings['raw_admin_bdys_schema'],))
+    # if settings['admin_bdys_schema'] != "admin_bdys":
+    #     sql = sql.replace(" admin_bdys.", " {0}.".format(settings['admin_bdys_schema'],))
+    sql = sql.replace(" raw_gnaf.", " {0}.".format(settings['raw_gnaf_schema'], ))
+    sql = sql.replace(" gnaf.", " {0}.".format(settings['gnaf_schema'], ))
+    sql = sql.replace(" raw_admin_bdys.", " {0}.".format(settings['raw_admin_bdys_schema'], ))
+    sql = sql.replace(" admin_bdys.", " {0}.".format(settings['admin_bdys_schema'], ))
+
     return sql
 
 
@@ -922,6 +934,24 @@ def split_sql_into_list(pg_cur, the_sql, table_schema, table_name, table_alias, 
 
     # logger.info('\n'.join(sql_list)
     return sql_list
+
+
+# get latest PSMA release version as YYYYMM, as of the date provided
+def get_psma_version(date):
+
+    month = date.month
+    year = date.year
+
+    if month == 1:
+        return str(year - 1) + '11'
+    elif 2 <= month < 5:
+        return str(year) + '02'
+    elif 5 <= month < 8:
+        return str(year) + '05'
+    elif 8 <= month < 11:
+        return str(year) + '08'
+    else:
+        return str(year) + '11'
 
 
 if __name__ == '__main__':
