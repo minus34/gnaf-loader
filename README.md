@@ -1,3 +1,10 @@
+### Change Log
+
+#### PSMA 201611 Release
+- Added `--psma-version` to the parameters. Represents the PSMA version number in YYYYMM format. Defaults to current year and last release month. e.g. `201611`
+- All default schema names are now suffixed with the PSMA version number. e.g. `gnaf_201611`
+- load-gnaf.py now works with Python 2.7 and Python 3.5
+
 # gnaf-loader
 A quick way to load the complete Geocoded National Address File of Australia (GNAF) and Australian Administrative Boundaries into Postgres, simplified and ready to use as reference data for geocoding, analysis, visualisation and aggregation.
 
@@ -21,9 +28,9 @@ My benchmarks are:
 To get a good load time you'll need to configure your Postgres server for performance. There's a good guide [here](http://revenant.ca/www/postgis/workshop/tuning.html), noting it's a few years old and some of the memory parameters can be beefed up if you have the RAM.
 
 ### Pre-requisites
-- Postgres 9.3+ with PostGIS 2.2 (tested on 9.3, 9.4 & 9.5 on Windows and 9.5 on OSX)
+- Postgres 9.3+ with PostGIS 2.2 (tested on 9.3, 9.4 & 9.5 on Windows and 9.5, 9.6 on macOS)
 - Add the Postgres bin directory to your system PATH
-- Python 2.7 with Psycopg2 2.6
+- Python 2.7 or Python 3.5 with Psycopg2 2.6
 
 ### Process
 1. Download [PSMA GNAF from data.gov.au](http://data.gov.au/dataset/geocoded-national-address-file-g-naf)
@@ -33,7 +40,7 @@ To get a good load time you'll need to configure your Postgres server for perfor
 5. Unzip Admin Bdys to a local directory
 6. Create the target database (if required)
 7. Check the available and required arguments by running load-gnaf.py with the `-h` argument (see command line examples below)
-8. Run the script, come back in 15-60 minutes and enjoy!
+8. Run the script, come back in 30-120 minutes and enjoy!
 
 ### Command Line Options
 The behaviour of gnaf-loader can be controlled by specifying various command line options to the script. Supported arguments are:
@@ -51,10 +58,11 @@ The behaviour of gnaf-loader can be controlled by specifying various command lin
 * `--pgpassword` password for accessing the Postgres server. This defaults to the `PGPASSWORD` environment variable if set, otherwise `password`.
 
 #### Optional Arguments
-* `--raw-gnaf-schema` schema name to store raw GNAF tables in. Defaults to `raw_gnaf`.
-* `--raw-admin-schema` schema name to store raw admin boundary tables in. Defaults to `raw_admin_bdys`.
-* `--gnaf-schema` destination schema name to store final GNAF tables in. Defaults to `gnaf`.
-* `--admin-schema` destination schema name to store final admin boundary tables in. Defaults to `admin_bdys`.
+* `--psma-version` PSMA version number in YYYYMM format. Defaults to current year and last release month. e.g. `201611`.
+* `--raw-gnaf-schema` schema name to store raw GNAF tables in. Defaults to `raw_gnaf_<psma_version>`.
+* `--raw-admin-schema` schema name to store raw admin boundary tables in. Defaults to `raw_admin_bdys_<psma_version>`.
+* `--gnaf-schema` destination schema name to store final GNAF tables in. Defaults to `gnaf_<psma_version>`.
+* `--admin-schema` destination schema name to store final admin boundary tables in. Defaults to `admin_bdys_<psma_version>`.
 * `--states` space separated list of states to load, eg `--states VIC TAS`. Defaults to loading all states.
 * `--prevacuum` forces the database to be vacuumed after dropping tables. Defaults to off, and specifying this option will slow the import process.
 * `--raw-fk` creates both primary & foreign keys for the raw GNAF tables. Defaults to off, and will slow the import process if specified. Use this option
@@ -105,12 +113,12 @@ Download Postgres dump files and restore them in your database.
 Should take 15-60 minutes.
 
 ### Pre-requisites
-- Postgres 9.5 with PostGIS 2.2
+- Postgres 9.6 with PostGIS 2.2+
 - A knowledge of [Postgres pg_restore parameters](http://www.postgresql.org/docs/9.5/static/app-pgrestore.html)
 
 ### Process
-1. Download [gnaf.dmp](http://minus34.com/opendata/psma-201608/gnaf.dmp) (~0.9Gb)
-2. Download [admin_bdys.dmp](http://minus34.com/opendata/psma-201608/admin-bdys.dmp) (~2.1Gb)
+1. Download [gnaf-201611.dmp](http://minus34.com/opendata/psma-201611/gnaf-201611.dmp) (~1.8Gb)
+2. Download [admin_bdys-201611.dmp](http://minus34.com/opendata/psma-201611/admin-bdys-201611.dmp) (~2.0Gb)
 3. Edit the restore-gnaf-admin-bdys.bat or .sh script in the supporting-files folder for your database parameters and for the location of pg_restore
 5. Run the script, come back in 15-60 minutes and enjoy!
 
