@@ -1,9 +1,9 @@
 ### Change Log
-
-#### PSMA 201611 Release
-- Added `--psma-version` to the parameters. Represents the PSMA version number in YYYYMM format. Defaults to current year and last release month. e.g. `201611`
-- All default schema names are now suffixed with the PSMA version number. e.g. `gnaf_201611`
+- Added `--psma-version` to the parameters. Represents the PSMA version number in YYYYMM format. Defaults to current year and latest release month. e.g. `201611`. Valid values are `<year>02` `<year>05` `<year>08` `<year>11`, and is based on the PSMA quarterly release months 
+- All default schema names are now suffixed with the PSMA version number to avoid clashes with previous versions. e.g. `gnaf_201611`
 - load-gnaf.py now works with Python 2.7 and Python 3.5
+- load-gnaf.py has been successfully tested on Postgres 9.6 and PostGIS 2.3
+    - Note: Limited performance testing on Postgres 9.6 has shown setting the maximum number of parallel processes `--max-processes` to 2 is the most efficient value on non-SSD machines
 
 # gnaf-loader
 A quick way to load the complete Geocoded National Address File of Australia (GNAF) and Australian Administrative Boundaries into Postgres, simplified and ready to use as reference data for geocoding, analysis, visualisation and aggregation.

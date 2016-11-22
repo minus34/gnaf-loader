@@ -41,6 +41,7 @@ def main():
     parser = argparse.ArgumentParser(
         description='A quick way to load the complete GNAF and PSMA Admin Boundaries into Postgres, '
                     'simplified and ready to use as reference data for geocoding, analysis and visualisation.')
+
     parser.add_argument(
         '--prevacuum', action='store_true', default=False, help='Forces database to be vacuumed after dropping tables.')
     parser.add_argument(
