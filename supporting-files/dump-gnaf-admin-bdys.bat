@@ -1,4 +1,4 @@
-"C:\Program Files\PostgreSQL\9.5\bin\pg_dump" -Fc -d psma_201602 -n gnaf -p 5432 -U postgres > "C:\minus34\GitHub\gnaf.dmp"
-"C:\Program Files\PostgreSQL\9.5\bin\pg_dump" -Fc -d psma_201602 -n admin_bdys -p 5432 -U postgres > "C:\minus34\GitHub\admin-bdys.dmp"
+"C:\Program Files\PostgreSQL\9.6\bin\pg_dump" -Fc -d geo -n gnaf_201611 -p 5432 -U postgres > "C:\minus34\GitHub\gnaf-201611.dmp"
+"C:\Program Files\PostgreSQL\9.6\bin\pg_dump" -Fc -d geo -n admin_bdys_201611 -p 5432 -U postgres > "C:\minus34\GitHub\admin-bdys-201611.dmp"
 
 pause

@@ -1,2 +1,2 @@
-/Applications/Postgres.app/Contents/Versions/9.5/bin/pg_dump -Fc -d psma_201605 -n gnaf -p 5432 -U postgres -f /Users/Hugh/tmp/psma_201605/gnaf.dmp
-/Applications/Postgres.app/Contents/Versions/9.5/bin/pg_dump -Fc -d psma_201605 -n admin_bdys -p 5432 -U postgres -f /Users/Hugh/tmp/psma_201605/adminbdys.dmp
+/Applications/Postgres.app/Contents/Versions/9.6/bin/pg_dump -Fc -d geo -n gnaf_201611 -p 5432 -U postgres -f /Users/hugh.saalmans/minus34/GitHub/gnaf-201611.dmp
+/Applications/Postgres.app/Contents/Versions/9.6/bin/pg_dump -Fc -d geo -n admin_bdys_201611 -p 5432 -U postgres -f /Users/hugh.saalmans/minus34/GitHub/admin-bdys-201611.dmp
