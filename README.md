@@ -1,6 +1,7 @@
 ### Change Log
 - Added `--psma-version` to the parameters. Represents the PSMA version number in YYYYMM format. Defaults to current year and latest release month. e.g. `201611`. Valid values are `<year>02` `<year>05` `<year>08` `<year>11`, and is based on the PSMA quarterly release months 
 - All default schema names are now suffixed with the PSMA version number to avoid clashes with previous versions. e.g. `gnaf_201611`
+- Postgres 9.6 dump files for the November 2016 PSMA release are [available](https://github.com/minus34/gnaf-loader#option-3---load-pg_dump-files)
 - load-gnaf.py now works with Python 2.7 and Python 3.5
 - load-gnaf.py has been successfully tested on Postgres 9.6 and PostGIS 2.3
     - Note: Limited performance testing on Postgres 9.6 has shown setting the maximum number of parallel processes `--max-processes` to 2 is the most efficient value on non-SSD machines
@@ -117,7 +118,7 @@ Should take 15-60 minutes.
 - A knowledge of [Postgres pg_restore parameters](http://www.postgresql.org/docs/9.5/static/app-pgrestore.html)
 
 ### Process
-1. Download [gnaf-201611.dmp](http://minus34.com/opendata/psma-201611/gnaf-201611.dmp) (~1.8Gb)
+1. Download [gnaf-201611.dmp](http://minus34.com/opendata/psma-201611/gnaf-201611.dmp) (~1.6Gb)
 2. Download [admin_bdys-201611.dmp](http://minus34.com/opendata/psma-201611/admin-bdys-201611.dmp) (~2.0Gb)
 3. Edit the restore-gnaf-admin-bdys.bat or .sh script in the supporting-files folder for your database parameters and for the location of pg_restore
 5. Run the script, come back in 15-60 minutes and enjoy!
