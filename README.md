@@ -1,5 +1,5 @@
 ### Change Log
-- Logging is now written to a file, load-gnaf.log, in your local repo directory as well as to the console 
+- Logging is now written to load-gnaf.log in your local repo directory as well as to the console 
 - Added `--psma-version` to the parameters. Represents the PSMA version number in YYYYMM format. Defaults to current year and latest release month. e.g. `201611`. Valid values are `<year>02` `<year>05` `<year>08` `<year>11`, and is based on the PSMA quarterly release months 
 - All default schema names are now suffixed with the PSMA version number to avoid clashes with previous versions. e.g. `gnaf_201611`
 - Postgres 9.6 dump files for the November 2016 PSMA release are [available](https://github.com/minus34/gnaf-loader#option-3---load-pg_dump-files)
