@@ -619,7 +619,8 @@ def create_reference_tables(pg_cur, settings):
     start_time = datetime.now()
     sql = open_sql_file("03-07-reference-populate-addresses-1.sql", settings)
     sql_list = split_sql_into_list(pg_cur, sql, settings['gnaf_schema'], "streets", "str", "gid", settings)
-    multiprocess_list('sql', sql_list, settings)
+    if sql_list is not None:
+        multiprocess_list('sql', sql_list, settings)
     pg_cur.execute(prep_sql("ANALYZE gnaf.temp_addresses;", settings))
     logger.info("\t- Step  7 of 14 : addresses populated : {0}".format(datetime.now() - start_time))
 
@@ -648,7 +649,8 @@ def create_reference_tables(pg_cur, settings):
     start_time = datetime.now()
     sql = open_sql_file("03-12-reference-populate-addresses-2.sql", settings)
     sql_list = split_sql_into_list(pg_cur, sql, settings['gnaf_schema'], "localities", "loc", "gid", settings)
-    multiprocess_list('sql', sql_list, settings)
+    if sql_list is not None:
+        multiprocess_list('sql', sql_list, settings)
 
     # turf the temp address table
     pg_cur.execute(prep_sql("DROP TABLE IF EXISTS gnaf.temp_addresses", settings))
@@ -709,12 +711,16 @@ def boundary_tag_gnaf(pg_cur, settings):
     for table in table_list:
         sql = template_sql.format(table[0], table[1])
 
-        sql_list.extend(
-            split_sql_into_list(pg_cur, sql, settings['admin_bdys_schema'], table[0], "bdys", "gid", settings))
+        short_sql_list = split_sql_into_list(pg_cur, sql, settings['admin_bdys_schema'],
+                                             table[0], "bdys", "gid", settings)
 
-    # logger.info('\n'.join(sql_list)
-    
-    multiprocess_list("sql", sql_list, settings)
+        if short_sql_list is not None:
+            sql_list.extend(short_sql_list)
+
+    # logger.info('\n'.join(sql_list))
+
+    if sql_list is not None:
+        multiprocess_list("sql", sql_list, settings)
 
     logger.info("\t- Step 1 of 3 : gnaf addresses tagged with admin boundary IDs: {0}"
                 .format(datetime.now() - start_time))
@@ -789,9 +795,10 @@ def boundary_tag_gnaf(pg_cur, settings):
     sql_list = split_sql_into_list(pg_cur, sql, settings['gnaf_schema'], "address_principals", "pnts", "gid", settings)
     # logger.info("\n".join(sql_list)
 
-    multiprocess_list("sql", sql_list, settings)
+    if sql_list is not None:
+        multiprocess_list("sql", sql_list, settings)
 
-    # drop tamp tables
+    # drop temp tables
     pg_cur.execute("".join(drop_table_list))
 
     logger.info("\t- Step 3 of 3 : gnaf bdy tag table created : {0}".format(datetime.now() - start_time))
@@ -893,50 +900,55 @@ def split_sql_into_list(pg_cur, the_sql, table_schema, table_name, table_alias, 
     min_max_sql = "SELECT MIN({2}) AS min, MAX({2}) AS max FROM {0}.{1}".format(table_schema, table_name, table_gid)
 
     pg_cur.execute(min_max_sql)
-    result = pg_cur.fetchone()
 
-    min_pkey = int(result[0])
-    max_pkey = int(result[1])
-    diff = max_pkey - min_pkey
+    try:
+        result = pg_cur.fetchone()
 
-    # Number of records in each query
-    rows_per_request = int(math.floor(float(diff) / float(settings['max_concurrent_processes']))) + 1
+        min_pkey = int(result[0])
+        max_pkey = int(result[1])
+        diff = max_pkey - min_pkey
 
-    # If less records than processes or rows per request, reduce both to allow for a minimum of 15 records each process
-    if float(diff) / float(settings['max_concurrent_processes']) < 10.0:
-        rows_per_request = 10
-        processes = int(math.floor(float(diff) / 10.0)) + 1
-        logger.info("\t\t- running {0} processes (adjusted due to low row count in table to split)".format(processes))
-    else:
-        processes = settings['max_concurrent_processes']
+        # Number of records in each query
+        rows_per_request = int(math.floor(float(diff) / float(settings['max_concurrent_processes']))) + 1
 
-    # create list of sql statements to run with multiprocessing
-    sql_list = []
-    start_pkey = min_pkey - 1
-
-    for i in range(0, processes):
-        end_pkey = start_pkey + rows_per_request
-
-        where_clause = " WHERE {0}.{3} > {1} AND {0}.{3} <= {2}".format(table_alias, start_pkey, end_pkey, table_gid)
-
-        if "WHERE " in the_sql:
-            mp_sql = the_sql.replace(" WHERE ", where_clause + " AND ")
-        elif "GROUP BY " in the_sql:
-            mp_sql = the_sql.replace("GROUP BY ", where_clause + " GROUP BY ")
-        elif "ORDER BY " in the_sql:
-            mp_sql = the_sql.replace("ORDER BY ", where_clause + " ORDER BY ")
+        # If less records than processes or rows per request, reduce both to allow for a minimum of 15 records each process
+        if float(diff) / float(settings['max_concurrent_processes']) < 10.0:
+            rows_per_request = 10
+            processes = int(math.floor(float(diff) / 10.0)) + 1
+            logger.info("\t\t- running {0} processes (adjusted due to low row count in table to split)".format(processes))
         else:
-            if ";" in the_sql:
-                mp_sql = the_sql.replace(";", where_clause + ";")
+            processes = settings['max_concurrent_processes']
+
+        # create list of sql statements to run with multiprocessing
+        sql_list = []
+        start_pkey = min_pkey - 1
+
+        for i in range(0, processes):
+            end_pkey = start_pkey + rows_per_request
+
+            where_clause = " WHERE {0}.{3} > {1} AND {0}.{3} <= {2}".format(table_alias, start_pkey, end_pkey, table_gid)
+
+            if "WHERE " in the_sql:
+                mp_sql = the_sql.replace(" WHERE ", where_clause + " AND ")
+            elif "GROUP BY " in the_sql:
+                mp_sql = the_sql.replace("GROUP BY ", where_clause + " GROUP BY ")
+            elif "ORDER BY " in the_sql:
+                mp_sql = the_sql.replace("ORDER BY ", where_clause + " ORDER BY ")
             else:
-                mp_sql = the_sql + where_clause
-                logger.warning("\t\t- NOTICE: no ; found at the end of the SQL statement")
+                if ";" in the_sql:
+                    mp_sql = the_sql.replace(";", where_clause + ";")
+                else:
+                    mp_sql = the_sql + where_clause
+                    logger.warning("\t\t- NOTICE: no ; found at the end of the SQL statement")
 
-        sql_list.append(mp_sql)
-        start_pkey = end_pkey
+            sql_list.append(mp_sql)
+            start_pkey = end_pkey
 
-    # logger.info('\n'.join(sql_list)
-    return sql_list
+        # logger.info('\n'.join(sql_list)
+        return sql_list
+    except Exception as ex:
+        logger.fatal("Looks like the table in this query is empty: {0}".format(min_max_sql))
+        return None
 
 
 # get latest PSMA release version as YYYYMM, as of the date provided
