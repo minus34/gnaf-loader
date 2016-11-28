@@ -825,6 +825,9 @@ def boundary_tag_gnaf(pg_cur, settings):
     # drop temp tables
     pg_cur.execute("".join(drop_table_list))
 
+    # get stats
+    pg_cur.execute("ANALYZE {0}.address_admin_boundaries ".format(settings['gnaf_schema']))
+
     logger.info("\t- Step 3 of 3 : gnaf bdy tag table created : {0}".format(datetime.now() - start_time))
 
 
