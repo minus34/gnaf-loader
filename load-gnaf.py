@@ -233,7 +233,8 @@ def main():
     if settings['primary_foreign_keys']:
         create_primary_foreign_keys(settings)
     else:
-        logger.info("\t- Step 6 of 6 : primary & foreign keys NOT created")
+        logger.info("\t- Step 6 of 7 : primary & foreign keys NOT created")
+    analyse_raw_gnaf_tables(pg_cur, settings)
     # set postgres search path back to the default
     pg_cur.execute("SET search_path = public, pg_catalog")
     logger.info("Part 1 of 4 : Raw GNAF loaded! : {0}".format(datetime.now() - start_time))
@@ -264,12 +265,12 @@ def main():
     else:
         logger.warning("Part 4 of 4 : Addresses NOT boundary tagged")
 
-    # # PART 5 - QA - CODE NOT STARTED!
-    # logger.info(""
-    # start_time = datetime.now()
-    # logger.info("Part 5 of 5 : QA results : {0}".format(start_time)
-    # qa_tables(pg_cur, settings)
-    # logger.info("Part 5 of 5 : results QA'd : {0}".format(datetime.now() - start_time)
+    # # PART 5 - QA - CODE UNDER CONSTRUCTION!
+    logger.info("")
+    start_time = datetime.now()
+    logger.info("Part 5 of 5 : Final row counts : {0}".format(start_time))
+    qa_tables(pg_cur, settings)
+    # logger.info("Part 5 of 5 : results QA'd : {0}".format(datetime.now() - start_time))
 
     pg_cur.close()
     pg_conn.close()
@@ -280,22 +281,22 @@ def main():
 
 
 def drop_tables_and_vacuum_db(pg_cur, settings):
-    # Step 1 of 6 : drop tables
+    # Step 1 of 7 : drop tables
     start_time = datetime.now()
     pg_cur.execute(open_sql_file("01-01-drop-tables.sql", settings))
-    logger.info("\t- Step 1 of 6 : tables dropped : {0}".format(datetime.now() - start_time))
+    logger.info("\t- Step 1 of 7 : tables dropped : {0}".format(datetime.now() - start_time))
 
-    # # Step 2 of 6 : vacuum database (if requested)
+    # # Step 2 of 7 : vacuum database (if requested)
     # start_time = datetime.now()
     # if vacuum_db:
     #     pg_cur.execute("VACUUM")
-    #     logger.info("\t- Step 2 of 6 : database vacuumed : {0}".format(datetime.now() - start_time)
+    #     logger.info("\t- Step 2 of 7 : database vacuumed : {0}".format(datetime.now() - start_time)
     # else:
-    logger.info("\t- Step 2 of 6 : database NOT vacuumed")
+    logger.info("\t- Step 2 of 7 : database NOT vacuumed")
 
 
 def create_raw_gnaf_tables(pg_cur, settings):
-    # Step 3 of 6 : create tables
+    # Step 3 of 7 : create tables
     start_time = datetime.now()
 
     # prep create table sql scripts (note: file doesn't contain any schema prefixes on table names)
@@ -325,12 +326,12 @@ def create_raw_gnaf_tables(pg_cur, settings):
     # create raw gnaf tables
     pg_cur.execute(sql)
 
-    logger.info("\t- Step 3 of 6 : {1}tables created : {0}".format(datetime.now() - start_time, unlogged_string))
+    logger.info("\t- Step 3 of 7 : {1}tables created : {0}".format(datetime.now() - start_time, unlogged_string))
 
 
 # load raw gnaf authority & state tables using multiprocessing
 def populate_raw_gnaf(settings):
-    # Step 4 of 6 : load raw gnaf authority & state tables
+    # Step 4 of 7 : load raw gnaf authority & state tables
     start_time = datetime.now()
 
     # authority code file list
@@ -344,11 +345,11 @@ def populate_raw_gnaf(settings):
     # are there any files to load?
     if len(sql_list) == 0:
         logger.fatal("No raw GNAF PSV files found\nACTION: Check your 'gnaf_network_directory' path")
-        logger.fatal("\t- Step 4 of 6 : table populate FAILED!")
+        logger.fatal("\t- Step 4 of 7 : table populate FAILED!")
     else:
         # load all PSV files using multiprocessing
         multiprocess_list("sql", sql_list, settings)
-        logger.info("\t- Step 4 of 6 : tables populated : {0}".format(datetime.now() - start_time))
+        logger.info("\t- Step 4 of 7 : tables populated : {0}".format(datetime.now() - start_time))
 
 
 def get_raw_gnaf_files(prefix, settings):
@@ -378,7 +379,7 @@ def get_raw_gnaf_files(prefix, settings):
 
 # index raw gnaf using multiprocessing
 def index_raw_gnaf(settings):
-    # Step 5 of 6 : create indexes
+    # Step 5 of 7 : create indexes
     start_time = datetime.now()
 
     raw_sql_list = open_sql_file("01-05-raw-gnaf-create-indexes.sql", settings).split("\n")
@@ -388,7 +389,7 @@ def index_raw_gnaf(settings):
             sql_list.append(sql)
 
     multiprocess_list("sql", sql_list, settings)
-    logger.info("\t- Step 5 of 6 : indexes created: {0}".format(datetime.now() - start_time))
+    logger.info("\t- Step 5 of 7 : indexes created: {0}".format(datetime.now() - start_time))
 
 
 # create raw gnaf primary & foreign keys (for data integrity) using multiprocessing
@@ -406,11 +407,34 @@ def create_primary_foreign_keys(settings):
             sql = sql.replace("ALTER TABLE ONLY ", "ALTER TABLE ONLY " + settings['raw_gnaf_schema'] + ".")
             sql_list.append(sql)
 
+    sql_list = []
+
     # run queries in separate processes
     multiprocess_list("sql", sql_list, settings)
 
-    logger.info("\t- Step 6 of 6 : primary & foreign keys created : {0}".format(datetime.now() - start_time))
+    logger.info("\t- Step 6 of 7 : primary & foreign keys created : {0}".format(datetime.now() - start_time))
 
+
+# analyse raw GNAF tables that have not stats - need actual row counts for QA at the end
+def analyse_raw_gnaf_tables(pg_cur, settings):
+    start_time = datetime.now()
+    
+    # get list of tables that haven't been analysed (i.e. that have no real row count)
+    sql = "SELECT nspname|| '.' || relname AS tablename " \
+          "FROM pg_class C LEFT JOIN pg_namespace N ON (N.oid = C.relnamespace)" \
+          "WHERE nspname = '{0}' AND relkind='r' AND reltuples = 0".format(settings['raw_gnaf_schema'])
+    pg_cur.execute(sql)
+
+    sql_list = []
+
+    for pg_row in pg_cur:
+        sql_list.append("ANALYZE {0}".format(pg_row[0]))
+
+    # run queries in separate processes
+    multiprocess_list("sql", sql_list, settings)
+
+    logger.info("\t- Step 7 of 7 : tables analysed : {0}".format(datetime.now() - start_time))
+    
 
 # loads the admin bdy shapefiles using the shp2pgsql command line tool (part of PostGIS), using multiprocessing
 def load_raw_admin_boundaries(pg_cur, settings):
@@ -619,7 +643,8 @@ def create_reference_tables(pg_cur, settings):
     start_time = datetime.now()
     sql = open_sql_file("03-07-reference-populate-addresses-1.sql", settings)
     sql_list = split_sql_into_list(pg_cur, sql, settings['gnaf_schema'], "streets", "str", "gid", settings)
-    multiprocess_list('sql', sql_list, settings)
+    if sql_list is not None:
+        multiprocess_list('sql', sql_list, settings)
     pg_cur.execute(prep_sql("ANALYZE gnaf.temp_addresses;", settings))
     logger.info("\t- Step  7 of 14 : addresses populated : {0}".format(datetime.now() - start_time))
 
@@ -648,7 +673,8 @@ def create_reference_tables(pg_cur, settings):
     start_time = datetime.now()
     sql = open_sql_file("03-12-reference-populate-addresses-2.sql", settings)
     sql_list = split_sql_into_list(pg_cur, sql, settings['gnaf_schema'], "localities", "loc", "gid", settings)
-    multiprocess_list('sql', sql_list, settings)
+    if sql_list is not None:
+        multiprocess_list('sql', sql_list, settings)
 
     # turf the temp address table
     pg_cur.execute(prep_sql("DROP TABLE IF EXISTS gnaf.temp_addresses", settings))
@@ -709,12 +735,16 @@ def boundary_tag_gnaf(pg_cur, settings):
     for table in table_list:
         sql = template_sql.format(table[0], table[1])
 
-        sql_list.extend(
-            split_sql_into_list(pg_cur, sql, settings['admin_bdys_schema'], table[0], "bdys", "gid", settings))
+        short_sql_list = split_sql_into_list(pg_cur, sql, settings['admin_bdys_schema'],
+                                             table[0], "bdys", "gid", settings)
 
-    # logger.info('\n'.join(sql_list)
-    
-    multiprocess_list("sql", sql_list, settings)
+        if short_sql_list is not None:
+            sql_list.extend(short_sql_list)
+
+    # logger.info('\n'.join(sql_list))
+
+    if sql_list is not None:
+        multiprocess_list("sql", sql_list, settings)
 
     logger.info("\t- Step 1 of 3 : gnaf addresses tagged with admin boundary IDs: {0}"
                 .format(datetime.now() - start_time))
@@ -789,12 +819,34 @@ def boundary_tag_gnaf(pg_cur, settings):
     sql_list = split_sql_into_list(pg_cur, sql, settings['gnaf_schema'], "address_principals", "pnts", "gid", settings)
     # logger.info("\n".join(sql_list)
 
-    multiprocess_list("sql", sql_list, settings)
+    if sql_list is not None:
+        multiprocess_list("sql", sql_list, settings)
 
-    # drop tamp tables
+    # drop temp tables
     pg_cur.execute("".join(drop_table_list))
 
+    # get stats
+    pg_cur.execute("ANALYZE {0}.address_admin_boundaries ".format(settings['gnaf_schema']))
+
     logger.info("\t- Step 3 of 3 : gnaf bdy tag table created : {0}".format(datetime.now() - start_time))
+
+
+# get row counts of tables for visual QA
+def qa_tables(pg_cur, settings):
+
+    sql = "SELECT nspname|| '.' || relname AS tablename, reltuples::int AS rowcount " \
+          "FROM pg_class C LEFT JOIN pg_namespace N ON (N.oid = C.relnamespace) " \
+          "WHERE nspname IN ('{0}', '{1}', '{2}', '{3}') AND relkind='r' " \
+          "ORDER BY nspname, relname;".format(settings['raw_gnaf_schema'], settings['gnaf_schema'],
+                                              settings['raw_admin_bdys_schema'], settings['admin_bdys_schema'])
+    pg_cur.execute(sql)
+
+    for pg_row in pg_cur:
+        table_name = pg_row[0]
+        row_count = str(pg_row[1]).rjust(9)
+        logger.info("\t{0} : {1}".format(row_count, table_name))
+
+    logger.info("")
 
 
 # takes a list of sql queries or command lines and runs them using multiprocessing
@@ -872,14 +924,6 @@ def prep_sql_list(sql_list, settings):
 
 # set schema names in the SQL script
 def prep_sql(sql, settings):
-    # if settings['raw_gnaf_schema'] != "raw_gnaf":
-    #     sql = sql.replace(" raw_gnaf.", " {0}.".format(settings['raw_gnaf_schema'],))
-    # if settings['gnaf_schema'] != "gnaf":
-    #     sql = sql.replace(" gnaf.", " {0}.".format(settings['gnaf_schema'],))
-    # if settings['raw_admin_bdys_schema'] != "raw_admin_bdys":
-    #     sql = sql.replace(" raw_admin_bdys.", " {0}.".format(settings['raw_admin_bdys_schema'],))
-    # if settings['admin_bdys_schema'] != "admin_bdys":
-    #     sql = sql.replace(" admin_bdys.", " {0}.".format(settings['admin_bdys_schema'],))
     sql = sql.replace(" raw_gnaf.", " {0}.".format(settings['raw_gnaf_schema'], ))
     sql = sql.replace(" gnaf.", " {0}.".format(settings['gnaf_schema'], ))
     sql = sql.replace(" raw_admin_bdys.", " {0}.".format(settings['raw_admin_bdys_schema'], ))
@@ -893,50 +937,58 @@ def split_sql_into_list(pg_cur, the_sql, table_schema, table_name, table_alias, 
     min_max_sql = "SELECT MIN({2}) AS min, MAX({2}) AS max FROM {0}.{1}".format(table_schema, table_name, table_gid)
 
     pg_cur.execute(min_max_sql)
-    result = pg_cur.fetchone()
 
-    min_pkey = int(result[0])
-    max_pkey = int(result[1])
-    diff = max_pkey - min_pkey
+    try:
+        result = pg_cur.fetchone()
 
-    # Number of records in each query
-    rows_per_request = int(math.floor(float(diff) / float(settings['max_concurrent_processes']))) + 1
+        min_pkey = int(result[0])
+        max_pkey = int(result[1])
+        diff = max_pkey - min_pkey
 
-    # If less records than processes or rows per request, reduce both to allow for a minimum of 15 records each process
-    if float(diff) / float(settings['max_concurrent_processes']) < 10.0:
-        rows_per_request = 10
-        processes = int(math.floor(float(diff) / 10.0)) + 1
-        logger.info("\t\t- running {0} processes (adjusted due to low row count in table to split)".format(processes))
-    else:
-        processes = settings['max_concurrent_processes']
+        # Number of records in each query
+        rows_per_request = int(math.floor(float(diff) / float(settings['max_concurrent_processes']))) + 1
 
-    # create list of sql statements to run with multiprocessing
-    sql_list = []
-    start_pkey = min_pkey - 1
-
-    for i in range(0, processes):
-        end_pkey = start_pkey + rows_per_request
-
-        where_clause = " WHERE {0}.{3} > {1} AND {0}.{3} <= {2}".format(table_alias, start_pkey, end_pkey, table_gid)
-
-        if "WHERE " in the_sql:
-            mp_sql = the_sql.replace(" WHERE ", where_clause + " AND ")
-        elif "GROUP BY " in the_sql:
-            mp_sql = the_sql.replace("GROUP BY ", where_clause + " GROUP BY ")
-        elif "ORDER BY " in the_sql:
-            mp_sql = the_sql.replace("ORDER BY ", where_clause + " ORDER BY ")
+        # If less records than processes or rows per request,
+        # reduce both to allow for a minimum of 15 records each process
+        if float(diff) / float(settings['max_concurrent_processes']) < 10.0:
+            rows_per_request = 10
+            processes = int(math.floor(float(diff) / 10.0)) + 1
+            logger.info("\t\t- running {0} processes (adjusted due to low row count in table to split)"
+                        .format(processes))
         else:
-            if ";" in the_sql:
-                mp_sql = the_sql.replace(";", where_clause + ";")
+            processes = settings['max_concurrent_processes']
+
+        # create list of sql statements to run with multiprocessing
+        sql_list = []
+        start_pkey = min_pkey - 1
+
+        for i in range(0, processes):
+            end_pkey = start_pkey + rows_per_request
+
+            where_clause = " WHERE {0}.{3} > {1} AND {0}.{3} <= {2}"\
+                .format(table_alias, start_pkey, end_pkey, table_gid)
+
+            if "WHERE " in the_sql:
+                mp_sql = the_sql.replace(" WHERE ", where_clause + " AND ")
+            elif "GROUP BY " in the_sql:
+                mp_sql = the_sql.replace("GROUP BY ", where_clause + " GROUP BY ")
+            elif "ORDER BY " in the_sql:
+                mp_sql = the_sql.replace("ORDER BY ", where_clause + " ORDER BY ")
             else:
-                mp_sql = the_sql + where_clause
-                logger.warning("\t\t- NOTICE: no ; found at the end of the SQL statement")
+                if ";" in the_sql:
+                    mp_sql = the_sql.replace(";", where_clause + ";")
+                else:
+                    mp_sql = the_sql + where_clause
+                    logger.warning("\t\t- NOTICE: no ; found at the end of the SQL statement")
 
-        sql_list.append(mp_sql)
-        start_pkey = end_pkey
+            sql_list.append(mp_sql)
+            start_pkey = end_pkey
 
-    # logger.info('\n'.join(sql_list)
-    return sql_list
+        # logger.info('\n'.join(sql_list)
+        return sql_list
+    except Exception as ex:
+        logger.fatal("Looks like the table in this query is empty: {0}\n{1}".format(min_max_sql, ex))
+        return None
 
 
 # get latest PSMA release version as YYYYMM, as of the date provided
