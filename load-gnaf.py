@@ -269,7 +269,7 @@ def main():
     logger.info("")
     start_time = datetime.now()
     logger.info("Part 5 of 5 : Final row counts : {0}".format(start_time))
-    qa_tables(pg_cur, settings)
+    create_qa_tables(pg_cur, settings)
     # logger.info("Part 5 of 5 : results QA'd : {0}".format(datetime.now() - start_time))
 
     pg_cur.close()
@@ -286,13 +286,13 @@ def drop_tables_and_vacuum_db(pg_cur, settings):
     pg_cur.execute(open_sql_file("01-01-drop-tables.sql", settings))
     logger.info("\t- Step 1 of 7 : tables dropped : {0}".format(datetime.now() - start_time))
 
-    # # Step 2 of 7 : vacuum database (if requested)
-    # start_time = datetime.now()
-    # if vacuum_db:
-    #     pg_cur.execute("VACUUM")
-    #     logger.info("\t- Step 2 of 7 : database vacuumed : {0}".format(datetime.now() - start_time)
-    # else:
-    logger.info("\t- Step 2 of 7 : database NOT vacuumed")
+    # Step 2 of 7 : vacuum database (if requested)
+    start_time = datetime.now()
+    if settings['vacuum_db']:
+        pg_cur.execute("VACUUM")
+        logger.info("\t- Step 2 of 7 : database vacuumed : {0}".format(datetime.now() - start_time))
+    else:
+        logger.info("\t- Step 2 of 7 : database NOT vacuumed")
 
 
 def create_raw_gnaf_tables(pg_cur, settings):
@@ -420,7 +420,7 @@ def analyse_raw_gnaf_tables(pg_cur, settings):
     start_time = datetime.now()
     
     # get list of tables that haven't been analysed (i.e. that have no real row count)
-    sql = "SELECT nspname|| '.' || relname AS tablename " \
+    sql = "SELECT nspname|| '.' || relname AS table_name " \
           "FROM pg_class C LEFT JOIN pg_namespace N ON (N.oid = C.relnamespace)" \
           "WHERE nspname = '{0}' AND relkind='r' AND reltuples = 0".format(settings['raw_gnaf_schema'])
     pg_cur.execute(sql)
@@ -781,8 +781,8 @@ def boundary_tag_gnaf(pg_cur, settings):
         name_field = pid_field. replace("_pid", "_name")
         create_table_list.append(", {0} character varying(15), {1} character varying(100)"
                                  .format(pid_field, name_field))
-    create_table_list.append(") WITH (OIDS=FALSE);ALTER TABLE {0}.address_admin_boundaries OWNER TO postgres"
-                             .format(settings['gnaf_schema'],))
+    create_table_list.append(") WITH (OIDS=FALSE);ALTER TABLE {0}.address_admin_boundaries OWNER TO {1}"
+                             .format(settings['gnaf_schema'], settings['pg_user']))
     pg_cur.execute("".join(create_table_list))
 
     # create insert statement for multiprocessing
@@ -831,20 +831,67 @@ def boundary_tag_gnaf(pg_cur, settings):
     logger.info("\t- Step 3 of 3 : gnaf bdy tag table created : {0}".format(datetime.now() - start_time))
 
 
-# get row counts of tables for visual QA
-def qa_tables(pg_cur, settings):
+# get row counts of tables in each schema, by state, for visual QA
+def create_qa_tables(pg_cur, settings):
+    start_time = datetime.now()
 
-    sql = "SELECT nspname|| '.' || relname AS tablename, reltuples::int AS rowcount " \
-          "FROM pg_class C LEFT JOIN pg_namespace N ON (N.oid = C.relnamespace) " \
-          "WHERE nspname IN ('{0}', '{1}', '{2}', '{3}') AND relkind='r' " \
-          "ORDER BY nspname, relname;".format(settings['raw_gnaf_schema'], settings['gnaf_schema'],
-                                              settings['raw_admin_bdys_schema'], settings['admin_bdys_schema'])
-    pg_cur.execute(sql)
+    i = 0
 
-    for pg_row in pg_cur:
-        table_name = pg_row[0]
-        row_count = str(pg_row[1]).rjust(9)
-        logger.info("\t{0} : {1}".format(row_count, table_name))
+    for schema in [settings['gnaf_schema'], settings['admin_bdys_schema']]:
+
+        i += 1
+
+        # create qa table of rows counts
+        sql = "DROP TABLE IF EXISTS {0}.qa;" \
+              "CREATE TABLE {0}.qa (table_name character varying(50), aus integer, act integer, nsw integer, " \
+              "nt integer, ot integer, qld integer, sa integer, tas integer, vic integer, wa integer) " \
+              "WITH (OIDS=FALSE);" \
+              "ALTER TABLE {0}.qa OWNER TO {1}".format(schema, settings['pg_user'])
+        pg_cur.execute(sql)
+
+        # get table names in schema
+        sql = "SELECT table_name FROM information_schema.tables WHERE table_schema = '{0}' AND table_name <> 'qa' " \
+              "ORDER BY table_name"\
+            .format(schema)
+        pg_cur.execute(sql)
+
+        table_names = []
+        for pg_row in pg_cur:
+            table_names.append(pg_row[0])
+
+        # get row counts by state
+        for table_name in table_names:
+            sql = "INSERT INTO {0}.qa " \
+                  "SELECT '{1}', SUM(AUS), SUM(ACT), SUM(NSW), SUM(NT), SUM(OT), " \
+                  "SUM(QLD), SUM(SA), SUM(TAS), SUM(VIC), SUM(WA) " \
+                  "FROM (" \
+                  "SELECT 1 AS AUS," \
+                  "CASE WHEN state = 'ACT' THEN 1 ELSE 0 END AS ACT," \
+                  "CASE WHEN state = 'NSW' THEN 1 ELSE 0 END AS NSW," \
+                  "CASE WHEN state = 'NT' THEN 1 ELSE 0 END AS NT," \
+                  "CASE WHEN state = 'OT' THEN 1 ELSE 0 END AS OT," \
+                  "CASE WHEN state = 'QLD' THEN 1 ELSE 0 END AS QLD," \
+                  "CASE WHEN state = 'SA' THEN 1 ELSE 0 END AS SA," \
+                  "CASE WHEN state = 'TAS' THEN 1 ELSE 0 END AS TAS," \
+                  "CASE WHEN state = 'VIC' THEN 1 ELSE 0 END AS VIC," \
+                  "CASE WHEN state = 'WA' THEN 1 ELSE 0 END AS WA " \
+                  "FROM {0}.{1}) AS sqt".format(schema, table_name)
+
+            try:
+                pg_cur.execute(sql)
+            except:
+                # if no state field - change the query for an Australia count only
+                sql = "INSERT INTO {0}.qa (table_name, aus) " \
+                      "SELECT '{1}', Count(*) FROM {0}.{1}".format(schema, table_name)
+
+                try:
+                    pg_cur.execute(sql)
+                except Exception as ex:
+                    # if no state field - change the query for an Australia count only
+                    logger.warning("Couldn't get row count for {0}.{1} : {2}".format(schema, table_name, ex))
+
+        logger.info("\t- Step {0} of 2 : got row counts for {1} schema : {2}"
+                    .format(i, schema, datetime.now() - start_time))
 
     logger.info("")
 
@@ -888,8 +935,8 @@ def run_sql_multiprocessing(args):
     try:
         pg_cur.execute(the_sql)
         result = "SUCCESS"
-    except psycopg2.Error as ex:
-        result = "SQL FAILED! : {0} : {1}".format(the_sql, ex.message)
+    except Exception as ex:
+        result = "SQL FAILED! : {0} : {1}".format(the_sql, ex)
 
     pg_cur.close()
     pg_conn.close()
@@ -898,13 +945,13 @@ def run_sql_multiprocessing(args):
 
 
 def run_command_line(cmd):
-    # run the command line without any output (it'll still tell you if it fails)
+    # run the command line without any output (it'll still tell you if it fails miserably)
     try:
         fnull = open(os.devnull, "w")
         subprocess.call(cmd, shell=True, stdout=fnull, stderr=subprocess.STDOUT)
         result = "SUCCESS"
     except Exception as ex:
-        result = "COMMAND FAILED! : {0} : {1}".format(cmd, ex.message)
+        result = "COMMAND FAILED! : {0} : {1}".format(cmd, ex)
 
     return result
 
