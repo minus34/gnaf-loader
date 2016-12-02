@@ -62,7 +62,7 @@ def main():
         return False
 
     # test if ST_SubDivide exists (only in PostGIS 2.2+). It's used to split boundaries for faster processing
-    check_postgis_version(pg_cur, settings)
+    psma.check_postgis_version(pg_cur, settings, logger)
 
     # START LOADING DATA
 
@@ -124,31 +124,6 @@ def main():
     logger.info("Total time : : {0}".format(datetime.now() - full_start_time))
 
     return True
-
-
-def check_postgis_version(pg_cur, settings):
-    # get Postgres, PostGIS & GEOS versions
-    pg_cur.execute("SELECT version()")
-    pg_version = pg_cur.fetchone()[0].replace("PostgreSQL ", "").split(",")[0]
-    pg_cur.execute("SELECT PostGIS_full_version()")
-    lib_strings = pg_cur.fetchone()[0].replace("\"", "").split(" ")
-    postgis_version = "UNKNOWN"
-    postgis_version_num = 0.0
-    geos_version = "UNKNOWN"
-    geos_version_num = 0.0
-    settings['st_subdivide_supported'] = False
-    for lib_string in lib_strings:
-        if lib_string[:8] == "POSTGIS=":
-            postgis_version = lib_string.replace("POSTGIS=", "")
-            postgis_version_num = float(postgis_version[:3])
-        if lib_string[:5] == "GEOS=":
-            geos_version = lib_string.replace("GEOS=", "")
-            geos_version_num = float(geos_version[:3])
-    if postgis_version_num >= 2.2 and geos_version_num >= 3.5:
-        settings['st_subdivide_supported'] = True
-    logger.info("")
-    logger.info("Running on Postgres {0} and PostGIS {1} (with GEOS {2})"
-                .format(pg_version, postgis_version, geos_version))
 
 
 def get_settings(args):

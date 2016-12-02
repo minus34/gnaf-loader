@@ -149,7 +149,6 @@ def split_sql_into_list(pg_cur, the_sql, table_schema, table_name, table_alias, 
 
 # get latest PSMA release version as YYYYMM, as of the date provided
 def get_psma_version(date):
-
     month = date.month
     year = date.year
 
@@ -163,3 +162,28 @@ def get_psma_version(date):
         return str(year) + '08'
     else:
         return str(year) + '11'
+
+
+def check_postgis_version(pg_cur, settings, logger):
+    # get Postgres, PostGIS & GEOS versions
+    pg_cur.execute("SELECT version()")
+    pg_version = pg_cur.fetchone()[0].replace("PostgreSQL ", "").split(",")[0]
+    pg_cur.execute("SELECT PostGIS_full_version()")
+    lib_strings = pg_cur.fetchone()[0].replace("\"", "").split(" ")
+    postgis_version = "UNKNOWN"
+    postgis_version_num = 0.0
+    geos_version = "UNKNOWN"
+    geos_version_num = 0.0
+    settings['st_subdivide_supported'] = False
+    for lib_string in lib_strings:
+        if lib_string[:8] == "POSTGIS=":
+            postgis_version = lib_string.replace("POSTGIS=", "")
+            postgis_version_num = float(postgis_version[:3])
+        if lib_string[:5] == "GEOS=":
+            geos_version = lib_string.replace("GEOS=", "")
+            geos_version_num = float(geos_version[:3])
+    if postgis_version_num >= 2.2 and geos_version_num >= 3.5:
+        settings['st_subdivide_supported'] = True
+    logger.info("")
+    logger.info("Running on Postgres {0} and PostGIS {1} (with GEOS {2})"
+                .format(pg_version, postgis_version, geos_version))
