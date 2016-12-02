@@ -25,19 +25,18 @@
 #
 # *********************************************************************************************************************
 
-import multiprocessing
-import math
 import os
-import subprocess
 import platform
 import psycopg2
 import argparse
 import logging.config
+import psma
 
 from datetime import datetime
 
 
 def main():
+
     parser = argparse.ArgumentParser(
         description='A quick way to load the complete GNAF and PSMA Admin Boundaries into Postgres, '
                     'simplified and ready to use as reference data for geocoding, analysis and visualisation.')
@@ -84,7 +83,7 @@ def main():
              'otherwise \'password\'.')
 
     # schema names for the raw gnaf, flattened reference and admin boundary tables
-    psma_version = get_psma_version(datetime.today())
+    psma_version = psma.get_psma_version(datetime.today())
 
     parser.add_argument(
         '--psma-version', default='psma_version',
@@ -283,7 +282,7 @@ def main():
 def drop_tables_and_vacuum_db(pg_cur, settings):
     # Step 1 of 7 : drop tables
     start_time = datetime.now()
-    pg_cur.execute(open_sql_file("01-01-drop-tables.sql", settings))
+    pg_cur.execute(psma.open_sql_file("01-01-drop-tables.sql", settings))
     logger.info("\t- Step 1 of 7 : tables dropped : {0}".format(datetime.now() - start_time))
 
     # Step 2 of 7 : vacuum database (if requested)
@@ -348,7 +347,7 @@ def populate_raw_gnaf(settings):
         logger.fatal("\t- Step 4 of 7 : table populate FAILED!")
     else:
         # load all PSV files using multiprocessing
-        multiprocess_list("sql", sql_list, settings)
+        psma.multiprocess_list("sql", sql_list, settings, logger)
         logger.info("\t- Step 4 of 7 : tables populated : {0}".format(datetime.now() - start_time))
 
 
@@ -382,13 +381,13 @@ def index_raw_gnaf(settings):
     # Step 5 of 7 : create indexes
     start_time = datetime.now()
 
-    raw_sql_list = open_sql_file("01-05-raw-gnaf-create-indexes.sql", settings).split("\n")
+    raw_sql_list = psma.open_sql_file("01-05-raw-gnaf-create-indexes.sql", settings).split("\n")
     sql_list = []
     for sql in raw_sql_list:
         if sql[0:2] != "--" and sql[0:2] != "":
             sql_list.append(sql)
 
-    multiprocess_list("sql", sql_list, settings)
+    psma.multiprocess_list("sql", sql_list, settings, logger)
     logger.info("\t- Step 5 of 7 : indexes created: {0}".format(datetime.now() - start_time))
 
 
@@ -410,7 +409,7 @@ def create_primary_foreign_keys(settings):
     sql_list = []
 
     # run queries in separate processes
-    multiprocess_list("sql", sql_list, settings)
+    psma.multiprocess_list("sql", sql_list, settings, logger)
 
     logger.info("\t- Step 6 of 7 : primary & foreign keys created : {0}".format(datetime.now() - start_time))
 
@@ -431,7 +430,7 @@ def analyse_raw_gnaf_tables(pg_cur, settings):
         sql_list.append("ANALYZE {0}".format(pg_row[0]))
 
     # run queries in separate processes
-    multiprocess_list("sql", sql_list, settings)
+    psma.multiprocess_list("sql", sql_list, settings, logger)
 
     logger.info("\t- Step 7 of 7 : tables analysed : {0}".format(datetime.now() - start_time))
     
@@ -441,7 +440,7 @@ def load_raw_admin_boundaries(pg_cur, settings):
     start_time = datetime.now()
 
     # drop existing views
-    pg_cur.execute(open_sql_file("02-01-drop-admin-bdy-views.sql", settings))
+    pg_cur.execute(psma.open_sql_file("02-01-drop-admin-bdy-views.sql", settings))
 
     # add locality class authority code table
     settings['states_to_load'].extend(["authority_code"])
@@ -529,8 +528,8 @@ def load_raw_admin_boundaries(pg_cur, settings):
     else:
         # load files in separate processes -
         # do the commands that create the tables first before attempting the subsequent insert commands
-        multiprocess_list("cmd", cmd_list1, settings)
-        multiprocess_list("cmd", cmd_list2, settings)
+        psma.multiprocess_list("cmd", cmd_list1, settings, logger)
+        psma.multiprocess_list("cmd", cmd_list2, settings, logger)
         logger.info("\t- Step 1 of 3 : raw admin boundaries loaded : {0}".format(datetime.now() - start_time))
 
 
@@ -543,7 +542,7 @@ def prep_admin_bdys(pg_cur, settings):
                        .format(settings['admin_bdys_schema'], settings['pg_user']))
 
     # create table using multiprocessing - using flag in file to split file up into sets of statements
-    sql_list = open_sql_file("02-02-prep-admin-bdys-tables.sql", settings).split("-- # --")
+    sql_list = psma.open_sql_file("02-02-prep-admin-bdys-tables.sql", settings).split("-- # --")
 
     # # Account for bdys that are not in states to load - not yet working
     # for sql in sql_list:
@@ -567,12 +566,12 @@ def prep_admin_bdys(pg_cur, settings):
     #             or 'WA' in settings['states_to_load']) and '.state_upper_house_electorates ' in sql:
     #         sql_list.remove(sql)
 
-    multiprocess_list("sql", sql_list, settings)
+    psma.multiprocess_list("sql", sql_list, settings, logger)
 
     # Special case - remove custom outback bdy if South Australia not requested
     if 'SA' not in settings['states_to_load']:
-        pg_cur.execute(prep_sql("DELETE FROM admin_bdys.locality_bdys WHERE locality_pid = 'SA999999'", settings))
-        pg_cur.execute(prep_sql("VACUUM ANALYZE admin_bdys.locality_bdys", settings))
+        pg_cur.execute(psma.prep_sql("DELETE FROM admin_bdys.locality_bdys WHERE locality_pid = 'SA999999'", settings))
+        pg_cur.execute(psma.prep_sql("VACUUM ANALYZE admin_bdys.locality_bdys", settings))
 
     logger.info("\t- Step 2 of 3 : admin boundaries prepped : {0}".format(datetime.now() - start_time))
 
@@ -582,7 +581,7 @@ def create_admin_bdys_for_analysis(settings):
     start_time = datetime.now()
 
     if settings['st_subdivide_supported']:
-        template_sql = open_sql_file("02-03-create-admin-bdy-analysis-tables_template.sql", settings)
+        template_sql = psma.open_sql_file("02-03-create-admin-bdy-analysis-tables_template.sql", settings)
         sql_list = list()
 
         for table in settings['admin_bdy_list']:
@@ -591,7 +590,7 @@ def create_admin_bdys_for_analysis(settings):
                 # sql = sql.replace(settings['raw_admin_bdys_schema'], settings['admin_bdys_schema'])
                 sql = sql.replace("name", "locality_name")
             sql_list.append(sql)
-        multiprocess_list("sql", sql_list, settings)
+        psma.multiprocess_list("sql", sql_list, settings, logger)
         logger.info("\t- Step 3 of 3 : admin boundaries for analysis created : {0}".format(datetime.now() - start_time))
     else:
         logger.warning("\t- Step 3 of 3 : admin boundaries for analysis NOT created - "
@@ -611,98 +610,99 @@ def create_reference_tables(pg_cur, settings):
 
     # Step 1 of 14 : create reference tables
     start_time = datetime.now()
-    pg_cur.execute(open_sql_file("03-01-reference-create-tables.sql", settings))
+    pg_cur.execute(psma.open_sql_file("03-01-reference-create-tables.sql", settings))
     logger.info("\t- Step  1 of 14 : create reference tables : {0}".format(datetime.now() - start_time))
 
     # Step 2 of 14 : populate localities
     start_time = datetime.now()
-    pg_cur.execute(open_sql_file("03-02-reference-populate-localities.sql", settings))
+    pg_cur.execute(psma.open_sql_file("03-02-reference-populate-localities.sql", settings))
     logger.info("\t- Step  2 of 14 : localities populated : {0}".format(datetime.now() - start_time))
 
     # Step 3 of 14 : populate locality aliases
     start_time = datetime.now()
-    pg_cur.execute(open_sql_file("03-03-reference-populate-locality-aliases.sql", settings))
+    pg_cur.execute(psma.open_sql_file("03-03-reference-populate-locality-aliases.sql", settings))
     logger.info("\t- Step  3 of 14 : locality aliases populated : {0}".format(datetime.now() - start_time))
 
     # Step 4 of 14 : populate locality neighbours
     start_time = datetime.now()
-    pg_cur.execute(open_sql_file("03-04-reference-populate-locality-neighbours.sql", settings))
+    pg_cur.execute(psma.open_sql_file("03-04-reference-populate-locality-neighbours.sql", settings))
     logger.info("\t- Step  4 of 14 : locality neighbours populated : {0}".format(datetime.now() - start_time))
 
     # Step 5 of 14 : populate streets
     start_time = datetime.now()
-    pg_cur.execute(open_sql_file("03-05-reference-populate-streets.sql", settings))
+    pg_cur.execute(psma.open_sql_file("03-05-reference-populate-streets.sql", settings))
     logger.info("\t- Step  5 of 14 : streets populated : {0}".format(datetime.now() - start_time))
 
     # Step 6 of 14 : populate street aliases
     start_time = datetime.now()
-    pg_cur.execute(open_sql_file("03-06-reference-populate-street-aliases.sql", settings))
+    pg_cur.execute(psma.open_sql_file("03-06-reference-populate-street-aliases.sql", settings))
     logger.info("\t- Step  6 of 14 : street aliases populated : {0}".format(datetime.now() - start_time))
 
     # Step 7 of 14 : populate addresses, using multiprocessing
     start_time = datetime.now()
-    sql = open_sql_file("03-07-reference-populate-addresses-1.sql", settings)
-    sql_list = split_sql_into_list(pg_cur, sql, settings['gnaf_schema'], "streets", "str", "gid", settings)
+    sql = psma.open_sql_file("03-07-reference-populate-addresses-1.sql", settings)
+    sql_list = psma.split_sql_into_list(pg_cur, sql, settings['gnaf_schema'], "streets", "str", "gid", settings, logger)
     if sql_list is not None:
-        multiprocess_list('sql', sql_list, settings)
-    pg_cur.execute(prep_sql("ANALYZE gnaf.temp_addresses;", settings))
+        psma.multiprocess_list('sql', sql_list, settings, logger)
+    pg_cur.execute(psma.prep_sql("ANALYZE gnaf.temp_addresses;", settings))
     logger.info("\t- Step  7 of 14 : addresses populated : {0}".format(datetime.now() - start_time))
 
     # Step 8 of 14 : populate principal alias lookup
     start_time = datetime.now()
-    pg_cur.execute(open_sql_file("03-08-reference-populate-address-alias-lookup.sql", settings))
+    pg_cur.execute(psma.open_sql_file("03-08-reference-populate-address-alias-lookup.sql", settings))
     logger.info("\t- Step  8 of 14 : principal alias lookup populated : {0}".format(datetime.now() - start_time))
 
     # Step 9 of 14 : populate primary secondary lookup
     start_time = datetime.now()
-    pg_cur.execute(open_sql_file("03-09-reference-populate-address-secondary-lookup.sql", settings))
-    pg_cur.execute(prep_sql("VACUUM ANALYSE gnaf.address_secondary_lookup", settings))
+    pg_cur.execute(psma.open_sql_file("03-09-reference-populate-address-secondary-lookup.sql", settings))
+    pg_cur.execute(psma.prep_sql("VACUUM ANALYSE gnaf.address_secondary_lookup", settings))
     logger.info("\t- Step  9 of 14 : primary secondary lookup populated : {0}".format(datetime.now() - start_time))
 
     # Step 10 of 14 : split the Melbourne locality into its 2 postcodes (3000, 3004)
     start_time = datetime.now()
-    pg_cur.execute(open_sql_file("03-10-reference-split-melbourne.sql", settings))
+    pg_cur.execute(psma.open_sql_file("03-10-reference-split-melbourne.sql", settings))
     logger.info("\t- Step 10 of 14 : Melbourne split : {0}".format(datetime.now() - start_time))
 
     # Step 11 of 14 : finalise localities assigned to streets and addresses
     start_time = datetime.now()
-    pg_cur.execute(open_sql_file("03-11-reference-finalise-localities.sql", settings))
+    pg_cur.execute(psma.open_sql_file("03-11-reference-finalise-localities.sql", settings))
     logger.info("\t- Step 11 of 14 : localities finalised : {0}".format(datetime.now() - start_time))
 
     # Step 12 of 14 : finalise addresses, using multiprocessing
     start_time = datetime.now()
-    sql = open_sql_file("03-12-reference-populate-addresses-2.sql", settings)
-    sql_list = split_sql_into_list(pg_cur, sql, settings['gnaf_schema'], "localities", "loc", "gid", settings)
+    sql = psma.open_sql_file("03-12-reference-populate-addresses-2.sql", settings)
+    sql_list = psma.split_sql_into_list(pg_cur, sql, settings['gnaf_schema'], "localities", "loc", "gid",
+                                        settings, logger)
     if sql_list is not None:
-        multiprocess_list('sql', sql_list, settings)
+        psma.multiprocess_list('sql', sql_list, settings, logger)
 
     # turf the temp address table
-    pg_cur.execute(prep_sql("DROP TABLE IF EXISTS gnaf.temp_addresses", settings))
+    pg_cur.execute(psma.prep_sql("DROP TABLE IF EXISTS gnaf.temp_addresses", settings))
     logger.info("\t- Step 12 of 14 : addresses finalised : {0}".format(datetime.now() - start_time))
 
     # Step 13 of 14 : create almost correct postcode boundaries by aggregating localities, using multiprocessing
     start_time = datetime.now()
-    sql = open_sql_file("03-13-reference-derived-postcode-bdys.sql", settings)
+    sql = psma.open_sql_file("03-13-reference-derived-postcode-bdys.sql", settings)
     sql_list = []
     for state in settings['states_to_load']:
         state_sql = sql.replace("GROUP BY ", "WHERE state = '{0}' GROUP BY ".format(state))
         sql_list.append(state_sql)
-    multiprocess_list("sql", sql_list, settings)
+    psma.multiprocess_list("sql", sql_list, settings, logger)
 
     # create analysis table?
     if settings['st_subdivide_supported']:
-        pg_cur.execute(open_sql_file("03-13a-create-postcode-analysis-table.sql", settings))
+        pg_cur.execute(psma.open_sql_file("03-13a-create-postcode-analysis-table.sql", settings))
 
     logger.info("\t- Step 13 of 14 : postcode boundaries created : {0}".format(datetime.now() - start_time))
 
     # Step 14 of 14 : create indexes, primary and foreign keys, using multiprocessing
     start_time = datetime.now()
-    raw_sql_list = open_sql_file("03-14-reference-create-indexes.sql", settings).split("\n")
+    raw_sql_list = psma.open_sql_file("03-14-reference-create-indexes.sql", settings).split("\n")
     sql_list = []
     for sql in raw_sql_list:
         if sql[0:2] != "--" and sql[0:2] != "":
             sql_list.append(sql)
-    multiprocess_list("sql", sql_list, settings)
+    psma.multiprocess_list("sql", sql_list, settings, logger)
     logger.info("\t- Step 14 of 14 : create primary & foreign keys and indexes : {0}"
                 .format(datetime.now() - start_time))
 
@@ -725,18 +725,18 @@ def boundary_tag_gnaf(pg_cur, settings):
             table_list.append([table_name, table[1]])
 
     # create temp tables
-    template_sql = open_sql_file("04-01a-bdy-tag-create-table-template.sql", settings)
+    template_sql = psma.open_sql_file("04-01a-bdy-tag-create-table-template.sql", settings)
     for table in table_list:
         pg_cur.execute(template_sql.format(table[0],))
 
     # create temp tables of bdy tagged gnaf_pids
-    template_sql = open_sql_file("04-01b-bdy-tag-template.sql", settings)
+    template_sql = psma.open_sql_file("04-01b-bdy-tag-template.sql", settings)
     sql_list = list()
     for table in table_list:
         sql = template_sql.format(table[0], table[1])
 
-        short_sql_list = split_sql_into_list(pg_cur, sql, settings['admin_bdys_schema'],
-                                             table[0], "bdys", "gid", settings)
+        short_sql_list = psma.split_sql_into_list(pg_cur, sql, settings['admin_bdys_schema'], table[0], "bdys", "gid",
+                                                  settings, logger)
 
         if short_sql_list is not None:
             sql_list.extend(short_sql_list)
@@ -744,7 +744,7 @@ def boundary_tag_gnaf(pg_cur, settings):
     # logger.info('\n'.join(sql_list))
 
     if sql_list is not None:
-        multiprocess_list("sql", sql_list, settings)
+        psma.multiprocess_list("sql", sql_list, settings, logger)
 
     logger.info("\t- Step 1 of 3 : gnaf addresses tagged with admin boundary IDs: {0}"
                 .format(datetime.now() - start_time))
@@ -757,7 +757,7 @@ def boundary_tag_gnaf(pg_cur, settings):
               "CREATE INDEX temp_{1}_tags_gnaf_pid_idx ON {0}.temp_{1}_tags USING btree(gnaf_pid);" \
               "ANALYZE {0}.temp_{1}_tags".format(settings['gnaf_schema'], table[0])
         sql_list.append(sql)
-    multiprocess_list("sql", sql_list, settings)
+    psma.multiprocess_list("sql", sql_list, settings, logger)
 
     logger.info("\t- Step 2 of 3 : invalid matches deleted & bdy tag indexes created : {0}"
                 .format(datetime.now() - start_time))
@@ -816,11 +816,12 @@ def boundary_tag_gnaf(pg_cur, settings):
     insert_statement_list.append("".join(insert_join_list))
 
     sql = "".join(insert_statement_list) + ";"
-    sql_list = split_sql_into_list(pg_cur, sql, settings['gnaf_schema'], "address_principals", "pnts", "gid", settings)
+    sql_list = psma.split_sql_into_list(pg_cur, sql, settings['gnaf_schema'], "address_principals", "pnts", "gid",
+                                        settings, logger)
     # logger.info("\n".join(sql_list)
 
     if sql_list is not None:
-        multiprocess_list("sql", sql_list, settings)
+        psma.multiprocess_list("sql", sql_list, settings, logger)
 
     # drop temp tables
     pg_cur.execute("".join(drop_table_list))
@@ -894,166 +895,6 @@ def create_qa_tables(pg_cur, settings):
                     .format(i, schema, datetime.now() - start_time))
 
     logger.info("")
-
-
-# takes a list of sql queries or command lines and runs them using multiprocessing
-def multiprocess_list(mp_type, work_list, settings):
-    pool = multiprocessing.Pool(processes=settings['max_concurrent_processes'])
-
-    num_jobs = len(work_list)
-
-    if mp_type == "sql":
-        results = pool.imap_unordered(run_sql_multiprocessing, [[w, settings] for w in work_list])
-    else:
-        results = pool.imap_unordered(run_command_line, work_list)
-
-    pool.close()
-    pool.join()
-
-    result_list = list(results)
-    num_results = len(result_list)
-
-    if num_jobs > num_results:
-        logger.warning("\t- A MULTIPROCESSING PROCESS FAILED WITHOUT AN ERROR\nACTION: Check the record counts")
-
-    for result in result_list:
-        if result != "SUCCESS":
-            logger.info(result)
-
-
-def run_sql_multiprocessing(args):
-    the_sql = args[0]
-    settings = args[1]
-    pg_conn = psycopg2.connect(settings['pg_connect_string'])
-    pg_conn.autocommit = True
-    pg_cur = pg_conn.cursor()
-
-    # set raw gnaf database schema (it's needed for the primary and foreign key creation)
-    if settings['raw_gnaf_schema'] != "public":
-        pg_cur.execute("SET search_path = {0}, public, pg_catalog".format(settings['raw_gnaf_schema'],))
-
-    try:
-        pg_cur.execute(the_sql)
-        result = "SUCCESS"
-    except Exception as ex:
-        result = "SQL FAILED! : {0} : {1}".format(the_sql, ex)
-
-    pg_cur.close()
-    pg_conn.close()
-
-    return result
-
-
-def run_command_line(cmd):
-    # run the command line without any output (it'll still tell you if it fails miserably)
-    try:
-        fnull = open(os.devnull, "w")
-        subprocess.call(cmd, shell=True, stdout=fnull, stderr=subprocess.STDOUT)
-        result = "SUCCESS"
-    except Exception as ex:
-        result = "COMMAND FAILED! : {0} : {1}".format(cmd, ex)
-
-    return result
-
-
-def open_sql_file(file_name, settings):
-    sql = open(os.path.join(settings['sql_dir'], file_name), "r").read()
-    return prep_sql(sql, settings)
-
-
-# change schema names in an array of SQL script if schemas not the default
-def prep_sql_list(sql_list, settings):
-    output_list = []
-    for sql in sql_list:
-        output_list.append(prep_sql(sql, settings))
-    return output_list
-
-
-# set schema names in the SQL script
-def prep_sql(sql, settings):
-    sql = sql.replace(" raw_gnaf.", " {0}.".format(settings['raw_gnaf_schema'], ))
-    sql = sql.replace(" gnaf.", " {0}.".format(settings['gnaf_schema'], ))
-    sql = sql.replace(" raw_admin_bdys.", " {0}.".format(settings['raw_admin_bdys_schema'], ))
-    sql = sql.replace(" admin_bdys.", " {0}.".format(settings['admin_bdys_schema'], ))
-
-    return sql
-
-
-def split_sql_into_list(pg_cur, the_sql, table_schema, table_name, table_alias, table_gid, settings):
-    # get min max gid values from the table to split
-    min_max_sql = "SELECT MIN({2}) AS min, MAX({2}) AS max FROM {0}.{1}".format(table_schema, table_name, table_gid)
-
-    pg_cur.execute(min_max_sql)
-
-    try:
-        result = pg_cur.fetchone()
-
-        min_pkey = int(result[0])
-        max_pkey = int(result[1])
-        diff = max_pkey - min_pkey
-
-        # Number of records in each query
-        rows_per_request = int(math.floor(float(diff) / float(settings['max_concurrent_processes']))) + 1
-
-        # If less records than processes or rows per request,
-        # reduce both to allow for a minimum of 15 records each process
-        if float(diff) / float(settings['max_concurrent_processes']) < 10.0:
-            rows_per_request = 10
-            processes = int(math.floor(float(diff) / 10.0)) + 1
-            logger.info("\t\t- running {0} processes (adjusted due to low row count in table to split)"
-                        .format(processes))
-        else:
-            processes = settings['max_concurrent_processes']
-
-        # create list of sql statements to run with multiprocessing
-        sql_list = []
-        start_pkey = min_pkey - 1
-
-        for i in range(0, processes):
-            end_pkey = start_pkey + rows_per_request
-
-            where_clause = " WHERE {0}.{3} > {1} AND {0}.{3} <= {2}"\
-                .format(table_alias, start_pkey, end_pkey, table_gid)
-
-            if "WHERE " in the_sql:
-                mp_sql = the_sql.replace(" WHERE ", where_clause + " AND ")
-            elif "GROUP BY " in the_sql:
-                mp_sql = the_sql.replace("GROUP BY ", where_clause + " GROUP BY ")
-            elif "ORDER BY " in the_sql:
-                mp_sql = the_sql.replace("ORDER BY ", where_clause + " ORDER BY ")
-            else:
-                if ";" in the_sql:
-                    mp_sql = the_sql.replace(";", where_clause + ";")
-                else:
-                    mp_sql = the_sql + where_clause
-                    logger.warning("\t\t- NOTICE: no ; found at the end of the SQL statement")
-
-            sql_list.append(mp_sql)
-            start_pkey = end_pkey
-
-        # logger.info('\n'.join(sql_list)
-        return sql_list
-    except Exception as ex:
-        logger.fatal("Looks like the table in this query is empty: {0}\n{1}".format(min_max_sql, ex))
-        return None
-
-
-# get latest PSMA release version as YYYYMM, as of the date provided
-def get_psma_version(date):
-
-    month = date.month
-    year = date.year
-
-    if month == 1:
-        return str(year - 1) + '11'
-    elif 2 <= month < 5:
-        return str(year) + '02'
-    elif 5 <= month < 8:
-        return str(year) + '05'
-    elif 8 <= month < 11:
-        return str(year) + '08'
-    else:
-        return str(year) + '11'
 
 
 if __name__ == '__main__':
