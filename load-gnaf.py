@@ -880,8 +880,8 @@ def create_qa_tables(pg_cur, settings):
 
             try:
                 pg_cur.execute(sql)
-            except:
-                # if no state field - change the query for an Australia count only
+            except psycopg2.Error:  # triggers when there is no state field in the table
+                # change the query for an Australia count only
                 sql = "INSERT INTO {0}.qa (table_name, aus) " \
                       "SELECT '{1}', Count(*) FROM {0}.{1}".format(schema, table_name)
 
