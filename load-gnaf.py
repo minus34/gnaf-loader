@@ -151,9 +151,6 @@ def set_arguments():
         help='Tags all addresses with admin boundary IDs for creating aggregates and choropleth maps. '
              'IMPORTANT: this will contribute 15-60 minutes to the process if you have PostGIS 2.2. '
              'WARNING: if you have PostGIS 2.1 or lower - this process can take hours')
-    parser.add_argument(
-        '--no-boundary-tag', action='store_false', dest='boundary_tag',
-        help='Do not tag all addresses with admin boundary IDs for creating aggregates and choropleth maps. ')
 
     # PG Options
     parser.add_argument(
@@ -227,6 +224,7 @@ def get_settings(args):
     settings['raw_admin_bdys_schema'] = args.raw_admin_schema
     settings['gnaf_schema'] = args.gnaf_schema
     settings['admin_bdys_schema'] = args.admin_schema
+    settings['boundary_tag'] = args.boundary_tag
     settings['gnaf_network_directory'] = args.gnaf_tables_path.replace("\\", "/")
     if args.local_server_dir:
         settings['gnaf_pg_server_local_directory'] = args.local_server_dir.replace("\\", "/")
