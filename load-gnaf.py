@@ -174,7 +174,7 @@ def set_arguments():
     # schema names for the raw gnaf, flattened reference and admin boundary tables
     psma_version = psma.get_psma_version(datetime.today())
     parser.add_argument(
-        '--psma-version', default='psma_version',
+        '--psma-version', default=psma_version,
         help='PSMA Version number as YYYYMM. Defaults to last release year and month \'' + psma_version + '\'.')
     parser.add_argument(
         '--raw-gnaf-schema', default='raw_gnaf_' + psma_version,
@@ -218,6 +218,7 @@ def get_settings(args):
     settings['primary_foreign_keys'] = args.raw_fk
     settings['unlogged_tables'] = args.raw_unlogged
     settings['max_concurrent_processes'] = args.max_processes
+    settings['psma_version'] = args.psma_version
     settings['states_to_load'] = args.states
     settings['boundary_tag'] = args.boundary_tag
     settings['raw_gnaf_schema'] = args.raw_gnaf_schema
