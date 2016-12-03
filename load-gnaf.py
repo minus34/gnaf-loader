@@ -126,9 +126,97 @@ def main():
     return True
 
 
-def get_settings(args):
+# set the command line arguments for the script
+def set_arguments():
 
+    parser = argparse.ArgumentParser(
+        description='A quick way to load the complete GNAF and PSMA Admin Boundaries into Postgres, '
+                    'simplified and ready to use as reference data for geocoding, analysis and visualisation.')
+
+    parser.add_argument(
+        '--prevacuum', action='store_true', default=False, help='Forces database to be vacuumed after dropping tables.')
+    parser.add_argument(
+        '--raw-fk', action='store_true', default=False,
+        help='Creates primary & foreign keys for the raw GNAF tables (adds time to data load)')
+    parser.add_argument(
+        '--raw-unlogged', action='store_true', default=False,
+        help='Creates unlogged raw GNAF tables, speeding up the import. Only specify this option if you don\'t care '
+             'about the raw data afterwards - they will be lost if the server crashes!')
+    parser.add_argument(
+        '--max-processes', type=int, default=3,
+        help='Maximum number of parallel processes to use for the data load. (Set it to the number of cores on the '
+             'Postgres server minus 2, limit to 12 if 16+ cores - there is minimal benefit beyond 12). Defaults to 6.')
+    parser.add_argument(
+        '--boundary-tag', action='store_true', dest='boundary_tag', default=True,
+        help='Tags all addresses with admin boundary IDs for creating aggregates and choropleth maps. '
+             'IMPORTANT: this will contribute 15-60 minutes to the process if you have PostGIS 2.2. '
+             'WARNING: if you have PostGIS 2.1 or lower - this process can take hours')
+    parser.add_argument(
+        '--no-boundary-tag', action='store_false', dest='boundary_tag',
+        help='Do not tag all addresses with admin boundary IDs for creating aggregates and choropleth maps. ')
+
+    # PG Options
+    parser.add_argument(
+        '--pghost',
+        help='Host name for Postgres server. Defaults to PGHOST environment variable if set, otherwise localhost.')
+    parser.add_argument(
+        '--pgport', type=int,
+        help='Port number for Postgres server. Defaults to PGPORT environment variable if set, otherwise 5432.')
+    parser.add_argument(
+        '--pgdb',
+        help='Database name for Postgres server. Defaults to PGDATABASE environment variable if set, '
+             'otherwise psma.')
+    parser.add_argument(
+        '--pguser',
+        help='Username for Postgres server. Defaults to PGUSER environment variable if set, otherwise postgres.')
+    parser.add_argument(
+        '--pgpassword',
+        help='Password for Postgres server. Defaults to PGPASSWORD environment variable if set, '
+             'otherwise \'password\'.')
+
+    # schema names for the raw gnaf, flattened reference and admin boundary tables
+    psma_version = psma.get_psma_version(datetime.today())
+    parser.add_argument(
+        '--psma-version', default='psma_version',
+        help='PSMA Version number as YYYYMM. Defaults to last release year and month \'' + psma_version + '\'.')
+    parser.add_argument(
+        '--raw-gnaf-schema', default='raw_gnaf_' + psma_version,
+        help='Schema name to store raw GNAF tables in. Defaults to \'raw_gnaf_' + psma_version + '\'.')
+    parser.add_argument(
+        '--raw-admin-schema', default='raw_admin_bdys_' + psma_version,
+        help='Schema name to store raw admin boundary tables in. Defaults to \'raw_admin_bdys_' + psma_version + '\'.')
+    parser.add_argument(
+        '--gnaf-schema', default='gnaf_' + psma_version,
+        help='Destination schema name to store final GNAF tables in. Defaults to \'gnaf_' + psma_version + '\'.')
+    parser.add_argument(
+        '--admin-schema', default='admin_bdys_' + psma_version,
+        help='Destination schema name to store final admin boundary tables in. Defaults to \'admin_bdys_'
+             + psma_version + '\'.')
+
+    # directories
+    parser.add_argument(
+        '--gnaf-tables-path', required=True,
+        help='Path to source GNAF tables (*.psv files). This directory must be accessible by the Postgres server, '
+             'and the local path to the directory for the server must be set via the local-server-dir argument '
+             'if it differs from this path.')
+    parser.add_argument(
+        '--local-server-dir',
+        help='Local path on server corresponding to gnaf-tables-path, if different to gnaf-tables-path.')
+    parser.add_argument(
+        '--admin-bdys-path', required=True, help='Local path to source admin boundary files.')
+
+    # states to load
+    parser.add_argument('--states', nargs='+', choices=["ACT", "NSW", "NT", "OT", "QLD", "SA", "TAS", "VIC", "WA"],
+                        default=["ACT", "NSW", "NT", "OT", "QLD", "SA", "TAS", "VIC", "WA"],
+                        help='List of states to load data for. Defaults to all states.')
+
+    return parser.parse_args()
+
+
+# create the dictionary of settings
+def get_settings(args):
     settings = dict()
+
     settings['vacuum_db'] = args.prevacuum
     settings['primary_foreign_keys'] = args.raw_fk
     settings['unlogged_tables'] = args.raw_unlogged
@@ -164,7 +252,7 @@ def get_settings(args):
     admin_bdy_list.append(["state_bdys", "state_pid"])
     admin_bdy_list.append(["locality_bdys", "locality_pid"])
 
-    # only process bdys if states to load have them -- doesn't completely work, will still get some false SQL errors
+    # only process bdys if states to load have them
     if settings['states_to_load'] != ['OT']:
         admin_bdy_list.append(["commonwealth_electorates", "ce_pid"])
     if settings['states_to_load'] != ['ACT']:
@@ -179,88 +267,6 @@ def get_settings(args):
     settings['admin_bdy_list'] = admin_bdy_list
 
     return settings
-
-
-# set the command line arguments for the script
-def set_arguments():
-
-    parser = argparse.ArgumentParser(
-        description='A quick way to load the complete GNAF and PSMA Admin Boundaries into Postgres, '
-                    'simplified and ready to use as reference data for geocoding, analysis and visualisation.')
-    parser.add_argument(
-        '--prevacuum', action='store_true', default=False, help='Forces database to be vacuumed after dropping tables.')
-    parser.add_argument(
-        '--raw-fk', action='store_true', default=False,
-        help='Creates primary & foreign keys for the raw GNAF tables (adds time to data load)')
-    parser.add_argument(
-        '--raw-unlogged', action='store_true', default=False,
-        help='Creates unlogged raw GNAF tables, speeding up the import. Only specify this option if you don\'t care '
-             'about the raw data afterwards - they will be lost if the server crashes!')
-    parser.add_argument(
-        '--max-processes', type=int, default=6,
-        help='Maximum number of parallel processes to use for the data load. (Set it to the number of cores on the '
-             'Postgres server minus 2, limit to 12 if 16+ cores - there is minimal benefit beyond 12). Defaults to 6.')
-    parser.add_argument(
-        '--boundary-tag', action='store_true', dest='boundary_tag', default=True,
-        help='Tags all addresses with admin boundary IDs for creating aggregates and choropleth maps. '
-             'IMPORTANT: this will contribute 15-60 minutes to the process if you have PostGIS 2.2. '
-             'WARNING: if you have PostGIS 2.1 or lower - this process can take hours')
-    parser.add_argument(
-        '--no-boundary-tag', action='store_false', dest='boundary_tag',
-        help='Do not tag all addresses with admin boundary IDs for creating aggregates and choropleth maps. ')
-    # PG Options
-    parser.add_argument(
-        '--pghost',
-        help='Host name for Postgres server. Defaults to PGHOST environment variable if set, otherwise localhost.')
-    parser.add_argument(
-        '--pgport', type=int,
-        help='Port number for Postgres server. Defaults to PGPORT environment variable if set, otherwise 5432.')
-    parser.add_argument(
-        '--pgdb',
-        help='Database name for Postgres server. Defaults to PGDATABASE environment variable if set, '
-             'otherwise psma.')
-    parser.add_argument(
-        '--pguser',
-        help='Username for Postgres server. Defaults to PGUSER environment variable if set, otherwise postgres.')
-    parser.add_argument(
-        '--pgpassword',
-        help='Password for Postgres server. Defaults to PGPASSWORD environment variable if set, '
-             'otherwise \'password\'.')
-    # schema names for the raw gnaf, flattened reference and admin boundary tables
-    psma_version = psma.get_psma_version(datetime.today())
-    parser.add_argument(
-        '--psma-version', default='psma_version',
-        help='PSMA Version number as YYYYMM. Defaults to last release year and month \'' + psma_version + '\'.')
-    parser.add_argument(
-        '--raw-gnaf-schema', default='raw_gnaf_' + psma_version,
-        help='Schema name to store raw GNAF tables in. Defaults to \'raw_gnaf_' + psma_version + '\'.')
-    parser.add_argument(
-        '--raw-admin-schema', default='raw_admin_bdys_' + psma_version,
-        help='Schema name to store raw admin boundary tables in. Defaults to \'raw_admin_bdys_' + psma_version + '\'.')
-    parser.add_argument(
-        '--gnaf-schema', default='gnaf_' + psma_version,
-        help='Destination schema name to store final GNAF tables in. Defaults to \'gnaf_' + psma_version + '\'.')
-    parser.add_argument(
-        '--admin-schema', default='admin_bdys_' + psma_version,
-        help='Destination schema name to store final admin boundary tables in. Defaults to \'admin_bdys_'
-             + psma_version + '\'.')
-    # directories
-    parser.add_argument(
-        '--gnaf-tables-path', required=True,
-        help='Path to source GNAF tables (*.psv files). This directory must be accessible by the Postgres server, '
-             'and the local path to the directory for the server must be set via the local-server-dir argument '
-             'if it differs from this path.')
-    parser.add_argument(
-        '--local-server-dir',
-        help='Local path on server corresponding to gnaf-tables-path, if different to gnaf-tables-path.')
-    parser.add_argument(
-        '--admin-bdys-path', required=True, help='Local path to source admin boundary files.')
-    # states to load
-    parser.add_argument('--states', nargs='+', choices=["ACT", "NSW", "NT", "OT", "QLD", "SA", "TAS", "VIC", "WA"],
-                        default=["ACT", "NSW", "NT", "OT", "QLD", "SA", "TAS", "VIC", "WA"],
-                        help='List of states to load data for. Defaults to all states.')
-
-    return parser.parse_args()
 
 
 def drop_tables_and_vacuum_db(pg_cur, settings):
@@ -889,7 +895,7 @@ if __name__ == '__main__':
     logging.basicConfig(filename=log_file, level=logging.DEBUG, format="%(asctime)s %(message)s",
                         datefmt="%m/%d/%Y %I:%M:%S %p")
 
-    # setup logger to logger.info(to screen as well as writing to log file
+    # setup logger to write to screen as well as writing to log file
     # define a Handler which writes INFO messages or higher to the sys.stderr
     console = logging.StreamHandler()
     console.setLevel(logging.INFO)
@@ -908,4 +914,5 @@ if __name__ == '__main__':
     else:
         logger.fatal("Something bad happened!")
 
+    logger.info("")
     logger.info("-------------------------------------------------------------------------------")
