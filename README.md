@@ -7,6 +7,7 @@
 - load-gnaf.py has been successfully tested on Postgres 9.6 and PostGIS 2.3
     - Note: Limited performance testing on Postgres 9.6 has shown setting the maximum number of parallel processes `--max-processes` to 2 is the most efficient value on non-SSD machines
 - Final row counts are stored in a new 'qa' table in the gnaf and admin_bdys schemas for checking the results
+- Code has been refactored to simplify it a bit and move some common functions to a new psma.py file
 
 # gnaf-loader
 A quick way to load the complete Geocoded National Address File of Australia (GNAF) and Australian Administrative Boundaries into Postgres, simplified and ready to use as reference data for geocoding, analysis, visualisation and aggregation.

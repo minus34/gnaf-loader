@@ -140,7 +140,8 @@ def split_sql_into_list(pg_cur, the_sql, table_schema, table_name, table_alias, 
             sql_list.append(mp_sql)
             start_pkey = end_pkey
 
-        # logger.info('\n'.join(sql_list)
+        # logger.info('\n'.join(sql_list))
+
         return sql_list
     except Exception as ex:
         logger.fatal("Looks like the table in this query is empty: {0}\n{1}".format(min_max_sql, ex))
