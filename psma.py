@@ -80,10 +80,19 @@ def prep_sql_list(sql_list, settings):
 
 # set schema names in the SQL script
 def prep_sql(sql, settings):
-    sql = sql.replace(" raw_gnaf.", " {0}.".format(settings['raw_gnaf_schema'], ))
-    sql = sql.replace(" gnaf.", " {0}.".format(settings['gnaf_schema'], ))
-    sql = sql.replace(" raw_admin_bdys.", " {0}.".format(settings['raw_admin_bdys_schema'], ))
-    sql = sql.replace(" admin_bdys.", " {0}.".format(settings['admin_bdys_schema'], ))
+
+    if settings['raw_gnaf_schema'] is not None:
+        sql = sql.replace(" raw_gnaf.", " {0}.".format(settings['raw_gnaf_schema'], ))
+    if settings['raw_admin_bdys_schema'] is not None:
+        sql = sql.replace(" raw_admin_bdys.", " {0}.".format(settings['raw_admin_bdys_schema'], ))
+    if settings['gnaf_schema'] is not None:
+        sql = sql.replace(" gnaf.", " {0}.".format(settings['gnaf_schema'], ))
+    if settings['admin_bdys_schema'] is not None:
+        sql = sql.replace(" admin_bdys.", " {0}.".format(settings['admin_bdys_schema'], ))
+
+    if settings['pg_user'] != "postgres":
+        # alter create table script to run with correct Postgres user name
+        sql = sql.replace(" postgres;", " {0};".format(settings['pg_user'], ))
 
     return sql
 

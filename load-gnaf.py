@@ -307,10 +307,6 @@ def create_raw_gnaf_tables(pg_cur, settings):
     else:
         unlogged_string = ""
 
-    if settings['pg_user'] != "postgres":
-        # alter create table script to run with correct Postgres user name
-        sql = sql.replace("postgres", settings['pg_user'])
-
     # create raw gnaf tables
     pg_cur.execute(sql)
 
