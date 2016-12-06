@@ -528,8 +528,8 @@ def prep_admin_bdys(pg_cur, settings):
 
     # create tables using multiprocessing - using flag in file to split file up into sets of statements
     sql_list = psma.open_sql_file("02-02a-prep-admin-bdys-tables.sql", settings).split("-- # --")
-    sql_list.append(psma.open_sql_file("02-02b-prep-census-2011-bdys-tables.sql", settings).split("-- # --"))
-    sql_list.append(psma.open_sql_file("02-02c-prep-census_2016-bdys-tables.sql", settings).split("-- # --"))
+    sql_list = sql_list + psma.open_sql_file("02-02b-prep-census-2011-bdys-tables.sql", settings).split("-- # --")
+    sql_list = sql_list + psma.open_sql_file("02-02c-prep-census-2016-bdys-tables.sql", settings).split("-- # --")
 
     # # Account for bdys that are not in states to load - not yet working
     # for sql in sql_list:
