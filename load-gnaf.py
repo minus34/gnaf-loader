@@ -878,6 +878,8 @@ def create_qa_tables(pg_cur, settings):
                     # if no state field - change the query for an Australia count only
                     logger.warning("Couldn't get row count for {0}.{1} : {2}".format(schema, table_name, ex))
 
+        pg_cur.execute("ANALYZE {0}.qa".format(schema))
+
         logger.info("\t- Step {0} of 2 : got row counts for {1} schema : {2}"
                     .format(i, schema, datetime.now() - start_time))
 
