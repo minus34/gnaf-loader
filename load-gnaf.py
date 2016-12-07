@@ -853,10 +853,10 @@ def boundary_tag_gnaf(pg_cur, settings):
         gnaf_pids = list()
 
         for duplicate in duplicates:
-            gnaf_pids.append(duplicate[0])
+            gnaf_pids.append("\t\t" + duplicate[0])
 
         logger.info("\t- Step {0} of 8 : found boundary tag duplicates : {1}".format(i, datetime.now() - start_time))
-        logger.info("\t\t\n".join(gnaf_pids))
+        logger.info("\n".join(gnaf_pids))
     except psycopg2.Error:
         logger.info("\t- Step {0} of 8 : no boundary tag duplicates : {1}".format(i, datetime.now() - start_time))
 
