@@ -143,12 +143,3 @@ GNAF and the Admin Bdys have been customised to remove some of the known, minor 
 - The Melbourne, VIC locality has been split into Melbourne, 3000 and Melbourne 3004 localities (the new locality PIDs are VIC 1634_1 & VIC 1634_2). The split occurs at the Yarra River (based on the postcodes in the Melbourne addresses)
 - A postcode boundaries layer has been created using the postcodes in the address tables. Whilst this closely emulates the official PSMA postcode boundaries, there are several hundred addresses that are in the wrong postcode bdy. Do not treat this data as authoritative
 
-## KNOWN ISSUES
- - If you only want to load certain states - you may get an error in Part 2 stating a table doesn't exist - this can be ignored. e.g. loading ACT only will return an error saying "local_government_wards" does not exist.
-
-## TO DO
-- Output reference tables to PSV & SHP
-- List final record counts
-- Build QA into the Python script
-- Script the creation of pg_dump files in Python
-- Script the copying of pg_dump, PSV & SHP file to Amazon S3, in Python
