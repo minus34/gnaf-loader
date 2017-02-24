@@ -1,5 +1,6 @@
 ### Change Log - February 2017 Release
 - No changes
+
 ### Change Log - November 2016 Release
 - Logging is now written to load-gnaf.log in your local repo directory as well as to the console 
 - Added `--psma-version` to the parameters. Represents the PSMA version number in YYYYMM format and is used to add a suffix to the default schema names. Defaults to current year and latest release month. e.g. `201611`. Valid values are `<year>02` `<year>05` `<year>08` `<year>11`, and is based on the PSMA quarterly release months 
