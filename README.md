@@ -1,3 +1,5 @@
+### Change Log - February 2017 Release
+- No changes
 ### Change Log - November 2016 Release
 - Logging is now written to load-gnaf.log in your local repo directory as well as to the console 
 - Added `--psma-version` to the parameters. Represents the PSMA version number in YYYYMM format and is used to add a suffix to the default schema names. Defaults to current year and latest release month. e.g. `201611`. Valid values are `<year>02` `<year>05` `<year>08` `<year>11`, and is based on the PSMA quarterly release months 
@@ -32,9 +34,9 @@ My benchmarks are:
 To get a good load time you'll need to configure your Postgres server for performance. There's a good guide [here](http://revenant.ca/www/postgis/workshop/tuning.html), noting it's a few years old and some of the memory parameters can be beefed up if you have the RAM.
 
 ### Pre-requisites
-- Postgres 9.3+ with PostGIS 2.2 (tested on 9.3, 9.4 & 9.5 on Windows and 9.5, 9.6 on macOS)
+- Postgres 9.3+ with PostGIS 2.2+ (tested on 9.3, 9.4 & 9.5 on Windows and 9.5, 9.6 on macOS)
 - Add the Postgres bin directory to your system PATH
-- Python 2.7 or Python 3.5 with Psycopg2 2.6
+- Python 2.7 or Python 3.5 with Psycopg2 2.6.x
 
 ### Process
 1. Download [PSMA GNAF from data.gov.au](http://data.gov.au/dataset/geocoded-national-address-file-g-naf)
@@ -121,8 +123,8 @@ Should take 15-60 minutes.
 - A knowledge of [Postgres pg_restore parameters](http://www.postgresql.org/docs/9.5/static/app-pgrestore.html)
 
 ### Process
-1. Download [gnaf-201611.dmp](http://minus34.com/opendata/psma-201611/gnaf-201611.dmp) (~1.6Gb)
-2. Download [admin-bdys-201611.dmp](http://minus34.com/opendata/psma-201611/admin-bdys-201611.dmp) (~2.0Gb)
+1. Download [gnaf-201702.dmp](http://minus34.com/opendata/psma-201702/gnaf-201702.dmp) (~1.6Gb)
+2. Download [admin-bdys-201702.dmp](http://minus34.com/opendata/psma-201702/admin-bdys-201702.dmp) (~2.0Gb)
 3. Edit the restore-gnaf-admin-bdys.bat or .sh script in the supporting-files folder for your database parameters and for the location of pg_restore
 5. Run the script, come back in 15-60 minutes and enjoy!
 
