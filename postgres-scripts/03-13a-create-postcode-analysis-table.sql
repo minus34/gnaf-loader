@@ -7,8 +7,8 @@ DROP TABLE IF EXISTS admin_bdys.postcode_bdys_analysis CASCADE;
 CREATE UNLOGGED TABLE admin_bdys.postcode_bdys_analysis
 (
   gid SERIAL NOT NULL,
-  postcode character(4),
-  state character varying(3) NOT NULL,
+  postcode text,
+  state text NOT NULL,
   geom geometry(Polygon,4283) NOT NULL
 )
 WITH (OIDS=FALSE);

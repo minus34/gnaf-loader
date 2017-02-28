@@ -6,11 +6,11 @@
 DROP TABLE IF EXISTS admin_bdys.locality_bdys CASCADE;
 CREATE TABLE admin_bdys.locality_bdys(
   gid SERIAL NOT NULL,
-  locality_pid character varying(16) NOT NULL,
-  locality_name character varying(100) NOT NULL,
-  postcode char(4) NULL,
-  state character varying(3) NOT NULL,
-	locality_class character varying(50) NOT NULL,
+  locality_pid text NOT NULL,
+  locality_name text NOT NULL,
+  postcode text NULL,
+  state text NOT NULL,
+  locality_class text NOT NULL,
   address_count integer NOT NULL DEFAULT 0,
   street_count integer NOT NULL DEFAULT 0,
   geom geometry(Multipolygon, 4283, 2) NOT NULL
@@ -43,11 +43,11 @@ ANALYZE admin_bdys.locality_bdys;
 -- create temp table of ACT districts
 DROP TABLE IF EXISTS temp_districts;
 CREATE TEMPORARY TABLE temp_districts (
-  locality_pid character varying(16) NOT NULL PRIMARY KEY,
-  locality_name character varying(100) NOT NULL,
-  postcode char(4) NULL,
-  state character varying(3) NOT NULL,
-	locality_class character varying(50) NOT NULL,
+  locality_pid text NOT NULL PRIMARY KEY,
+  locality_name text NOT NULL,
+  postcode text NULL,
+  state text NOT NULL,
+  locality_class text NOT NULL,
   geom geometry(Multipolygon, 4283, 2) NULL
 ) WITH (OIDS=FALSE);
 ALTER TABLE temp_districts OWNER TO postgres;
@@ -153,11 +153,11 @@ SELECT '250190776' AS locality_pid,
 DROP TABLE IF EXISTS temp_bdys;
 CREATE UNLOGGED TABLE temp_bdys
 (
-  locality_pid character varying(16) NOT NULL,
-  locality_name character varying(100) NOT NULL,
-  postcode char(4) NULL,
-  state character varying(3) NOT NULL,
-	locality_class character varying(50) NOT NULL,
+  locality_pid text NOT NULL,
+  locality_name text NOT NULL,
+  postcode text NULL,
+  state text NOT NULL,
+	locality_class text NOT NULL,
   geom geometry(Multipolygon, 4283, 2) NOT NULL
 )
 WITH (OIDS=FALSE);
@@ -216,11 +216,11 @@ ALTER TABLE admin_bdys.locality_bdys CLUSTER ON locality_bdys_geom_idx;
 -- CREATE UNLOGGED TABLE admin_bdys.hundreds_sa_only
 -- (
 --   gid SERIAL NOT NULL,
---   locality_pid character varying(16) NOT NULL PRIMARY KEY,
---   locality_name character varying(100) NOT NULL,
---   postcode char(4) NULL,
---   state character varying(3) NOT NULL,
--- 	locality_class character varying(50) NOT NULL,
+--   locality_pid text NOT NULL PRIMARY KEY,
+--   locality_name text NOT NULL,
+--   postcode text NULL,
+--   state text NOT NULL,
+-- 	locality_class text NOT NULL,
 --   geom geometry(Multipolygon, 4283, 2) NOT NULL
 -- )
 -- WITH (OIDS=FALSE);
@@ -261,8 +261,8 @@ DROP TABLE IF EXISTS admin_bdys.postcode_bdys CASCADE;
 CREATE UNLOGGED TABLE admin_bdys.postcode_bdys
 (
   gid SERIAL NOT NULL,
-  postcode character(4),
-  state character varying(3) NOT NULL,
+  postcode text,
+  state text NOT NULL,
   address_count integer NOT NULL,
   street_count integer NOT NULL,
   geom geometry(Multipolygon, 4283, 2) NOT NULL

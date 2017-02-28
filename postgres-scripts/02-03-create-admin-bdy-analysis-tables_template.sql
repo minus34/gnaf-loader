@@ -2,9 +2,9 @@
 DROP TABLE IF EXISTS admin_bdys.{0}_analysis CASCADE;
 CREATE TABLE admin_bdys.{0}_analysis (
   gid SERIAL NOT NULL PRIMARY KEY,
-  {1} character varying(16) NOT NULL,
-  name character varying(100) NOT NULL,
-  state character varying(3) NOT NULL,
+  {1} text NOT NULL,
+  name text NOT NULL,
+  state text NOT NULL,
   geom geometry(Polygon, 4283, 2) NOT NULL
 ) WITH (OIDS=FALSE);
 ALTER TABLE admin_bdys.{0}_analysis OWNER TO postgres;

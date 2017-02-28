@@ -714,17 +714,17 @@ def boundary_tag_gnaf(pg_cur, settings):
     pg_cur.execute("DROP TABLE IF EXISTS {0}.address_admin_boundaries CASCADE".format(settings['gnaf_schema'], ))
     create_table_list = list()
     create_table_list.append("CREATE TABLE {0}.address_admin_boundaries (gid serial NOT NULL,"
-                             "gnaf_pid character varying(16) NOT NULL,"
+                             "gnaf_pid text NOT NULL,"
                              "alias_principal character(1) NOT NULL,"
-                             "locality_pid character varying(16) NOT NULL,"
-                             "locality_name character varying(100) NOT NULL,"
-                             "postcode character varying(4),"
-                             "state character varying(3) NOT NULL"
+                             "locality_pid text NOT NULL,"
+                             "locality_name text NOT NULL,"
+                             "postcode text,"
+                             "state text NOT NULL"
                              .format(settings['gnaf_schema'], ))
     for table in table_list:
         pid_field = table[1]
         name_field = pid_field.replace("_pid", "_name")
-        create_table_list.append(", {0} character varying(15), {1} character varying(100)"
+        create_table_list.append(", {0} text, {1} text"
                                  .format(pid_field, name_field))
     create_table_list.append(") WITH (OIDS=FALSE);ALTER TABLE {0}.address_admin_boundaries OWNER TO {1}"
                              .format(settings['gnaf_schema'], settings['pg_user']))
@@ -873,7 +873,7 @@ def create_qa_tables(pg_cur, settings):
 
         # create qa table of rows counts
         sql = "DROP TABLE IF EXISTS {0}.qa;" \
-              "CREATE TABLE {0}.qa (table_name character varying(50), aus integer, act integer, nsw integer, " \
+              "CREATE TABLE {0}.qa (table_name text, aus integer, act integer, nsw integer, " \
               "nt integer, ot integer, qld integer, sa integer, tas integer, vic integer, wa integer) " \
               "WITH (OIDS=FALSE);" \
               "ALTER TABLE {0}.qa OWNER TO {1}".format(schema, settings['pg_user'])
