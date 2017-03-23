@@ -66,22 +66,22 @@ def main():
 
     # START LOADING DATA
 
-    # PART 1 - load gnaf from PSV files
-    logger.info("")
-    start_time = datetime.now()
-    logger.info("Part 1 of 4 : Start raw GNAF load : {0}".format(start_time))
-    drop_tables_and_vacuum_db(pg_cur, settings)
-    create_raw_gnaf_tables(pg_cur, settings)
-    populate_raw_gnaf(settings)
-    index_raw_gnaf(settings)
-    if settings['primary_foreign_keys']:
-        create_primary_foreign_keys(settings)
-    else:
-        logger.info("\t- Step 6 of 7 : primary & foreign keys NOT created")
-    analyse_raw_gnaf_tables(pg_cur, settings)
-    # set postgres search path back to the default
-    pg_cur.execute("SET search_path = public, pg_catalog")
-    logger.info("Part 1 of 4 : Raw GNAF loaded! : {0}".format(datetime.now() - start_time))
+    # # PART 1 - load gnaf from PSV files
+    # logger.info("")
+    # start_time = datetime.now()
+    # logger.info("Part 1 of 4 : Start raw GNAF load : {0}".format(start_time))
+    # drop_tables_and_vacuum_db(pg_cur, settings)
+    # create_raw_gnaf_tables(pg_cur, settings)
+    # populate_raw_gnaf(settings)
+    # index_raw_gnaf(settings)
+    # if settings['primary_foreign_keys']:
+    #     create_primary_foreign_keys(settings)
+    # else:
+    #     logger.info("\t- Step 6 of 7 : primary & foreign keys NOT created")
+    # analyse_raw_gnaf_tables(pg_cur, settings)
+    # # set postgres search path back to the default
+    # pg_cur.execute("SET search_path = public, pg_catalog")
+    # logger.info("Part 1 of 4 : Raw GNAF loaded! : {0}".format(datetime.now() - start_time))
 
     # PART 2 - load raw admin boundaries from Shapefiles
     logger.info("")
@@ -92,29 +92,29 @@ def main():
     create_admin_bdys_for_analysis(settings)
     logger.info("Part 2 of 4 : Raw admin boundaries loaded! : {0}".format(datetime.now() - start_time))
 
-    # PART 3 - create flattened and standardised GNAF and Administrative Boundary reference tables
-    logger.info("")
-    start_time = datetime.now()
-    logger.info("Part 3 of 4 : Start create reference tables : {0}".format(start_time))
-    create_reference_tables(pg_cur, settings)
-    logger.info("Part 3 of 4 : Reference tables created! : {0}".format(datetime.now() - start_time))
-
-    # PART 4 - boundary tag GNAF addresses
-    logger.info("")
-    if settings['boundary_tag']:
-        start_time = datetime.now()
-        logger.info("Part 4 of 4 : Start boundary tagging addresses : {0}".format(start_time))
-        boundary_tag_gnaf(pg_cur, settings)
-        logger.info("Part 4 of 4 : Addresses boundary tagged: {0}".format(datetime.now() - start_time))
-    else:
-        logger.warning("Part 4 of 4 : Addresses NOT boundary tagged")
-
-    # # PART 5 - get record counts for QA
-    logger.info("")
-    start_time = datetime.now()
-    logger.info("Part 5 of 5 : Start row counts : {0}".format(start_time))
-    create_qa_tables(pg_cur, settings)
-    logger.info("Part 5 of 5 : Got row counts : {0}".format(datetime.now() - start_time))
+    # # PART 3 - create flattened and standardised GNAF and Administrative Boundary reference tables
+    # logger.info("")
+    # start_time = datetime.now()
+    # logger.info("Part 3 of 4 : Start create reference tables : {0}".format(start_time))
+    # create_reference_tables(pg_cur, settings)
+    # logger.info("Part 3 of 4 : Reference tables created! : {0}".format(datetime.now() - start_time))
+    #
+    # # PART 4 - boundary tag GNAF addresses
+    # logger.info("")
+    # if settings['boundary_tag']:
+    #     start_time = datetime.now()
+    #     logger.info("Part 4 of 4 : Start boundary tagging addresses : {0}".format(start_time))
+    #     boundary_tag_gnaf(pg_cur, settings)
+    #     logger.info("Part 4 of 4 : Addresses boundary tagged: {0}".format(datetime.now() - start_time))
+    # else:
+    #     logger.warning("Part 4 of 4 : Addresses NOT boundary tagged")
+    #
+    # # # PART 5 - get record counts for QA
+    # logger.info("")
+    # start_time = datetime.now()
+    # logger.info("Part 5 of 5 : Start row counts : {0}".format(start_time))
+    # create_qa_tables(pg_cur, settings)
+    # logger.info("Part 5 of 5 : Got row counts : {0}".format(datetime.now() - start_time))
 
     # close Postgres connection
     pg_cur.close()
@@ -435,23 +435,10 @@ def load_raw_admin_boundaries(pg_cur, settings):
         pg_cur.execute("CREATE SCHEMA IF NOT EXISTS {0} AUTHORIZATION {1}"
                        .format(settings['raw_admin_bdys_schema'], settings['pg_user']))
 
-    # set psql connect string and password
-    psql_str = "psql -U {0} -d {1} -h {2} -p {3}"\
-        .format(settings['pg_user'], settings['pg_db'], settings['pg_host'], settings['pg_port'])
-
-    password_str = ''
-    if not os.getenv("PGPASSWORD"):
-        if platform.system() == "Windows":
-            password_str = "SET"
-        else:
-            password_str = "export"
-
-        password_str += " PGPASSWORD={0}&&".format(settings['pg_password'])
-
     # get file list
-    table_list = []
-    cmd_list1 = []
-    cmd_list2 = []
+    table_list = list()
+    create_list = list()
+    append_list = list()
 
     for state in settings['states_to_load']:
         state = state.lower()
@@ -460,61 +447,62 @@ def load_raw_admin_boundaries(pg_cur, settings):
             for file_name in files:
                 if file_name.lower().startswith(state + "_"):
                     if file_name.lower().endswith("_shp.dbf"):
+                        file_dict = dict()
+
                         # change file type for spatial files
                         if file_name.lower().endswith("_polygon_shp.dbf"):
-                            spatial = True
-                            bdy_file = os.path.join(root, file_name.replace(".dbf", ".shp"))
+                            file_dict['spatial'] = True
+                            file_dict['file_path'] = os.path.join(root, file_name.replace(".dbf", ".shp"))
                         else:
-                            spatial = False
-                            bdy_file = os.path.join(root, file_name)
+                            file_dict['spatial'] = False
+                            file_dict['file_path'] = os.path.join(root, file_name)
 
-                        bdy_table = file_name.lower().replace(state + "_", "aus_", 1).replace("_shp.dbf", "")
+                        file_dict['pg_table'] = \
+                            file_name.lower().replace(state + "_", "aus_", 1).replace("_shp.dbf", "")
+
+                        file_dict['pg_schema'] = settings['raw_admin_bdys_schema']
 
                         # set command line parameters depending on whether this is the 1st state (for creating tables)
                         table_list_add = False
 
-                        if bdy_table not in table_list:
+                        if file_dict['pg_table'] not in table_list:
                             table_list_add = True
 
-                            if spatial:
-                                params = "-d -D -s 4283 -i"
-                            else:
-                                params = "-d -D -G -n -i"
+                            file_dict['delete_table'] = True
                         else:
-                            if spatial:
-                                params = "-a -D -s 4283 -i"
-                            else:
-                                params = "-a -D -G -n -i"
-
-                        cmd = "{0}shp2pgsql {1} \"{2}\" {3}.{4} | {5}".format(
-                            password_str, params, bdy_file, settings['raw_admin_bdys_schema'], bdy_table, psql_str)
+                            file_dict['delete_table'] = False
 
                         # if locality file from Towns folder: don't add - it's a duplicate
-                        if "town points" not in bdy_file.lower():
+                        if "town points" not in file_dict['file_path'].lower():
                             if table_list_add:
-                                table_list.append(bdy_table)
-                                cmd_list1.append(cmd)
+                                table_list.append(file_dict['pg_table'])
+                                create_list.append(file_dict)
                             else:
-                                cmd_list2.append(cmd)
+                                append_list.append(file_dict)
                         else:
-                            if not bdy_file.lower().endswith("_locality_shp.dbf"):
+                            if not file_dict['file_path'].lower().endswith("_locality_shp.dbf"):
                                 if table_list_add:
-                                    table_list.append(bdy_table)
-                                    cmd_list1.append(cmd)
+                                    table_list.append(file_dict['pg_table'])
+                                    create_list.append(file_dict)
                                 else:
-                                    cmd_list2.append(cmd)
+                                    append_list.append(file_dict)
 
-    # logger.info('\n'.join(cmd_list1)
-    # logger.info('\n'.join(cmd_list2)
+    # logger.info(create_list)
+    # logger.info(append_list)
 
     # are there any files to load?
-    if len(cmd_list1) == 0:
-        logger.fatal("No Admin Boundary files found\nACTION: Check your 'admin-bdys-path' argument")
+    if len(create_list) == 0:
+        logger.fatal("No admin boundary files found\nACTION: Check your 'admin-bdys-path' argument")
     else:
-        # load files in separate processes -
-        # do the commands that create the tables first before attempting the subsequent insert commands
-        psma.multiprocess_list("cmd", cmd_list1, settings, logger)
-        psma.multiprocess_list("cmd", cmd_list2, settings, logger)
+        # load files in separate processes
+        psma.multiprocess_shapefile_load(create_list, settings, logger)
+
+        # Run the appends one at a time (Can't multi process as large sets of parallel INSERTs cause database deadlocks)
+        # utils.multiprocess_shapefile_load(append_list, settings, logger)
+        for shp in append_list:
+            psma.import_shapefile_to_postgres(pg_cur, shp['file_path'], shp['pg_table'], shp['pg_schema'],
+                                               shp['delete_table'], shp['spatial'])
+
         logger.info("\t- Step 1 of 3 : raw admin boundaries loaded : {0}".format(datetime.now() - start_time))
 
 
