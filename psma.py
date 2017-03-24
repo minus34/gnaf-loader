@@ -257,8 +257,10 @@ def import_shapefile_to_postgres(pg_cur, file_path, pg_table, pg_schema, delete_
         spatial_or_dbf_flags = "-G -n"
 
     # build shp2pgsql command line
-    shp2pgsql_cmd = "shp2pgsql {0} {1} -i -I {2} {3}.{4}"\
+    shp2pgsql_cmd = "shp2pgsql {0} {1} -i -I '{2}' {3}.{4}"\
         .format(delete_append_flag, spatial_or_dbf_flags, file_path, pg_schema, pg_table)
+
+    # print(shp2pgsql_cmd)
 
     # convert the Shapefile to SQL statements
     try:
@@ -291,11 +293,12 @@ def import_shapefile_to_postgres(pg_cur, file_path, pg_table, pg_schema, delete_
         return "\tImporting {0} - Couldn't run Shapefile SQL".format(file_path)
 
     # Cluster table on spatial index for performance
-    sql = "ALTER TABLE {0}.{1} CLUSTER ON {1}_geom_idx".format(pg_schema, pg_table)
+    if spatial:
+        sql = "ALTER TABLE {0}.{1} CLUSTER ON {1}_geom_idx".format(pg_schema, pg_table)
 
-    try:
-        pg_cur.execute(sql)
-    except:
-        return "\tImporting {0} - Couldn't cluster on spatial index".format(pg_table)
+        try:
+            pg_cur.execute(sql)
+        except:
+            return "\tImporting {0} - Couldn't cluster on spatial index".format(pg_table)
 
     return "SUCCESS"
