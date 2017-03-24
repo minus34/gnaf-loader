@@ -26,7 +26,6 @@
 # *********************************************************************************************************************
 
 import os
-import platform
 import psycopg2
 import argparse
 import logging.config

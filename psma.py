@@ -252,14 +252,13 @@ def import_shapefile_to_postgres(pg_cur, file_path, pg_table, pg_schema, delete_
 
     # assign coordinate system if spatial, otherwise flag as non-spatial
     if spatial:
-        spatial_or_dbf_flags = "-s 4283"
+        spatial_or_dbf_flags = "-s 4283 -I"
     else:
         spatial_or_dbf_flags = "-G -n"
 
     # build shp2pgsql command line
-    shp2pgsql_cmd = "shp2pgsql {0} {1} -i -I '{2}' {3}.{4}"\
+    shp2pgsql_cmd = "shp2pgsql {0} {1} -i '{2}' {3}.{4}"\
         .format(delete_append_flag, spatial_or_dbf_flags, file_path, pg_schema, pg_table)
-
     # print(shp2pgsql_cmd)
 
     # convert the Shapefile to SQL statements
