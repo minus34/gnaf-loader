@@ -286,6 +286,7 @@ def import_shapefile_to_postgres(pg_cur, file_path, pg_table, pg_schema, delete_
     try:
         pg_cur.execute(sql)
     except:
+        # if import fails for some reason - output sql to file for debugging
         target = open(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'test.sql'), "w")
         target.write(sql)
 
