@@ -197,3 +197,108 @@ def check_postgis_version(pg_cur, settings, logger):
     logger.info("")
     logger.info("Running on Postgres {0} and PostGIS {1} (with GEOS {2})"
                 .format(pg_version, postgis_version, geos_version))
+
+
+def multiprocess_shapefile_load(work_list, settings, logger):
+    pool = multiprocessing.Pool(processes=settings['max_concurrent_processes'])
+
+    num_jobs = len(work_list)
+
+    results = pool.imap_unordered(intermediate_shapefile_load_step, [[w, settings] for w in work_list])
+
+    pool.close()
+    pool.join()
+
+    result_list = list(results)
+    num_results = len(result_list)
+
+    if num_jobs > num_results:
+        logger.warning("\t- A MULTIPROCESSING PROCESS FAILED WITHOUT AN ERROR\nACTION: Check the record counts")
+
+    for result in result_list:
+        if result != "SUCCESS":
+            logger.info(result)
+
+
+def intermediate_shapefile_load_step(args):
+    work_dict = args[0]
+    settings = args[1]
+    # logger = args[2]
+
+    file_path = work_dict['file_path']
+    pg_table = work_dict['pg_table']
+    pg_schema = work_dict['pg_schema']
+    delete_table = work_dict['delete_table']
+    spatial = work_dict['spatial']
+
+    pg_conn = psycopg2.connect(settings['pg_connect_string'])
+    pg_conn.autocommit = True
+    pg_cur = pg_conn.cursor()
+
+    result = import_shapefile_to_postgres(pg_cur, file_path, pg_table, pg_schema, delete_table, spatial)
+
+    return result
+
+
+# imports a Shapefile into Postgres in 2 steps: SHP > SQL; SQL > Postgres
+# overcomes issues trying to use psql with PGPASSWORD set at runtime
+def import_shapefile_to_postgres(pg_cur, file_path, pg_table, pg_schema, delete_table, spatial):
+
+    # delete target table or append to it?
+    if delete_table:
+        delete_append_flag = "-d"
+    else:
+        delete_append_flag = "-a"
+
+    # assign coordinate system if spatial, otherwise flag as non-spatial
+    if spatial:
+        spatial_or_dbf_flags = "-s 4283 -I"
+    else:
+        spatial_or_dbf_flags = "-G -n"
+
+    # build shp2pgsql command line
+    shp2pgsql_cmd = "shp2pgsql {0} {1} -i \"{2}\" {3}.{4}"\
+        .format(delete_append_flag, spatial_or_dbf_flags, file_path, pg_schema, pg_table)
+    # print(shp2pgsql_cmd)
+
+    # convert the Shapefile to SQL statements
+    try:
+        process = subprocess.Popen(shp2pgsql_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+        sqlobj, err = process.communicate()
+    except:
+        return "Importing {0} - Couldn't convert Shapefile to SQL".format(file_path)
+
+    # prep Shapefile SQL
+    sql = sqlobj.decode("utf-8")  # this is required for Python 3
+    sql = sql.replace("Shapefile type: ", "-- Shapefile type: ")
+    sql = sql.replace("Postgis type: ", "-- Postgis type: ")
+    sql = sql.replace("SELECT DropGeometryColumn", "-- SELECT DropGeometryColumn")
+
+    # bug in shp2pgsql? - an append command will still create a spatial index if requested - disable it
+    if not delete_table:
+        sql = sql.replace("CREATE INDEX ", "-- CREATE INDEX ")
+
+    # this is required due to differing approaches by different versions of PostGIS
+    sql = sql.replace("DROP TABLE ", "DROP TABLE IF EXISTS ")
+    sql = sql.replace("DROP TABLE IF EXISTS IF EXISTS ", "DROP TABLE IF EXISTS ")
+
+    # import data to Postgres
+    try:
+        pg_cur.execute(sql)
+    except:
+        # if import fails for some reason - output sql to file for debugging
+        target = open(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'test.sql'), "w")
+        target.write(sql)
+
+        return "\tImporting {0} - Couldn't run Shapefile SQL\nshp2pgsql result was: {1} ".format(file_path, err)
+
+    # Cluster table on spatial index for performance
+    if spatial:
+        sql = "ALTER TABLE {0}.{1} CLUSTER ON {1}_geom_idx".format(pg_schema, pg_table)
+
+        try:
+            pg_cur.execute(sql)
+        except:
+            return "\tImporting {0} - Couldn't cluster on spatial index".format(pg_table)
+
+    return "SUCCESS"

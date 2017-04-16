@@ -1,5 +1,5 @@
 ### Change Log - February 2017 Release
-- No changes
+- Refactored the raw admin boundary import process to avoid needing to set PGPASSWORD. This could have failed on some Postgres instances due to security settings. The new process imports the shapefiles into SQL and then runs it using Psycopg2 instead of psql. 
 
 ### Change Log - November 2016 Release
 - Logging is now written to load-gnaf.log in your local repo directory as well as to the console 
@@ -41,7 +41,7 @@ To get a good load time you'll need to configure your Postgres server for perfor
 
 ### Process
 1. Download [PSMA GNAF from data.gov.au](http://data.gov.au/dataset/geocoded-national-address-file-g-naf)
-2. Download [PSMA Administrative Boundaries from data.gov.au](http://data.gov.au/dataset/psma-administrative-boundaries) (download the ESRI Shapefile version)
+2. Download [PSMA Administrative Boundaries from data.gov.au](http://data.gov.au/dataset/psma-administrative-boundaries) (**download the ESRI Shapefile version**)
 3. Unzip GNAF to a directory on your Postgres server
 4. Alter security on the directory to grant Postgres read access
 5. Unzip Admin Bdys to a local directory
