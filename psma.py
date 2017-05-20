@@ -176,6 +176,18 @@ def get_psma_version(date):
         return str(year) + '11'
 
 
+def check_python_version(logger):
+    # get python and psycopg2 version
+    python_version = sys.version.split("(")[0].strip()
+    psycopg2_version = psycopg2.__version__.split("(")[0].strip()
+    os_version = platform.system() + " " + platform.version().strip()
+
+    # logger.info("")
+    logger.info("\t- running Python {0} with Psycopg2 {1}"
+                .format(python_version, psycopg2_version))
+    logger.info("\t- on {0}".format(os_version))
+
+
 def check_postgis_version(pg_cur, settings, logger):
     # get Postgres, PostGIS & GEOS versions
     pg_cur.execute("SELECT version()")
@@ -196,20 +208,8 @@ def check_postgis_version(pg_cur, settings, logger):
             geos_version_num = float(geos_version[:3])
     if postgis_version_num >= 2.2 and geos_version_num >= 3.5:
         settings['st_subdivide_supported'] = True
-    logger.info("using Postgres {0} and PostGIS {1} (with GEOS {2})"
+    logger.info("\t- using Postgres {0} and PostGIS {1} (with GEOS {2})"
                 .format(pg_version, postgis_version, geos_version))
-
-
-def check_python_version(logger):
-    # get python and psycopg2 version
-    python_version = sys.version.split("(")[0].strip()
-    psycopg2_version = psycopg2.__version__.split("(")[0].strip()
-    os_version = platform.system() + " " + platform.version().strip()
-
-    logger.info("")
-    logger.info("Running Python {0} with Psycopg2 {1}"
-                .format(python_version, psycopg2_version))
-    logger.info("on {0}".format(os_version))
 
 
 def multiprocess_shapefile_load(work_list, settings, logger):
