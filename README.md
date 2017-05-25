@@ -1,3 +1,6 @@
+### Change Log - May 2017 Release
+- Nothing so far... 
+
 ### Change Log - February 2017 Release
 - Refactored the raw admin boundary import process to avoid needing to set PGPASSWORD. This could have failed on some Postgres instances due to security settings. The new process imports the shapefiles into SQL and then runs it using Psycopg2 instead of psql. 
 
@@ -35,9 +38,9 @@ My benchmarks are:
 To get a good load time you'll need to configure your Postgres server for performance. There's a good guide [here](http://revenant.ca/www/postgis/workshop/tuning.html), noting it's a few years old and some of the memory parameters can be beefed up if you have the RAM.
 
 ### Pre-requisites
-- Postgres 9.3+ with PostGIS 2.2+ (tested on 9.3, 9.4 & 9.5 on Windows and 9.5, 9.6 on macOS)
+- Postgres 9.3+ with PostGIS 2.2+ (tested on 9.3, 9.4, 9.5 on Windows and 9.5, 9.6 on macOS)
 - Add the Postgres bin directory to your system PATH
-- Python 2.7 or Python 3.5 with Psycopg2 2.6.x
+- Python 2.7+ or Python 3.6+ with Psycopg2 2.6+
 
 ### Process
 1. Download [PSMA GNAF from data.gov.au](http://data.gov.au/dataset/geocoded-national-address-file-g-naf)
@@ -124,8 +127,8 @@ Should take 15-60 minutes.
 - A knowledge of [Postgres pg_restore parameters](http://www.postgresql.org/docs/9.5/static/app-pgrestore.html)
 
 ### Process
-1. Download [gnaf-201702.dmp](http://minus34.com/opendata/psma-201702/gnaf-201702.dmp) (~1.6Gb)
-2. Download [admin-bdys-201702.dmp](http://minus34.com/opendata/psma-201702/admin-bdys-201702.dmp) (~2.0Gb)
+1. Download [gnaf-201705.dmp](http://minus34.com/opendata/psma-201705/gnaf-201705.dmp) (~1.6Gb)
+2. Download [admin-bdys-201705.dmp](http://minus34.com/opendata/psma-201705/admin-bdys-201705.dmp) (~2.0Gb)
 3. Edit the restore-gnaf-admin-bdys.bat or .sh script in the supporting-files folder for your database parameters and for the location of pg_restore
 5. Run the script, come back in 15-60 minutes and enjoy!
 
