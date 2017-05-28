@@ -1,5 +1,5 @@
 ### Change Log - May 2017 Release
-- Nothing so far... 
+- Nothing to see here...
 
 ### Change Log - February 2017 Release
 - Refactored the raw admin boundary import process to avoid needing to set PGPASSWORD. This could have failed on some Postgres instances due to security settings. The new process imports the shapefiles into SQL and then runs it using Psycopg2 instead of psql. 
