@@ -100,15 +100,15 @@ def main():
 
     # PART 4 - boundary tag GNAF addresses
     logger.info("")
-    if settings['boundary_tag']:
+    if settings["no_boundary_tag"]:
+        logger.warning("Part 4 of 4 : Addresses NOT boundary tagged")
+    else:
         start_time = datetime.now()
         logger.info("Part 4 of 4 : Start boundary tagging addresses : {0}".format(start_time))
         boundary_tag_gnaf(pg_cur, settings)
         logger.info("Part 4 of 4 : Addresses boundary tagged: {0}".format(datetime.now() - start_time))
-    else:
-        logger.warning("Part 4 of 4 : Addresses NOT boundary tagged")
 
-    # # PART 5 - get record counts for QA
+    # PART 5 - get record counts for QA
     logger.info("")
     start_time = datetime.now()
     logger.info("Part 5 of 5 : Start row counts : {0}".format(start_time))
@@ -133,12 +133,12 @@ def set_arguments():
                     'simplified and ready to use as reference data for geocoding, analysis and visualisation.')
 
     parser.add_argument(
-        '--prevacuum', action='store_true', default=False, help='Forces database to be vacuumed after dropping tables.')
+        '--prevacuum', action='store_true', help='Forces database to be vacuumed after dropping tables.')
     parser.add_argument(
-        '--raw-fk', action='store_true', default=False,
+        '--raw-fk', action='store_true',
         help='Creates primary & foreign keys for the raw GNAF tables (adds time to data load)')
     parser.add_argument(
-        '--raw-unlogged', action='store_true', default=False,
+        '--raw-unlogged', action='store_true',
         help='Creates unlogged raw GNAF tables, speeding up the import. Only specify this option if you don\'t care '
              'about the raw data afterwards - they will be lost if the server crashes!')
     parser.add_argument(
@@ -146,8 +146,8 @@ def set_arguments():
         help='Maximum number of parallel processes to use for the data load. (Set it to the number of cores on the '
              'Postgres server minus 2, limit to 12 if 16+ cores - there is minimal benefit beyond 12). Defaults to 6.')
     parser.add_argument(
-        '--boundary-tag', action='store_true', dest='boundary_tag', default=True,
-        help='Tags all addresses with admin boundary IDs for creating aggregates and choropleth maps. '
+        '--no-boundary-tag', action='store_true', dest='no_boundary_tag',
+        help='DO NOT tag all addresses with admin boundary IDs for creating aggregates and choropleth maps. '
              'IMPORTANT: this will contribute 15-60 minutes to the process if you have PostGIS 2.2. '
              'WARNING: if you have PostGIS 2.1 or lower - this process can take hours')
 
@@ -219,12 +219,11 @@ def get_settings(args):
     settings['max_concurrent_processes'] = args.max_processes
     settings['psma_version'] = args.psma_version
     settings['states_to_load'] = args.states
-    settings['boundary_tag'] = args.boundary_tag
+    settings['no_boundary_tag'] = args.no_boundary_tag
     settings['raw_gnaf_schema'] = args.raw_gnaf_schema
     settings['raw_admin_bdys_schema'] = args.raw_admin_schema
     settings['gnaf_schema'] = args.gnaf_schema
     settings['admin_bdys_schema'] = args.admin_schema
-    settings['boundary_tag'] = args.boundary_tag
     settings['gnaf_network_directory'] = args.gnaf_tables_path.replace("\\", "/")
     if args.local_server_dir:
         settings['gnaf_pg_server_local_directory'] = args.local_server_dir.replace("\\", "/")
