@@ -1,5 +1,5 @@
 ### Change Log - May 2017 Release
-- No changes
+- A `--no-boundary-tag` flag replaces the incorrectly implemented `--boundary-tag` flag. Including the `--no-boundary-tag` flag will prevent GNAF being tagging with PSMA Admin Boundary IDs and save ~15-45 minutes of processing time.
 
 ### Change Log - February 2017 Release
 - Refactored the raw admin boundary import process to avoid needing to set PGPASSWORD. This could have failed on some Postgres instances due to security settings. The new process imports the shapefiles into SQL and then runs it using Psycopg2 instead of psql. 
@@ -79,8 +79,8 @@ The behaviour of gnaf-loader can be controlled by specifying various command lin
 if you intend to utilise the raw GNAF tables as anything more then a temporary import step. Note that the final processed tables will always have appropriate
 primary and foreign keys set.
 * `--raw-unlogged` creates unlogged raw GNAF tables, speeding up the import. Defaults to off. Only specify this option if you don't care about the raw data tables after the import - they will be lost if the server crashes!
-* `--max-processes` specifies the maximum number of parallel processes to use for the data load. Set this to the number of cores on the Postgres server minus 2, but limit to 12 if 16+ cores - there is minimal benefit beyond 12. Defaults to 6.
-* `--boundary-tag` tags all addresses with some of the key admin boundary IDs for creating aggregates and choropleth maps.
+* `--max-processes` specifies the maximum number of parallel processes to use for the data load. Set this to the number of cores on the Postgres server minus 2, but limit to 12 if 16+ cores - there is minimal benefit beyond 12. Defaults to 3.
+* `--no-boundary-tag` DO NOT tag all addresses with some of the key admin boundary IDs for creating aggregates and choropleth maps.
 
 ### Example Command Line Arguments
 * Local Postgres server: `python load-gnaf.py --gnaf-tables-path="C:\temp\psma_201602\G-NAF" --admin-bdys-path="C:\temp\psma_201602\Administrative Boundaries"` Loads the GNAF tables to a Postgres server running locally. GNAF archives have been extracted to the folder `C:\temp\psma_201602\G-NAF`, and admin boundaries have been extracted to the `C:\temp\psma_201602\Administrative Boundaries` folder.
