@@ -88,7 +88,7 @@ primary and foreign keys set.
 * Loading only selected states: `python load-gnaf.py --states VIC TAS NT ...` Loads only the data for Victoria, Tasmania and Northern Territory
 
 ### Advanced
-You can load the Admin Boundaries without GNAF. To do this: comment out steps 1, 3 & 4 in def main.
+You can load the Admin Boundaries without GNAF. To do this: comment out steps 1, 3 and 4 in def main.
 
 Note: you can't load GNAF without the Admin Bdys due to dependencies required to split Melbourne and to fix non-boundary locality_pids on addresses.
 
