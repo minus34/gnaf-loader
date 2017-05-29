@@ -1,5 +1,5 @@
 
-import io
+# import io
 import multiprocessing
 import math
 import os
@@ -9,63 +9,63 @@ import subprocess
 import sys
 
 
-# takes a list of sql queries or command lines and runs them using multiprocessing
-def multiprocess_csv_import(work_list, settings, logger):
-    pool = multiprocessing.Pool(processes=settings['max_concurrent_processes'])
-
-    num_jobs = len(work_list)
-
-    results = pool.imap_unordered(run_csv_import_multiprocessing, [[w, settings] for w in work_list])
-
-    pool.close()
-    pool.join()
-
-    result_list = list(results)
-    num_results = len(result_list)
-
-    if num_jobs > num_results:
-        logger.warning("\t- A MULTIPROCESSING PROCESS FAILED WITHOUT AN ERROR\nACTION: Check the record counts")
-
-    for result in result_list:
-        if result != "SUCCESS":
-            logger.info(result)
-
-
-def run_csv_import_multiprocessing(args):
-    file_dict = args[0]
-    settings = args[1]
-
-    pg_conn = psycopg2.connect(settings['pg_connect_string'])
-    pg_conn.autocommit = True
-    pg_cur = pg_conn.cursor()
-
-    try:
-        # read CSV into a string
-        raw_string = open(file_dict["path"], 'r').read()
-
-        # # clean whitespace and non-ascii characters
-        # clean_string = raw_string.lstrip().rstrip().replace(" ", "").replace("\x1A", "")
-
-        # convert to in memory stream
-        csv_file = io.StringIO(raw_string)
-        csv_file.seek(0)  # move position back to beginning of file before reading
-
-        # import into Postgres
-        sql = "COPY {0}.{1} FROM stdin WITH CSV DELIMITER as '|' NULL as ''"\
-            .format(settings['raw_gnaf_schema'], file_dict["path"])
-        pg_cur.copy_expert(sql, csv_file)
-
-    except Exception as ex:
-        return "IMPORT CSV INTO POSTGRES FAILED! : {0} : {1}".format(file_dict["path"], ex)
-
-    pg_cur.execute("ANALYSE {0}.{1}".format(settings['raw_gnaf_schema'], file_dict["path"]))
-
-    result = "SUCCESS"
-
-    pg_cur.close()
-    pg_conn.close()
-
-    return result
+# # takes a list of sql queries or command lines and runs them using multiprocessing
+# def multiprocess_csv_import(work_list, settings, logger):
+#     pool = multiprocessing.Pool(processes=settings['max_concurrent_processes'])
+#
+#     num_jobs = len(work_list)
+#
+#     results = pool.imap_unordered(run_csv_import_multiprocessing, [[w, settings] for w in work_list])
+#
+#     pool.close()
+#     pool.join()
+#
+#     result_list = list(results)
+#     num_results = len(result_list)
+#
+#     if num_jobs > num_results:
+#         logger.warning("\t- A MULTIPROCESSING PROCESS FAILED WITHOUT AN ERROR\nACTION: Check the record counts")
+#
+#     for result in result_list:
+#         if result != "SUCCESS":
+#             logger.info(result)
+#
+#
+# def run_csv_import_multiprocessing(args):
+#     file_dict = args[0]
+#     settings = args[1]
+#
+#     pg_conn = psycopg2.connect(settings['pg_connect_string'])
+#     pg_conn.autocommit = True
+#     pg_cur = pg_conn.cursor()
+#
+#     try:
+#         # read CSV into a string
+#         raw_string = open(file_dict["path"], 'r').read()
+#
+#         # # clean whitespace and non-ascii characters
+#         # clean_string = raw_string.lstrip().rstrip().replace(" ", "").replace("\x1A", "")
+#
+#         # convert to in memory stream
+#         csv_file = io.StringIO(raw_string)
+#         csv_file.seek(0)  # move position back to beginning of file before reading
+#
+#         # import into Postgres
+#         sql = "COPY {0}.{1} FROM stdin WITH CSV DELIMITER as '|' NULL as ''"\
+#             .format(settings['raw_gnaf_schema'], file_dict["path"])
+#         pg_cur.copy_expert(sql, csv_file)
+#
+#     except Exception as ex:
+#         return "IMPORT CSV INTO POSTGRES FAILED! : {0} : {1}".format(file_dict["path"], ex)
+#
+#     pg_cur.execute("ANALYSE {0}.{1}".format(settings['raw_gnaf_schema'], file_dict["path"]))
+#
+#     result = "SUCCESS"
+#
+#     pg_cur.close()
+#     pg_conn.close()
+#
+#     return result
 
 
 # takes a list of sql queries or command lines and runs them using multiprocessing
