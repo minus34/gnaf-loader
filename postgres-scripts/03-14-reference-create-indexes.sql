@@ -29,7 +29,7 @@ ALTER TABLE ONLY admin_bdys.postcode_bdys ADD CONSTRAINT postcode_bdys_pk PRIMAR
 
 -- required for boundary tagging
 CREATE INDEX address_principals_gid_idx ON gnaf.address_principals USING btree(gid);
-CREATE INDEX address_aliases_gid_idx ON gnaf.address_principals USING btree(gid);
+CREATE INDEX address_aliases_gid_idx ON gnaf.address_aliases USING btree(gid);
 
 -- foreign keys
 
