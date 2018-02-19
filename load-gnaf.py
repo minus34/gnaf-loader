@@ -499,7 +499,7 @@ def load_raw_admin_boundaries(pg_cur, settings):
         # utils.multiprocess_shapefile_load(append_list, settings, logger)
         for shp in append_list:
             psma.import_shapefile_to_postgres(pg_cur, shp['file_path'], shp['pg_table'], shp['pg_schema'],
-                                               shp['delete_table'], shp['spatial'])
+                                              shp['delete_table'], shp['spatial'])
 
         logger.info("\t- Step 1 of 3 : raw admin boundaries loaded : {0}".format(datetime.now() - start_time))
 
