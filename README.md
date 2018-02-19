@@ -110,8 +110,8 @@ Should take 15-60 minutes.
 - A knowledge of [Postgres pg_restore parameters](http://www.postgresql.org/docs/9.5/static/app-pgrestore.html)
 
 ### Process
-1. Download [gnaf-201711.dmp](http://minus34.com/opendata/psma-201711/gnaf-201711.dmp) (~1.6Gb)
-2. Download [admin-bdys-201711.dmp](http://minus34.com/opendata/psma-201711/admin-bdys-201711.dmp) (~2.7Gb)
+1. Download [gnaf-201802.dmp](http://minus34.com/opendata/psma-201802/gnaf-201802.dmp) (~1.6Gb)
+2. Download [admin-bdys-201802.dmp](http://minus34.com/opendata/psma-201802/admin-bdys-201802.dmp) (~2.7Gb)
 3. Edit the restore-gnaf-admin-bdys.bat or .sh script in the supporting-files folder for your database parameters and for the location of pg_restore
 5. Run the script, come back in 15-60 minutes and enjoy!
 

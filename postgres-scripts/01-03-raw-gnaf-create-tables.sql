@@ -71,7 +71,7 @@ CREATE TABLE address_detail (
     date_created date NOT NULL,
     date_last_modified date,
     date_retired date,
-    building_name character varying(45),
+    building_name character varying(100),
     lot_number_prefix character varying(2),
     lot_number character varying(5),
     lot_number_suffix character varying(2),
