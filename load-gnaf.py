@@ -690,129 +690,131 @@ def boundary_tag_gnaf(pg_cur, settings):
             # if no analysis tables created - use the full tables instead of the subdivided ones
             # WARNING: this can add hours to the processing
             if settings['st_subdivide_supported']:
-                table_name = "{0}_analysis".format(table[0], )
+                table_name = "{}_analysis".format(table[0], )
             else:
                 table_name = table[0]
 
             table_list.append([table_name, table[1]])
 
-    # create bdy tagged address table
-    pg_cur.execute("DROP TABLE IF EXISTS {0}.address_admin_boundaries CASCADE".format(settings['gnaf_schema'], ))
-    create_table_list = list()
-    create_table_list.append("CREATE TABLE {0}.address_admin_boundaries (gid serial NOT NULL,"
-                             "gnaf_pid text NOT NULL,"
-                             "alias_principal character(1) NOT NULL,"
-                             "locality_pid text NOT NULL,"
-                             "locality_name text NOT NULL,"
-                             "postcode text,"
-                             "state text NOT NULL"
-                             .format(settings['gnaf_schema'], ))
-    for table in table_list:
-        pid_field = table[1]
-        name_field = pid_field.replace("_pid", "_name")
-        create_table_list.append(", {0} text, {1} text"
-                                 .format(pid_field, name_field))
-    create_table_list.append(") WITH (OIDS=FALSE);ALTER TABLE {0}.address_admin_boundaries OWNER TO {1}"
-                             .format(settings['gnaf_schema'], settings['pg_user']))
-    pg_cur.execute("".join(create_table_list))
-
-    i = 0
-
+    # create bdy tagged address tables
     for address_table in ["address_principals", "address_aliases"]:
-
-        # Step 1/4 of 8 : tag gnaf addresses with admin boundary IDs, using multiprocessing
-        start_time = datetime.now()
-
-        # create temp tables
-        template_sql = psma.open_sql_file("04-01a-bdy-tag-create-table-template.sql", settings)
-        for table in table_list:
-            pg_cur.execute(template_sql.format(table[0],))
-
-        # create temp tables of bdy tagged gnaf_pids
-        template_sql = psma.open_sql_file("04-01b-bdy-tag-template.sql", settings)
-        sql_list = list()
-        for table in table_list:
-            sql = template_sql.format(table[0], table[1])
-
-            short_sql_list = psma.split_sql_into_list(pg_cur, sql, settings['admin_bdys_schema'], table[0],
-                                                      "bdys", "gid", settings, logger)
-
-            if short_sql_list is not None:
-                sql_list.extend(short_sql_list)
-
-        # logger.info('\n'.join(sql_list))
-
-        if sql_list is not None:
-            psma.multiprocess_list("sql", sql_list, settings, logger)
-
-        i += 1
-        logger.info("\t- Step {0} of 8 : {1} - gnaf addresses tagged with admin boundary IDs: {2}"
-                    .format(i, address_table, datetime.now() - start_time))
-        start_time = datetime.now()
-
-        # Step 2/5 of 8 : delete invalid matches, create indexes and analyse tables
-        sql_list = list()
-        for table in table_list:
-            sql = "DELETE FROM {0}.temp_{1}_tags WHERE gnaf_state <> bdy_state AND gnaf_state <> 'OT';" \
-                  "CREATE INDEX temp_{1}_tags_gnaf_pid_idx ON {0}.temp_{1}_tags USING btree(gnaf_pid);" \
-                  "ANALYZE {0}.temp_{1}_tags".format(settings['gnaf_schema'], table[0])
-            sql_list.append(sql)
-        psma.multiprocess_list("sql", sql_list, settings, logger)
-
-        i += 1
-        logger.info("\t- Step {0} of 8 : {1} - invalid matches deleted & bdy tag indexes created : {2}"
-                    .format(i, address_table, datetime.now() - start_time))
-        start_time = datetime.now()
-
-        # Step 3/6 of 8 : insert boundary tagged addresses
-
-        # create insert statement for multiprocessing
-        insert_field_list = list()
-        insert_field_list.append("(gnaf_pid, alias_principal, locality_pid, locality_name, postcode, state")
-
-        insert_join_list = list()
-        insert_join_list.append("FROM {0}.{1} AS pnts ".format(settings['gnaf_schema'], address_table))
-
-        select_field_list = list()
-        select_field_list.append("SELECT pnts.gnaf_pid, pnts.alias_principal, pnts.locality_pid, "
-                                 "pnts.locality_name, pnts.postcode, pnts.state")
-
-        drop_table_list = list()
+        pg_cur.execute("DROP TABLE IF EXISTS {}.{}_admin_boundaries CASCADE"
+                       .format(settings['gnaf_schema'], address_table))
+        create_table_list = list()
+        create_table_list.append("CREATE TABLE {}.{}_admin_boundaries (gid serial NOT NULL,"
+                                 "gnaf_pid text NOT NULL,"
+                                 "alias_principal character(1) NOT NULL,"
+                                 "locality_pid text NOT NULL,"
+                                 "locality_name text NOT NULL,"
+                                 "postcode text,"
+                                 "state text NOT NULL"
+                                 .format(settings['gnaf_schema'], address_table))
 
         for table in table_list:
             pid_field = table[1]
-            name_field = pid_field. replace("_pid", "_name")
-            insert_field_list.append(", {0}, {1}".format(pid_field, name_field))
-            select_field_list.append(", temp_{0}_tags.bdy_pid, temp_{0}_tags.bdy_name ".format(table[0]))
-            insert_join_list.append("LEFT OUTER JOIN {0}.temp_{1}_tags ON pnts.gnaf_pid = temp_{1}_tags.gnaf_pid "
-                                    .format(settings['gnaf_schema'], table[0]))
-            drop_table_list.append("DROP TABLE IF EXISTS {0}.temp_{1}_tags;".format(settings['gnaf_schema'], table[0]))
+            name_field = pid_field.replace("_pid", "_name")
+            create_table_list.append(", {} text, {} text".format(pid_field, name_field))
+        create_table_list.append(") WITH (OIDS=FALSE);ALTER TABLE {}.{}_admin_boundaries OWNER TO {}"
+                                 .format(settings['gnaf_schema'], address_table, settings['pg_user']))
+        pg_cur.execute("".join(create_table_list))
 
-        insert_field_list.append(") ")
+    # Step 1 of 8 : tag gnaf addresses with admin boundary IDs, using multiprocessing
+    start_time = datetime.now()
 
-        insert_statement_list = list()
-        insert_statement_list.append("INSERT INTO {0}.address_admin_boundaries ".format(settings['gnaf_schema'],))
-        insert_statement_list.append("".join(insert_field_list))
-        insert_statement_list.append("".join(select_field_list))
-        insert_statement_list.append("".join(insert_join_list))
+    # create temp tables
+    template_sql = psma.open_sql_file("04-01a-bdy-tag-create-table-template.sql", settings)
+    for table in table_list:
+        pg_cur.execute(template_sql.format(table[0],))
 
-        sql = "".join(insert_statement_list) + ";"
-        sql_list = psma.split_sql_into_list(pg_cur, sql, settings['gnaf_schema'], address_table, "pnts", "gid",
-                                            settings, logger)
-        # logger.info("\n".join(sql_list)
+    # create temp tables of bdy tagged gnaf_pids
+    template_sql = psma.open_sql_file("04-01b-bdy-tag-template.sql", settings)
+    sql_list = list()
+    for table in table_list:
+        sql = template_sql.format(table[0], table[1])
 
-        if sql_list is not None:
-            psma.multiprocess_list("sql", sql_list, settings, logger)
+        short_sql_list = psma.split_sql_into_list(pg_cur, sql, settings['admin_bdys_schema'], table[0],
+                                                  "bdys", "gid", settings, logger)
 
-        # drop temp tables
-        pg_cur.execute("".join(drop_table_list))
+        if short_sql_list is not None:
+            sql_list.extend(short_sql_list)
 
-        # get stats
-        pg_cur.execute("ANALYZE {0}.address_admin_boundaries ".format(settings['gnaf_schema']))
+    # logger.info('\n'.join(sql_list))
 
-        i += 1
-        logger.info("\t- Step {0} of 8 : {1} - bdy tags added to output table : {2}"
-                    .format(i, address_table, datetime.now() - start_time))
+    if sql_list is not None:
+        psma.multiprocess_list("sql", sql_list, settings, logger)
+
+    logger.info("\t- Step 1 of 8 : principal addresses tagged with admin boundary IDs: {}"
+                .format(datetime.now() - start_time, ))
+    start_time = datetime.now()
+
+    # Step 2 of 8 : delete invalid matches, create indexes and analyse tables
+    sql_list = list()
+    for table in table_list:
+        sql = "DELETE FROM {0}.temp_{1}_tags WHERE gnaf_state <> bdy_state AND gnaf_state <> 'OT';" \
+              "CREATE INDEX temp_{1}_tags_gnaf_pid_idx ON {0}.temp_{1}_tags USING btree(gnaf_pid);" \
+              "ANALYZE {0}.temp_{1}_tags".format(settings['gnaf_schema'], table[0])
+        sql_list.append(sql)
+    psma.multiprocess_list("sql", sql_list, settings, logger)
+
+    logger.info("\t- Step 2 of 8 : principal addresses - invalid matches deleted & bdy tag indexes created : {}"
+                .format(datetime.now() - start_time, ))
+    start_time = datetime.now()
+
+    # Step 3 of 8 : insert boundary tagged addresses
+
+    # create insert statement for multiprocessing
+    insert_field_list = list()
+    insert_field_list.append("(gnaf_pid, alias_principal, locality_pid, locality_name, postcode, state")
+
+    insert_join_list = list()
+    insert_join_list.append("FROM {}.address_principals AS pnts ".format(settings['gnaf_schema'], ))
+
+    select_field_list = list()
+    select_field_list.append("SELECT pnts.gnaf_pid, pnts.alias_principal, pnts.locality_pid, "
+                             "pnts.locality_name, pnts.postcode, pnts.state")
+
+    drop_table_list = list()
+
+    for table in table_list:
+        pid_field = table[1]
+        name_field = pid_field. replace("_pid", "_name")
+        insert_field_list.append(", {0}, {1}".format(pid_field, name_field))
+        select_field_list.append(", temp_{0}_tags.bdy_pid, temp_{0}_tags.bdy_name ".format(table[0]))
+        insert_join_list.append("LEFT OUTER JOIN {0}.temp_{1}_tags ON pnts.gnaf_pid = temp_{1}_tags.gnaf_pid "
+                                .format(settings['gnaf_schema'], table[0]))
+        drop_table_list.append("DROP TABLE IF EXISTS {0}.temp_{1}_tags;".format(settings['gnaf_schema'], table[0]))
+
+    insert_field_list.append(") ")
+
+    insert_statement_list = list()
+    insert_statement_list.append("INSERT INTO {0}.address_admin_boundaries ".format(settings['gnaf_schema'],))
+    insert_statement_list.append("".join(insert_field_list))
+    insert_statement_list.append("".join(select_field_list))
+    insert_statement_list.append("".join(insert_join_list))
+
+    sql = "".join(insert_statement_list) + ";"
+    sql_list = psma.split_sql_into_list(pg_cur, sql, settings['gnaf_schema'], "address_principals", "pnts", "gid",
+                                        settings, logger)
+    # logger.info("\n".join(sql_list)
+
+    if sql_list is not None:
+        psma.multiprocess_list("sql", sql_list, settings, logger)
+
+    # drop temp tables
+    pg_cur.execute("".join(drop_table_list))
+
+    # get stats
+    pg_cur.execute("ANALYZE {0}.address_admin_boundaries ".format(settings['gnaf_schema']))
+
+    i += 1
+    logger.info("\t- Step 3 of 8 : principal addresses - bdy tags added to output table : {}"
+                .format(datetime.now() - start_time, ))
+
+
+
+
+
+
 
     start_time = datetime.now()
 
@@ -821,9 +823,8 @@ def boundary_tag_gnaf(pg_cur, settings):
         .format(settings['gnaf_schema'])
     pg_cur.execute(sql)
 
-    i += 1
-    logger.info("\t- Step {0} of 8 : created index on bdy tagged address table : {1}"
-                .format(i, datetime.now() - start_time))
+    logger.info("\t- Step 4 of 8 : created index on bdy tagged address table : {}"
+                .format(datetime.now() - start_time, ))
     start_time = datetime.now()
 
     # Step 8 of 8 : log duplicates - happens when 2 boundaries overlap by a very small amount
