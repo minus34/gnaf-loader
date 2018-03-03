@@ -787,7 +787,8 @@ def boundary_tag_gnaf(pg_cur, settings):
     insert_field_list.append(") ")
 
     insert_statement_list = list()
-    insert_statement_list.append("INSERT INTO {0}.address_admin_boundaries ".format(settings['gnaf_schema'],))
+    insert_statement_list.append("INSERT INTO {0}.address_principals_admin_boundaries "
+                                 .format(settings['gnaf_schema'], ))
     insert_statement_list.append("".join(insert_field_list))
     insert_statement_list.append("".join(select_field_list))
     insert_statement_list.append("".join(insert_join_list))
@@ -804,22 +805,16 @@ def boundary_tag_gnaf(pg_cur, settings):
     pg_cur.execute("".join(drop_table_list))
 
     # get stats
-    pg_cur.execute("ANALYZE {0}.address_admin_boundaries ".format(settings['gnaf_schema']))
+    pg_cur.execute("ANALYZE {0}.address_principals_admin_boundaries ".format(settings['gnaf_schema']))
 
-    i += 1
     logger.info("\t- Step 3 of 8 : principal addresses - bdy tags added to output table : {}"
                 .format(datetime.now() - start_time, ))
 
-
-
-
-
-
-
     start_time = datetime.now()
 
-    # Step 7 of 8 : add index to output table
-    sql = "CREATE INDEX address_admin_boundaries_gnaf_pid_idx ON {0}.address_admin_boundaries USING btree (gnaf_pid)"\
+    # Step 4 of 8 : add index to output table
+    sql = "CREATE INDEX address_principals_admin_boundaries_gnaf_pid_idx " \
+          "ON {0}.address_principals_admin_boundaries USING btree (gnaf_pid)"\
         .format(settings['gnaf_schema'])
     pg_cur.execute(sql)
 
@@ -827,25 +822,33 @@ def boundary_tag_gnaf(pg_cur, settings):
                 .format(datetime.now() - start_time, ))
     start_time = datetime.now()
 
-    # Step 8 of 8 : log duplicates - happens when 2 boundaries overlap by a very small amount
+    # Step 5 of 8 : log duplicates - happens when 2 boundaries overlap by a very small amount
     # (can be ignored if there's a small number of records affected)
-    sql = "SELECT gnaf_pid FROM (SELECT Count(*) AS cnt, gnaf_pid FROM {0}.address_admin_boundaries " \
+    sql = "SELECT gnaf_pid FROM (SELECT Count(*) AS cnt, gnaf_pid FROM {0}.address_principals_admin_boundaries " \
           "GROUP BY gnaf_pid) AS sqt WHERE cnt > 1".format(settings['gnaf_schema'])
     pg_cur.execute(sql)
 
-    i += 1
+    # get cursor description to test if any rows returned safely
+    columns = pg_cur.description
 
-    try:
+    # log gnaf_pids that got duplicate results
+    if columns is not None:
         duplicates = pg_cur.fetchall()
         gnaf_pids = list()
 
         for duplicate in duplicates:
             gnaf_pids.append("\t\t" + duplicate[0])
 
-        logger.warning("\t- Step {0} of 8 : found boundary tag duplicates : {1}".format(i, datetime.now() - start_time))
+        logger.warning("\t- Step 5 of 8 : found boundary tag duplicates : {}".format(datetime.now() - start_time, ))
         logger.warning("\n".join(gnaf_pids))
-    except psycopg2.Error:
-        logger.info("\t- Step {0} of 8 : no boundary tag duplicates : {1}".format(i, datetime.now() - start_time))
+    else:
+        logger.info("\t- Step 5 of 8 : no boundary tag duplicates : {}".format(datetime.now() - start_time, ))
+
+
+
+
+
+
 
 
 # get row counts of tables in each schema, by state, for visual QA
