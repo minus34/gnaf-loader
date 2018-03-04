@@ -65,38 +65,38 @@ def main():
 
     # START LOADING DATA
 
-    # PART 1 - load gnaf from PSV files
-    logger.info("")
-    start_time = datetime.now()
-    logger.info("Part 1 of 4 : Start raw GNAF load : {0}".format(start_time))
-    drop_tables_and_vacuum_db(pg_cur, settings)
-    create_raw_gnaf_tables(pg_cur, settings)
-    populate_raw_gnaf(settings)
-    index_raw_gnaf(settings)
-    if settings['primary_foreign_keys']:
-        create_primary_foreign_keys(settings)
-    else:
-        logger.info("\t- Step 6 of 7 : primary & foreign keys NOT created")
-    analyse_raw_gnaf_tables(pg_cur, settings)
-    # set postgres search path back to the default
-    pg_cur.execute("SET search_path = public, pg_catalog")
-    logger.info("Part 1 of 4 : Raw GNAF loaded! : {0}".format(datetime.now() - start_time))
-
-    # PART 2 - load raw admin boundaries from Shapefiles
-    logger.info("")
-    start_time = datetime.now()
-    logger.info("Part 2 of 4 : Start raw admin boundary load : {0}".format(start_time))
-    load_raw_admin_boundaries(pg_cur, settings)
-    prep_admin_bdys(pg_cur, settings)
-    create_admin_bdys_for_analysis(settings)
-    logger.info("Part 2 of 4 : Raw admin boundaries loaded! : {0}".format(datetime.now() - start_time))
-
-    # PART 3 - create flattened and standardised GNAF and Administrative Boundary reference tables
-    logger.info("")
-    start_time = datetime.now()
-    logger.info("Part 3 of 4 : Start create reference tables : {0}".format(start_time))
-    create_reference_tables(pg_cur, settings)
-    logger.info("Part 3 of 4 : Reference tables created! : {0}".format(datetime.now() - start_time))
+    # # PART 1 - load gnaf from PSV files
+    # logger.info("")
+    # start_time = datetime.now()
+    # logger.info("Part 1 of 4 : Start raw GNAF load : {0}".format(start_time))
+    # drop_tables_and_vacuum_db(pg_cur, settings)
+    # create_raw_gnaf_tables(pg_cur, settings)
+    # populate_raw_gnaf(settings)
+    # index_raw_gnaf(settings)
+    # if settings['primary_foreign_keys']:
+    #     create_primary_foreign_keys(settings)
+    # else:
+    #     logger.info("\t- Step 6 of 7 : primary & foreign keys NOT created")
+    # analyse_raw_gnaf_tables(pg_cur, settings)
+    # # set postgres search path back to the default
+    # pg_cur.execute("SET search_path = public, pg_catalog")
+    # logger.info("Part 1 of 4 : Raw GNAF loaded! : {0}".format(datetime.now() - start_time))
+    #
+    # # PART 2 - load raw admin boundaries from Shapefiles
+    # logger.info("")
+    # start_time = datetime.now()
+    # logger.info("Part 2 of 4 : Start raw admin boundary load : {0}".format(start_time))
+    # load_raw_admin_boundaries(pg_cur, settings)
+    # prep_admin_bdys(pg_cur, settings)
+    # create_admin_bdys_for_analysis(settings)
+    # logger.info("Part 2 of 4 : Raw admin boundaries loaded! : {0}".format(datetime.now() - start_time))
+    #
+    # # PART 3 - create flattened and standardised GNAF and Administrative Boundary reference tables
+    # logger.info("")
+    # start_time = datetime.now()
+    # logger.info("Part 3 of 4 : Start create reference tables : {0}".format(start_time))
+    # create_reference_tables(pg_cur, settings)
+    # logger.info("Part 3 of 4 : Reference tables created! : {0}".format(datetime.now() - start_time))
 
     # PART 4 - boundary tag GNAF addresses
     logger.info("")
@@ -108,12 +108,12 @@ def main():
         boundary_tag_gnaf(pg_cur, settings)
         logger.info("Part 4 of 4 : Addresses boundary tagged: {0}".format(datetime.now() - start_time))
 
-    # PART 5 - get record counts for QA
-    logger.info("")
-    start_time = datetime.now()
-    logger.info("Part 5 of 5 : Start row counts : {0}".format(start_time))
-    create_qa_tables(pg_cur, settings)
-    logger.info("Part 5 of 5 : Got row counts : {0}".format(datetime.now() - start_time))
+    # # PART 5 - get record counts for QA
+    # logger.info("")
+    # start_time = datetime.now()
+    # logger.info("Part 5 of 5 : Start row counts : {0}".format(start_time))
+    # create_qa_tables(pg_cur, settings)
+    # logger.info("Part 5 of 5 : Got row counts : {0}".format(datetime.now() - start_time))
 
     # close Postgres connection
     pg_cur.close()
@@ -764,13 +764,13 @@ def boundary_tag_gnaf(pg_cur, settings):
 
     # create insert statement for multiprocessing
     insert_field_list = list()
-    insert_field_list.append("(gnaf_pid, alias_principal, locality_pid, locality_name, postcode, state")
+    insert_field_list.append("(gnaf_pid, locality_pid, locality_name, postcode, state")
 
     insert_join_list = list()
     insert_join_list.append("FROM {}.address_principals AS pnts ".format(settings['gnaf_schema'], ))
 
     select_field_list = list()
-    select_field_list.append("SELECT pnts.gnaf_pid, pnts.alias_principal, pnts.locality_pid, "
+    select_field_list.append("SELECT pnts.gnaf_pid, pnts.locality_pid, "
                              "pnts.locality_name, pnts.postcode, pnts.state")
 
     drop_table_list = list()
@@ -839,13 +839,17 @@ def boundary_tag_gnaf(pg_cur, settings):
         for duplicate in duplicates:
             gnaf_pids.append("\t\t" + duplicate[0])
 
-        logger.warning("\t- Step 5 of 8 : found boundary tag duplicates : {}".format(datetime.now() - start_time, ))
-        logger.warning("\n".join(gnaf_pids))
+        if len(gnaf_pids) > 0:
+            logger.warning("\t- Step 5 of 8 : found boundary tag duplicates : {}".format(datetime.now() - start_time, ))
+            logger.warning("\n".join(gnaf_pids))
+        else:
+            logger.info("\t- Step 5 of 8 : no boundary tag duplicates : {}".format(datetime.now() - start_time, ))
     else:
         logger.info("\t- Step 5 of 8 : no boundary tag duplicates : {}".format(datetime.now() - start_time, ))
 
     # Step 6 of 8 : Copy principal boundary tags to alias addresses
     pg_cur.execute(psma.open_sql_file("04-06-bdy-tags-for-alias-addresses.sql", settings))
+    logger.warning("\t- Step 6 of 6 : alias addresses boundary tagged : {}".format(datetime.now() - start_time, ))
 
 
 # get row counts of tables in each schema, by state, for visual QA
