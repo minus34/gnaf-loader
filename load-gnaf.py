@@ -851,6 +851,10 @@ def boundary_tag_gnaf(pg_cur, settings):
     pg_cur.execute(psma.open_sql_file("04-06-bdy-tags-for-alias-addresses.sql", settings))
     logger.info("\t- Step 6 of 6 : alias addresses boundary tagged : {}".format(datetime.now() - start_time, ))
 
+    # Step 7 of 7 : Create view of all bdy tags
+    pg_cur.execute(psma.open_sql_file("04-07-create-bdy-tag-view.sql", settings))
+    logger.info("\t- Step 6 of 6 : boundary tagged address view created : {}".format(datetime.now() - start_time, ))
+
 
 # get row counts of tables in each schema, by state, for visual QA
 def create_qa_tables(pg_cur, settings):
