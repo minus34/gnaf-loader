@@ -5,3 +5,5 @@ SELECT als.gnaf_pid, pcl.locality_pid, pcl.locality_name,
   FROM gnaf.address_principal_admin_boundaries AS pcl
   INNER JOIN gnaf.address_alias_lookup AS lkp ON pcl.gnaf_pid = lkp.principal_pid
   INNER JOIN gnaf.address_aliases AS als ON lkp.alias_pid = als.gnaf_pid;
+
+ANALYZE gnaf.address_alias_admin_boundaries;
