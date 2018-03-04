@@ -1,3 +1,6 @@
+### Feb 2018 Release
+- Admin boundary tags on alias addresses are now copied from each alias' principal address. This can reduce processing times significantly. Previously the boundary tags were processed using spatial queries.
+
 ### May 2017 Release
 - A `--no-boundary-tag` flag replaces the incorrectly implemented `--boundary-tag` flag. Including the `--no-boundary-tag` flag will prevent GNAF being tagging with PSMA Admin Boundary IDs and save ~15-45 minutes of processing time.
 
