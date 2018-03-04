@@ -697,13 +697,13 @@ def boundary_tag_gnaf(pg_cur, settings):
             table_list.append([table_name, table[1]])
 
     # create bdy tagged address tables
-    for address_table in ["address_principals", "address_aliases"]:
+    for address_table in ["address_principal", "address_alias"]:
         pg_cur.execute("DROP TABLE IF EXISTS {}.{}_admin_boundaries CASCADE"
                        .format(settings['gnaf_schema'], address_table))
         create_table_list = list()
         create_table_list.append("CREATE TABLE {}.{}_admin_boundaries (gid serial NOT NULL,"
                                  "gnaf_pid text NOT NULL,"
-                                 "alias_principal character(1) NOT NULL,"
+                                 # "alias_principal character(1) NOT NULL,"
                                  "locality_pid text NOT NULL,"
                                  "locality_name text NOT NULL,"
                                  "postcode text,"
@@ -787,7 +787,7 @@ def boundary_tag_gnaf(pg_cur, settings):
     insert_field_list.append(") ")
 
     insert_statement_list = list()
-    insert_statement_list.append("INSERT INTO {0}.address_principals_admin_boundaries "
+    insert_statement_list.append("INSERT INTO {0}.address_principal_admin_boundaries "
                                  .format(settings['gnaf_schema'], ))
     insert_statement_list.append("".join(insert_field_list))
     insert_statement_list.append("".join(select_field_list))
@@ -805,7 +805,7 @@ def boundary_tag_gnaf(pg_cur, settings):
     pg_cur.execute("".join(drop_table_list))
 
     # get stats
-    pg_cur.execute("ANALYZE {0}.address_principals_admin_boundaries ".format(settings['gnaf_schema']))
+    pg_cur.execute("ANALYZE {0}.address_principal_admin_boundaries ".format(settings['gnaf_schema']))
 
     logger.info("\t- Step 3 of 8 : principal addresses - bdy tags added to output table : {}"
                 .format(datetime.now() - start_time, ))
@@ -813,8 +813,8 @@ def boundary_tag_gnaf(pg_cur, settings):
     start_time = datetime.now()
 
     # Step 4 of 8 : add index to output table
-    sql = "CREATE INDEX address_principals_admin_boundaries_gnaf_pid_idx " \
-          "ON {0}.address_principals_admin_boundaries USING btree (gnaf_pid)"\
+    sql = "CREATE INDEX address_principal_admin_boundaries_gnaf_pid_idx " \
+          "ON {0}.address_principal_admin_boundaries USING btree (gnaf_pid)"\
         .format(settings['gnaf_schema'])
     pg_cur.execute(sql)
 
@@ -824,7 +824,7 @@ def boundary_tag_gnaf(pg_cur, settings):
 
     # Step 5 of 8 : log duplicates - happens when 2 boundaries overlap by a very small amount
     # (can be ignored if there's a small number of records affected)
-    sql = "SELECT gnaf_pid FROM (SELECT Count(*) AS cnt, gnaf_pid FROM {0}.address_principals_admin_boundaries " \
+    sql = "SELECT gnaf_pid FROM (SELECT Count(*) AS cnt, gnaf_pid FROM {0}.address_principal_admin_boundaries " \
           "GROUP BY gnaf_pid) AS sqt WHERE cnt > 1".format(settings['gnaf_schema'])
     pg_cur.execute(sql)
 
@@ -844,11 +844,8 @@ def boundary_tag_gnaf(pg_cur, settings):
     else:
         logger.info("\t- Step 5 of 8 : no boundary tag duplicates : {}".format(datetime.now() - start_time, ))
 
-
-
-
-
-
+    # Step 6 of 8 : Copy principal boundary tags to alias addresses
+    pg_cur.execute(psma.open_sql_file("04-06-bdy-tags-for-alias-addresses.sql", settings))
 
 
 # get row counts of tables in each schema, by state, for visual QA
