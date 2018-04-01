@@ -162,9 +162,9 @@ def set_arguments():
         help='Creates unlogged raw GNAF tables, speeding up the import. Only specify this option if you don\'t care '
              'about the raw data afterwards - they will be lost if the server crashes!')
     parser.add_argument(
-        '--max-processes', type=int, default=3,
+        '--max-processes', type=int, default=6,
         help='Maximum number of parallel processes to use for the data load. (Set it to the number of cores on the '
-             'Postgres server minus 2, limit to 12 if 16+ cores - there is minimal benefit beyond 12). Defaults to 3.')
+             'Postgres server minus 2, limit to 12 if 16+ cores - there is minimal benefit beyond 12). Defaults to 6.')
     parser.add_argument(
         '--no-boundary-tag', action='store_true', dest='no_boundary_tag',
         help='DO NOT tag all addresses with admin boundary IDs for creating aggregates and choropleth maps. '
@@ -923,8 +923,6 @@ def create_qa_tables(pg_cur, settings):
 
         logger.info("\t- Step {0} of 2 : got row counts for {1} schema : {2}"
                     .format(i, schema, datetime.now() - start_time))
-
-    logger.info("")
 
 
 if __name__ == '__main__':
