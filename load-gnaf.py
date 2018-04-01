@@ -65,10 +65,30 @@ def main():
 
     # START LOADING DATA
 
-    # PART 1 - load gnaf from PSV files
+    # PART 1 - create new schemas
+    # done up front to avoid this issue: https://github.com/minus34/gnaf-loader/issues/29
     logger.info("")
     start_time = datetime.now()
-    logger.info("Part 1 of 5 : Start raw GNAF load : {0}".format(start_time))
+    logger.info("Part 1 of 6 : Create schemas : {0}".format(start_time))
+
+    if settings['raw_gnaf_schema'] != "public":
+        pg_cur.execute("CREATE SCHEMA IF NOT EXISTS {0} AUTHORIZATION {1}"
+                       .format(settings['raw_gnaf_schema'], settings['pg_user']))
+    if settings['raw_admin_bdys_schema'] != "public":
+        pg_cur.execute("CREATE SCHEMA IF NOT EXISTS {0} AUTHORIZATION {1}"
+                       .format(settings['raw_admin_bdys_schema'], settings['pg_user']))
+    if settings['admin_bdys_schema'] != "public":
+        pg_cur.execute("CREATE SCHEMA IF NOT EXISTS {0} AUTHORIZATION {1}"
+                       .format(settings['admin_bdys_schema'], settings['pg_user']))
+    if settings['gnaf_schema'] != "public":
+        pg_cur.execute("CREATE SCHEMA IF NOT EXISTS {0} AUTHORIZATION {1}"
+                       .format(settings['gnaf_schema'], settings['pg_user']))
+    logger.info("Part 1 of 6 : Schemas created! : {0}".format(datetime.now() - start_time))
+
+    # PART 2 - load gnaf from PSV files
+    logger.info("")
+    start_time = datetime.now()
+    logger.info("Part 2 of 6 : Start raw GNAF load : {0}".format(start_time))
     drop_tables_and_vacuum_db(pg_cur, settings)
     create_raw_gnaf_tables(pg_cur, settings)
     populate_raw_gnaf(settings)
@@ -80,40 +100,40 @@ def main():
     analyse_raw_gnaf_tables(pg_cur, settings)
     # set postgres search path back to the default
     pg_cur.execute("SET search_path = public, pg_catalog")
-    logger.info("Part 1 of 5 : Raw GNAF loaded! : {0}".format(datetime.now() - start_time))
+    logger.info("Part 2 of 6 : Raw GNAF loaded! : {0}".format(datetime.now() - start_time))
 
-    # PART 2 - load raw admin boundaries from Shapefiles
+    # PART 3 - load raw admin boundaries from Shapefiles
     logger.info("")
     start_time = datetime.now()
-    logger.info("Part 2 of 5 : Start raw admin boundary load : {0}".format(start_time))
+    logger.info("Part 3 of 6 : Start raw admin boundary load : {0}".format(start_time))
     load_raw_admin_boundaries(pg_cur, settings)
     prep_admin_bdys(pg_cur, settings)
     create_admin_bdys_for_analysis(settings)
-    logger.info("Part 2 of 5 : Raw admin boundaries loaded! : {0}".format(datetime.now() - start_time))
+    logger.info("Part 3 of 6 : Raw admin boundaries loaded! : {0}".format(datetime.now() - start_time))
 
-    # PART 3 - create flattened and standardised GNAF and Administrative Boundary reference tables
+    # PART 4 - create flattened and standardised GNAF and Administrative Boundary reference tables
     logger.info("")
     start_time = datetime.now()
-    logger.info("Part 3 of 5 : Start create reference tables : {0}".format(start_time))
+    logger.info("Part 4 of 6 : Start create reference tables : {0}".format(start_time))
     create_reference_tables(pg_cur, settings)
-    logger.info("Part 3 of 5 : Reference tables created! : {0}".format(datetime.now() - start_time))
+    logger.info("Part 4 of 6 : Reference tables created! : {0}".format(datetime.now() - start_time))
 
-    # PART 4 - boundary tag GNAF addresses
+    # PART 5 - boundary tag GNAF addresses
     logger.info("")
     if settings["no_boundary_tag"]:
-        logger.warning("Part 4 of 5 : Addresses NOT boundary tagged")
+        logger.warning("Part 5 of 6 : Addresses NOT boundary tagged")
     else:
         start_time = datetime.now()
-        logger.info("Part 4 of 5 : Start boundary tagging addresses : {0}".format(start_time))
+        logger.info("Part 5 of 6 : Start boundary tagging addresses : {0}".format(start_time))
         boundary_tag_gnaf(pg_cur, settings)
-        logger.info("Part 4 of 5 : Addresses boundary tagged: {0}".format(datetime.now() - start_time))
+        logger.info("Part 5 of 6 : Addresses boundary tagged: {0}".format(datetime.now() - start_time))
 
-    # PART 5 - get record counts for QA
+    # PART 6 - get record counts for QA
     logger.info("")
     start_time = datetime.now()
-    logger.info("Part 5 of 5 : Start row counts : {0}".format(start_time))
+    logger.info("Part 6 of 6 : Start row counts : {0}".format(start_time))
     create_qa_tables(pg_cur, settings)
-    logger.info("Part 5 of 5 : Got row counts : {0}".format(datetime.now() - start_time))
+    logger.info("Part 6 of 6 : Got row counts : {0}".format(datetime.now() - start_time))
 
     # close Postgres connection
     pg_cur.close()
@@ -288,10 +308,8 @@ def create_raw_gnaf_tables(pg_cur, settings):
     # prep create table sql scripts (note: file doesn't contain any schema prefixes on table names)
     sql = open(os.path.join(settings['sql_dir'], "01-03-raw-gnaf-create-tables.sql"), "r").read()
 
-    # create schema and set as search path
+    # set search path
     if settings['raw_gnaf_schema'] != "public":
-        pg_cur.execute("CREATE SCHEMA IF NOT EXISTS {0} AUTHORIZATION {1}"
-                       .format(settings['raw_gnaf_schema'], settings['pg_user']))
         pg_cur.execute("SET search_path = {0}".format(settings['raw_gnaf_schema'],))
 
         # alter create table script to run on chosen schema
@@ -428,11 +446,6 @@ def load_raw_admin_boundaries(pg_cur, settings):
     # add locality class authority code table
     settings['states_to_load'].extend(["authority_code"])
 
-    # create schema
-    if settings['raw_admin_bdys_schema'] != "public":
-        pg_cur.execute("CREATE SCHEMA IF NOT EXISTS {0} AUTHORIZATION {1}"
-                       .format(settings['raw_admin_bdys_schema'], settings['pg_user']))
-
     # get file list
     table_list = list()
     create_list = list()
@@ -508,10 +521,6 @@ def prep_admin_bdys(pg_cur, settings):
     # Step 2 of 3 : create admin bdy tables read to be used
     start_time = datetime.now()
 
-    if settings['admin_bdys_schema'] != "public":
-        pg_cur.execute("CREATE SCHEMA IF NOT EXISTS {0} AUTHORIZATION {1}"
-                       .format(settings['admin_bdys_schema'], settings['pg_user']))
-
     # create tables using multiprocessing - using flag in file to split file up into sets of statements
     sql_list = psma.open_sql_file("02-02a-prep-admin-bdys-tables.sql", settings).split("-- # --")
     sql_list = sql_list + psma.open_sql_file("02-02b-prep-census-2011-bdys-tables.sql", settings).split("-- # --")
@@ -575,11 +584,6 @@ def create_admin_bdys_for_analysis(settings):
 def create_reference_tables(pg_cur, settings):
     # set postgres search path back to the default
     pg_cur.execute("SET search_path = public, pg_catalog")
-
-    # create schemas
-    if settings['gnaf_schema'] != "public":
-        pg_cur.execute("CREATE SCHEMA IF NOT EXISTS {0} AUTHORIZATION {1}"
-                       .format(settings['gnaf_schema'], settings['pg_user']))
 
     # Step 1 of 14 : create reference tables
     start_time = datetime.now()
