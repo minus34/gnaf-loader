@@ -306,7 +306,7 @@ def create_raw_gnaf_tables(pg_cur, settings):
     start_time = datetime.now()
 
     # prep create table sql scripts (note: file doesn't contain any schema prefixes on table names)
-    sql = psma.open_sql_file(os.path.join(settings['sql_dir'], "01-03-raw-gnaf-create-tables.sql"), settings)
+    sql = psma.open_sql_file("01-03-raw-gnaf-create-tables.sql", settings)
 
     # set search path
     if settings['raw_gnaf_schema'] != "public":
@@ -396,8 +396,7 @@ def index_raw_gnaf(settings):
 def create_primary_foreign_keys(settings):
     start_time = datetime.now()
 
-    key_sql = psma.open_sql_file(os.path.join(settings['sql_dir'], "01-06-raw-gnaf-create-primary-foreign-keys.sql"),
-                                 settings)
+    key_sql = psma.open_sql_file("01-06-raw-gnaf-create-primary-foreign-keys.sql", settings)
     key_sql_list = key_sql.split("--")
     sql_list = []
 
