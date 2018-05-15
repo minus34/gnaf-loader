@@ -63,6 +63,26 @@ def main():
     # test if ST_SubDivide exists (only in PostGIS 2.2+). It's used to split boundaries for faster processing
     psma.check_postgis_version(pg_cur, settings, logger)
 
+    # log the settings
+
+    logger.info("")
+    logger.info("Arguments")
+    for arg in vars(args):
+        value = getattr(args, arg)
+
+        if value is not None:
+            if arg != "pgpassword":
+                logger.info("\t- {} : {}".format(arg, value))
+            else:
+                logger.info("\t- {} : {}".format(arg, "************"))
+
+    # logger.info("")
+    # logger.info("Target schemas")
+    # logger.info("\t- Raw GNAF             : {}".format(settings['raw_gnaf_schema'],))
+    # logger.info("\t- Raw Admin Bdys       : {}".format(settings['raw_admin_bdys_schema'],))
+    # logger.info("\t- Processed Admin Bdys : {}".format(settings['admin_bdys_schema'],))
+    # logger.info("\t- Processed GNAF       : {}".format(settings['gnaf_schema'],))
+
     # START LOADING DATA
 
     # PART 1 - create new schemas
