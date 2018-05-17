@@ -342,8 +342,8 @@ def import_shapefile_to_postgres(pg_cur, file_path, pg_table, pg_schema, delete_
     try:
         process = subprocess.Popen(shp2pgsql_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
         sqlobj, err = process.communicate()
-    except:
-        return "Importing {0} - Couldn't convert Shapefile to SQL".format(file_path)
+    except Exception as ex:
+        return "Importing {} - Couldn't convert Shapefile to SQL : {}".format(file_path, ex)
 
     # prep Shapefile SQL
     sql = sqlobj.decode("utf-8")  # this is required for Python 3
@@ -362,13 +362,13 @@ def import_shapefile_to_postgres(pg_cur, file_path, pg_table, pg_schema, delete_
     # import data to Postgres
     try:
         pg_cur.execute(sql)
-    except:
+    except Exception as ex:
         # if import fails for some reason - output sql to file for debugging
         target = open(os.path.join(os.path.dirname(os.path.realpath(__file__)),
                                    "shp_load_debug_{}.sql".format(pg_table,)), "w")
         target.write(sql)
 
-        return "\tImporting {0} - Couldn't run Shapefile SQL\nshp2pgsql result was: {1} ".format(file_path, err)
+        return "\tImporting {} - Couldn't run Shapefile SQL\nshp2pgsql result was: {} ".format(file_path, ex)
 
     # Cluster table on spatial index for performance
     if delete_table and spatial:
@@ -376,7 +376,7 @@ def import_shapefile_to_postgres(pg_cur, file_path, pg_table, pg_schema, delete_
 
         try:
             pg_cur.execute(sql)
-        except:
-            return "\tImporting {0} - Couldn't cluster on spatial index".format(pg_table)
+        except Exception as ex:
+            return "\tImporting {} - Couldn't cluster on spatial index : {}".format(pg_table, ex)
 
     return "SUCCESS"

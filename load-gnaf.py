@@ -105,22 +105,22 @@ def main():
                        .format(settings['gnaf_schema'], settings['pg_user']))
     logger.info("Part 1 of 6 : Schemas created! : {0}".format(datetime.now() - start_time))
 
-    # PART 2 - load gnaf from PSV files
-    logger.info("")
-    start_time = datetime.now()
-    logger.info("Part 2 of 6 : Start raw GNAF load : {0}".format(start_time))
-    drop_tables_and_vacuum_db(pg_cur, settings)
-    create_raw_gnaf_tables(pg_cur, settings)
-    populate_raw_gnaf(settings)
-    index_raw_gnaf(settings)
-    if settings['primary_foreign_keys']:
-        create_primary_foreign_keys(settings)
-    else:
-        logger.info("\t- Step 6 of 7 : primary & foreign keys NOT created")
-    analyse_raw_gnaf_tables(pg_cur, settings)
-    # set postgres search path back to the default
-    pg_cur.execute("SET search_path = public, pg_catalog")
-    logger.info("Part 2 of 6 : Raw GNAF loaded! : {0}".format(datetime.now() - start_time))
+    # # PART 2 - load gnaf from PSV files
+    # logger.info("")
+    # start_time = datetime.now()
+    # logger.info("Part 2 of 6 : Start raw GNAF load : {0}".format(start_time))
+    # drop_tables_and_vacuum_db(pg_cur, settings)
+    # create_raw_gnaf_tables(pg_cur, settings)
+    # populate_raw_gnaf(settings)
+    # index_raw_gnaf(settings)
+    # if settings['primary_foreign_keys']:
+    #     create_primary_foreign_keys(settings)
+    # else:
+    #     logger.info("\t- Step 6 of 7 : primary & foreign keys NOT created")
+    # analyse_raw_gnaf_tables(pg_cur, settings)
+    # # set postgres search path back to the default
+    # pg_cur.execute("SET search_path = public, pg_catalog")
+    # logger.info("Part 2 of 6 : Raw GNAF loaded! : {0}".format(datetime.now() - start_time))
 
     # PART 3 - load raw admin boundaries from Shapefiles
     logger.info("")
@@ -528,11 +528,13 @@ def load_raw_admin_boundaries(pg_cur, settings):
         # load files in separate processes
         psma.multiprocess_shapefile_load(create_list, settings, logger)
 
-        # Run the appends one at a time (Can't multi process as large sets of parallel INSERTs cause database deadlocks)
-        # utils.multiprocess_shapefile_load(append_list, settings, logger)
+        # Run the appends one at a time (Can't multiprocess as sets of parallel INSERTs cause database deadlocks)
         for shp in append_list:
-            psma.import_shapefile_to_postgres(pg_cur, shp['file_path'], shp['pg_table'], shp['pg_schema'],
-                                              shp['delete_table'], shp['spatial'])
+            result = psma.import_shapefile_to_postgres(pg_cur, shp['file_path'], shp['pg_table'], shp['pg_schema'],
+                                                       shp['delete_table'], shp['spatial'])
+
+            if result != "SUCCESS":
+                logger.info(result)
 
         logger.info("\t- Step 1 of 3 : raw admin boundaries loaded : {0}".format(datetime.now() - start_time))
 
