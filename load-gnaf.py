@@ -530,11 +530,11 @@ def load_raw_admin_boundaries(pg_cur, settings):
 
         # Run the appends one at a time (Can't multiprocess as sets of parallel INSERTs cause database deadlocks)
         for shp in append_list:
-            result = psma.import_shapefile_to_postgres(pg_cur, shp['file_path'], shp['pg_table'], shp['pg_schema'],
+            result = psma.import_shapefile_to_postgres(settings, shp['file_path'], shp['pg_table'], shp['pg_schema'],
                                                        shp['delete_table'], shp['spatial'])
 
             if result != "SUCCESS":
-                logger.info(result)
+                logger.warning(result)
 
         logger.info("\t- Step 1 of 3 : raw admin boundaries loaded : {0}".format(datetime.now() - start_time))
 

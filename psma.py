@@ -305,21 +305,18 @@ def intermediate_shapefile_load_step(args):
     delete_table = work_dict['delete_table']
     spatial = work_dict['spatial']
 
-    pg_conn = psycopg2.connect(settings['pg_connect_string'])
-    pg_conn.autocommit = True
-    pg_cur = pg_conn.cursor()
-
-    result = import_shapefile_to_postgres(pg_cur, file_path, pg_table, pg_schema, delete_table, spatial)
-
-    pg_cur.close()
-    pg_conn.close()
+    result = import_shapefile_to_postgres(settings, file_path, pg_table, pg_schema, delete_table, spatial)
 
     return result
 
 
 # imports a Shapefile into Postgres in 2 steps: SHP > SQL; SQL > Postgres
 # overcomes issues trying to use psql with PGPASSWORD set at runtime
-def import_shapefile_to_postgres(pg_cur, file_path, pg_table, pg_schema, delete_table, spatial):
+def import_shapefile_to_postgres(settings, file_path, pg_table, pg_schema, delete_table, spatial):
+
+    pg_conn = psycopg2.connect(settings['pg_connect_string'])
+    pg_conn.autocommit = True
+    pg_cur = pg_conn.cursor()
 
     # delete target table or append to it?
     if delete_table:
@@ -364,11 +361,13 @@ def import_shapefile_to_postgres(pg_cur, file_path, pg_table, pg_schema, delete_
         pg_cur.execute(sql)
     except Exception as ex:
         # if import fails for some reason - output sql to file for debugging
+        file_name = os.path.basename(file_path)
+
         target = open(os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                                   "shp_load_debug_{}.sql".format(pg_table,)), "w")
+                                   "error_debug_{}.sql".format(file_name,)), "w")
         target.write(sql)
 
-        return "\tImporting {} - Couldn't run Shapefile SQL\nshp2pgsql result was: {} ".format(file_path, ex)
+        return "\tImporting {} - Couldn't run Shapefile SQL\nshp2pgsql result was: {} ".format(file_name, ex)
 
     # Cluster table on spatial index for performance
     if delete_table and spatial:
@@ -378,5 +377,8 @@ def import_shapefile_to_postgres(pg_cur, file_path, pg_table, pg_schema, delete_
             pg_cur.execute(sql)
         except Exception as ex:
             return "\tImporting {} - Couldn't cluster on spatial index : {}".format(pg_table, ex)
+
+    pg_cur.close()
+    pg_conn.close()
 
     return "SUCCESS"
