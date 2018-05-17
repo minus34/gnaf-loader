@@ -311,6 +311,9 @@ def intermediate_shapefile_load_step(args):
 
     result = import_shapefile_to_postgres(pg_cur, file_path, pg_table, pg_schema, delete_table, spatial)
 
+    pg_cur.close()
+    pg_conn.close()
+
     return result
 
 
@@ -361,7 +364,8 @@ def import_shapefile_to_postgres(pg_cur, file_path, pg_table, pg_schema, delete_
         pg_cur.execute(sql)
     except:
         # if import fails for some reason - output sql to file for debugging
-        target = open(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'test.sql'), "w")
+        target = open(os.path.join(os.path.dirname(os.path.realpath(__file__)),
+                                   "shp_load_debug_{}.sql".format(pg_table,)), "w")
         target.write(sql)
 
         return "\tImporting {0} - Couldn't run Shapefile SQL\nshp2pgsql result was: {1} ".format(file_path, err)
