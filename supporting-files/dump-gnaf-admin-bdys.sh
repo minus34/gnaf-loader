@@ -4,7 +4,10 @@
 output_folder="/Users/hugh.saalmans/tmp"
 
 /Applications/Postgres.app/Contents/Versions/9.6/bin/pg_dump -Fc -d geo -n gnaf_201805 -p 5432 -U postgres -f ${output_folder}/gnaf-201805.dmp
+echo "GNAF schema exported to dump file"
+
 /Applications/Postgres.app/Contents/Versions/9.6/bin/pg_dump -Fc -d geo -n admin_bdys_201805 -p 5432 -U postgres -f ${output_folder}/admin-bdys-201805.dmp
+echo "Admin Bdys schema exported to dump file"
 
 ## OPTIONAL - copy files to AWS S3 and allow public read access (requires awscli installed)
 #cd ${output_folder}
