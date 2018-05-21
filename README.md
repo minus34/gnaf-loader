@@ -106,12 +106,12 @@ Download Postgres dump files and restore them in your database.
 Should take 15-60 minutes.
 
 ### Pre-requisites
-- Postgres 9.6 with PostGIS 2.2+
+- Postgres 9.6+ with PostGIS 2.2+
 - A knowledge of [Postgres pg_restore parameters](http://www.postgresql.org/docs/9.5/static/app-pgrestore.html)
 
 ### Process
-1. Download [gnaf-201805.dmp](http://minus34.com/opendata/psma-201805/gnaf-201805.dmp) (~1.6Gb)
-2. Download [admin-bdys-201805.dmp](http://minus34.com/opendata/psma-201805/admin-bdys-201805.dmp) (~2.7Gb)
+1. Download [gnaf-201805.dmp](http://minus34.com/opendata/psma-201805/gnaf-201805.dmp) (~1.2Gb)
+2. Download [admin-bdys-201805.dmp](http://minus34.com/opendata/psma-201805/admin-bdys-201805.dmp) (~2.4Gb)
 3. Edit the restore-gnaf-admin-bdys.bat or .sh script in the supporting-files folder for your database parameters and for the location of pg_restore
 5. Run the script, come back in 15-60 minutes and enjoy!
 
@@ -128,4 +128,3 @@ GNAF and the Admin Bdys have been customised to remove some of the known, minor 
 - Suburb-Locality bdys have been flattened into a single continuous layer of localities - South Australian Hundreds have been removed and ACT districts have been added where there are no gazetted localities
 - The Melbourne, VIC locality has been split into Melbourne, 3000 and Melbourne 3004 localities (the new locality PIDs are VIC 1634_1 & VIC 1634_2). The split occurs at the Yarra River (based on the postcodes in the Melbourne addresses)
 - A postcode boundaries layer has been created using the postcodes in the address tables. Whilst this closely emulates the official PSMA postcode boundaries, there are several hundred addresses that are in the wrong postcode bdy. Do not treat this data as authoritative
-
