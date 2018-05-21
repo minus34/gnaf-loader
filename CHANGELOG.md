@@ -1,3 +1,6 @@
+### My 2018 Release
+- Improved handing of Admin Boundary data errors
+
 ### Feb 2018 Release
 - Admin boundary tags on alias addresses are now copied from each alias' principal address. This can reduce processing times significantly. Previously the boundary tags were processed using spatial queries. This has created 2 new tables: `address_principal_admin_boundaries` and `address_alias_admin_boundaries`. The previous table `address_admin_boundaries` is now a view. 
 

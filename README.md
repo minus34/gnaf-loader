@@ -21,7 +21,7 @@ My benchmarks are:
 To get a good load time you'll need to configure your Postgres server for performance. There's a good guide [here](http://revenant.ca/www/postgis/workshop/tuning.html), noting it's a few years old and some of the memory parameters can be beefed up if you have the RAM.
 
 ### Pre-requisites
-- Postgres 9.3+ with PostGIS 2.2+ (tested on 9.3, 9.4, 9.5 on Windows and 9.5, 9.6 on macOS)
+- Postgres 9.3+ with PostGIS 2.2+ (tested on 9.3, 9.4, 9.5 on Windows and 9.5, 9.6, 10 on macOS)
 - Add the Postgres bin directory to your system PATH
 - Python 2.7+ or Python 3.6+ with Psycopg2 2.6+
 
@@ -110,8 +110,8 @@ Should take 15-60 minutes.
 - A knowledge of [Postgres pg_restore parameters](http://www.postgresql.org/docs/9.5/static/app-pgrestore.html)
 
 ### Process
-1. Download [gnaf-201802.dmp](http://minus34.com/opendata/psma-201802/gnaf-201802.dmp) (~1.6Gb)
-2. Download [admin-bdys-201802.dmp](http://minus34.com/opendata/psma-201802/admin-bdys-201802.dmp) (~2.7Gb)
+1. Download [gnaf-201805.dmp](http://minus34.com/opendata/psma-201805/gnaf-201805.dmp) (~1.6Gb)
+2. Download [admin-bdys-201805.dmp](http://minus34.com/opendata/psma-201805/admin-bdys-201805.dmp) (~2.7Gb)
 3. Edit the restore-gnaf-admin-bdys.bat or .sh script in the supporting-files folder for your database parameters and for the location of pg_restore
 5. Run the script, come back in 15-60 minutes and enjoy!
 
