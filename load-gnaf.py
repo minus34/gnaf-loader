@@ -76,17 +76,9 @@ def main():
             else:
                 logger.info("\t- {} : {}".format(arg, "************"))
 
-    # logger.info("")
-    # logger.info("Target schemas")
-    # logger.info("\t- Raw GNAF             : {}".format(settings['raw_gnaf_schema'],))
-    # logger.info("\t- Raw Admin Bdys       : {}".format(settings['raw_admin_bdys_schema'],))
-    # logger.info("\t- Processed Admin Bdys : {}".format(settings['admin_bdys_schema'],))
-    # logger.info("\t- Processed GNAF       : {}".format(settings['gnaf_schema'],))
-
     # START LOADING DATA
 
     # PART 1 - create new schemas
-    # done up front to avoid this issue: https://github.com/minus34/gnaf-loader/issues/29
     logger.info("")
     start_time = datetime.now()
     logger.info("Part 1 of 6 : Create schemas : {0}".format(start_time))
