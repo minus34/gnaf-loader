@@ -546,6 +546,38 @@ CREATE TABLE street_type_aut (
 
 ALTER TABLE street_type_aut OWNER TO postgres;
 
+-- new for August 2018
+--
+-- Name: address_feature; Type: TABLE; Schema: public; Owner: postgres; Tablespace:
+--
+
+CREATE TABLE address_feature (
+    address_feature_id character varying(16) NOT NULL,
+    address_feature_pid character varying(16) NOT NULL,
+    address_alias_pid character varying(15) NOT NULL,
+    date_address_detail_created date,
+    date_address_detail_retired date,
+    address_change_type_code character varying(50) NOT NULL
+);
+
+
+ALTER TABLE address_feature OWNER TO postgres;
+
+--
+-- Name: address_change_type_aut; Type: TABLE; Schema: public; Owner: postgres; Tablespace:
+--
+
+CREATE TABLE address_change_type_aut (
+    code character varying(50) NOT NULL,
+    name character varying(100) NOT NULL,
+    description character varying(500)
+);
+
+
+ALTER TABLE address_change_type_aut OWNER TO postgres;
+
+
+
 
 REVOKE ALL ON SCHEMA public FROM PUBLIC;
 REVOKE ALL ON SCHEMA public FROM postgres;

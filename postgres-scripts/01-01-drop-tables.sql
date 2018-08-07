@@ -40,6 +40,9 @@ DROP TABLE IF EXISTS raw_gnaf.address_type_aut CASCADE;
 DROP TABLE IF EXISTS raw_gnaf.locality_class_aut CASCADE;
 DROP TABLE IF EXISTS raw_gnaf.state CASCADE;
 DROP TABLE IF EXISTS raw_gnaf.geocode_reliability_aut CASCADE;
+-- new for August 2018
+DROP TABLE IF EXISTS raw_gnaf.address_feature CASCADE;
+DROP TABLE IF EXISTS raw_gnaf.address_change_type_aut CASCADE;
 
 -- drop raw admin boundaries
 DROP TABLE IF EXISTS raw_admin_bdys.aus_comm_electoral CASCADE;
@@ -108,7 +111,6 @@ DROP TABLE IF EXISTS admin_bdys.postcode_bdys CASCADE;
 DROP TABLE IF EXISTS admin_bdys.postcode_bdys_analysis CASCADE;
 DROP TABLE IF EXISTS admin_bdys.state_bdys_analysis CASCADE;
 DROP TABLE IF EXISTS admin_bdys.commonwealth_electorates_analysis CASCADE;
-
 DROP TABLE IF EXISTS admin_bdys.gccsa_2011_analysis CASCADE;
 DROP TABLE IF EXISTS admin_bdys.iare_2011_analysis CASCADE;
 DROP TABLE IF EXISTS admin_bdys.iloc_2011_analysis CASCADE;
