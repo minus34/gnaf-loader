@@ -264,6 +264,22 @@ ALTER TABLE ONLY street_type_aut
 
 
 --
+-- Name: address_feature_pk; Type: CONSTRAINT; Schema: public; Owner: postgres; Tablespace:
+--
+
+ALTER TABLE ONLY address_feature
+    ADD CONSTRAINT address_feature_pk PRIMARY KEY (address_feature_id);
+
+
+--
+-- Name: address_change_type_aut_pk; Type: CONSTRAINT; Schema: public; Owner: postgres; Tablespace:
+--
+
+ALTER TABLE ONLY address_change_type_aut
+    ADD CONSTRAINT address_change_type_aut_pk PRIMARY KEY (code);
+
+
+--
 -- Name: address_alias_fk1; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -598,3 +614,18 @@ ALTER TABLE ONLY street_locality
 ALTER TABLE ONLY street_locality_point
     ADD CONSTRAINT street_locality_point_fk1 FOREIGN KEY (street_locality_pid) REFERENCES street_locality(street_locality_pid);
 
+
+--
+-- Name: address_alias_fk1; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY address_feature
+    ADD CONSTRAINT address_feature_fk1 FOREIGN KEY (address_detail_pid) REFERENCES address_detail(address_detail_pid);
+
+
+--
+-- Name: address_feature_fk2; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY address_feature
+    ADD CONSTRAINT address_feature_fk2 FOREIGN KEY (address_change_type_code) REFERENCES address_change_type_aut(code);

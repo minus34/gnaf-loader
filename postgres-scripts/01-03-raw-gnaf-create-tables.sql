@@ -554,7 +554,7 @@ ALTER TABLE street_type_aut OWNER TO postgres;
 CREATE TABLE address_feature (
     address_feature_id character varying(16) NOT NULL,
     address_feature_pid character varying(16) NOT NULL,
-    address_alias_pid character varying(15) NOT NULL,
+    address_detail_pid character varying(15) NOT NULL,
     date_address_detail_created date,
     date_address_detail_retired date,
     address_change_type_code character varying(50) NOT NULL
@@ -575,7 +575,6 @@ CREATE TABLE address_change_type_aut (
 
 
 ALTER TABLE address_change_type_aut OWNER TO postgres;
-
 
 
 
