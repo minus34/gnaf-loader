@@ -10,12 +10,7 @@ Have a look at [these intro slides](http://minus34.com/opendata/intro-to-gnaf.pp
 3. [Download](https://github.com/minus34/gnaf-loader#option-3---load-pg_dump-files) the GNAF and/or Admin Bdys Postgres dump files & restore them in your database
 
 ## Option 1 - Run load.gnaf.py
-Running the Python script takes 30-120 minutes on a Postgres server configured for performance.
-
-My benchmarks are:
-- 3 year old, 32 core Windows server with SSDs = ~45 mins
-- MacBook Pro = ~75 mins
-- 3 year old, 8 core commodity PC = ~75 mins.
+Running the Python script takes 30-120 minutes on a Postgres server configured to take advantage of the RAM available.
 
 ### Performance
 To get a good load time you'll need to configure your Postgres server for performance. There's a good guide [here](http://revenant.ca/www/postgis/workshop/tuning.html), noting it's a few years old and some of the memory parameters can be beefed up if you have the RAM.

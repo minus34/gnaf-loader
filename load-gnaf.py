@@ -101,10 +101,10 @@ def main():
     logger.info("")
     start_time = datetime.now()
     logger.info("Part 2 of 6 : Start raw GNAF load : {0}".format(start_time))
-    drop_tables_and_vacuum_db(pg_cur, settings)
-    create_raw_gnaf_tables(pg_cur, settings)
-    populate_raw_gnaf(settings)
-    index_raw_gnaf(settings)
+    # drop_tables_and_vacuum_db(pg_cur, settings)
+    # create_raw_gnaf_tables(pg_cur, settings)
+    # populate_raw_gnaf(settings)
+    # index_raw_gnaf(settings)
     if settings['primary_foreign_keys']:
         create_primary_foreign_keys(settings)
     else:
@@ -114,14 +114,14 @@ def main():
     pg_cur.execute("SET search_path = public, pg_catalog")
     logger.info("Part 2 of 6 : Raw GNAF loaded! : {0}".format(datetime.now() - start_time))
 
-    # PART 3 - load raw admin boundaries from Shapefiles
-    logger.info("")
-    start_time = datetime.now()
-    logger.info("Part 3 of 6 : Start raw admin boundary load : {0}".format(start_time))
-    load_raw_admin_boundaries(pg_cur, settings)
-    prep_admin_bdys(pg_cur, settings)
-    create_admin_bdys_for_analysis(settings)
-    logger.info("Part 3 of 6 : Raw admin boundaries loaded! : {0}".format(datetime.now() - start_time))
+    # # PART 3 - load raw admin boundaries from Shapefiles
+    # logger.info("")
+    # start_time = datetime.now()
+    # logger.info("Part 3 of 6 : Start raw admin boundary load : {0}".format(start_time))
+    # load_raw_admin_boundaries(pg_cur, settings)
+    # prep_admin_bdys(pg_cur, settings)
+    # create_admin_bdys_for_analysis(settings)
+    # logger.info("Part 3 of 6 : Raw admin boundaries loaded! : {0}".format(datetime.now() - start_time))
 
     # # PART 4 - create flattened and standardised GNAF and Administrative Boundary reference tables
     # logger.info("")
@@ -418,8 +418,6 @@ def create_primary_foreign_keys(settings):
             # add schema to tables names, in case raw gnaf schema not the default
             sql = sql.replace("ALTER TABLE ONLY ", "ALTER TABLE ONLY " + settings['raw_gnaf_schema'] + ".")
             sql_list.append(sql)
-
-    sql_list = []
 
     # run queries in separate processes
     psma.multiprocess_list("sql", sql_list, settings, logger)
