@@ -154,6 +154,11 @@ def main():
     logger.info("")
     logger.info("Total time : : {0}".format(datetime.now() - full_start_time))
 
+    # dump postgres files and optionally copy to AWS - this is here for my convenience... HS 27-08-2018
+    script_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "supporting-files/dump-gnaf-admin-bdys.sh")
+    dump_script = open(script_path, "r")
+    psma.run_command_line(dump_script)
+
     return True
 
 
@@ -274,6 +279,8 @@ def get_settings(args):
         settings['pg_db'], settings['pg_host'], settings['pg_port'], settings['pg_user'], settings['pg_password'])
 
     # set postgres script directory
+    settings['sql_dir'] = os.path.join(os.path.dirname(os.path.realpath(__file__)), "postgres-scripts")
+
     settings['sql_dir'] = os.path.join(os.path.dirname(os.path.realpath(__file__)), "postgres-scripts")
 
     # set the list of admin bdys to create analysis tables for and to boundary tag with
