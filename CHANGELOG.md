@@ -1,4 +1,9 @@
-### My 2018 Release
+### August 2018 Release
+- GNAF now contains an *address_feature_pid* field for determining which addresses are new and which have changed. Previously the *address_detail_pid* on an address would change when a part of the address changed (e.g. 10 Smith St became 10 Smyth St) - even in cases where the building or dwelling it represents didn't change. This made determining which addresses were new and which had changed difficult. More info [here](https://www.psma.com.au/blog/blog/product-update-data-model-changes-improve-g-naf-product-scope)
+- *address_feature_pid* is in the `raw_gnaf_201808.address_feature` table. In the future, the data in this table will be added to the de-normalised schema (i.e. the gnaf_201808 schema).
+- Fixed a bug that prevented raw GNAF primary & foreign key creation.
+
+### May 2018 Release
 - Improved handing of Admin Boundary data errors
 
 ### Feb 2018 Release

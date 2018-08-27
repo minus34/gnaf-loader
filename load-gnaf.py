@@ -276,6 +276,8 @@ def get_settings(args):
     # set postgres script directory
     settings['sql_dir'] = os.path.join(os.path.dirname(os.path.realpath(__file__)), "postgres-scripts")
 
+    settings['sql_dir'] = os.path.join(os.path.dirname(os.path.realpath(__file__)), "postgres-scripts")
+
     # set the list of admin bdys to create analysis tables for and to boundary tag with
     admin_bdy_list = list()
     admin_bdy_list.append(["state_bdys", "state_pid"])
@@ -418,8 +420,6 @@ def create_primary_foreign_keys(settings):
             # add schema to tables names, in case raw gnaf schema not the default
             sql = sql.replace("ALTER TABLE ONLY ", "ALTER TABLE ONLY " + settings['raw_gnaf_schema'] + ".")
             sql_list.append(sql)
-
-    sql_list = []
 
     # run queries in separate processes
     psma.multiprocess_list("sql", sql_list, settings, logger)
