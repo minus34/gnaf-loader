@@ -151,9 +151,6 @@ def main():
     pg_cur.close()
     pg_conn.close()
 
-    logger.info("")
-    logger.info("Total time : : {0}".format(datetime.now() - full_start_time))
-
     # # dump postgres files and optionally copy to AWS - this is here for my convenience... HS 27-08-2018
     # start_time = datetime.now()
     # logger.info("Epilogue : Dump schemas and copy to AWS : {0}".format(start_time))
@@ -162,6 +159,9 @@ def main():
     # dump_script = open(script_path, "r")
     # psma.run_command_line(dump_script)
     # logger.info("Epilogue : Dump schemas and copy to AWS : {0}".format(datetime.now() - start_time))
+
+    logger.info("")
+    logger.info("Total time : : {0}".format(datetime.now() - full_start_time))
 
     return True
 
