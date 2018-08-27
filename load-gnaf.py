@@ -101,10 +101,10 @@ def main():
     logger.info("")
     start_time = datetime.now()
     logger.info("Part 2 of 6 : Start raw GNAF load : {0}".format(start_time))
-    # drop_tables_and_vacuum_db(pg_cur, settings)
-    # create_raw_gnaf_tables(pg_cur, settings)
-    # populate_raw_gnaf(settings)
-    # index_raw_gnaf(settings)
+    drop_tables_and_vacuum_db(pg_cur, settings)
+    create_raw_gnaf_tables(pg_cur, settings)
+    populate_raw_gnaf(settings)
+    index_raw_gnaf(settings)
     if settings['primary_foreign_keys']:
         create_primary_foreign_keys(settings)
     else:
@@ -114,38 +114,38 @@ def main():
     pg_cur.execute("SET search_path = public, pg_catalog")
     logger.info("Part 2 of 6 : Raw GNAF loaded! : {0}".format(datetime.now() - start_time))
 
-    # # PART 3 - load raw admin boundaries from Shapefiles
-    # logger.info("")
-    # start_time = datetime.now()
-    # logger.info("Part 3 of 6 : Start raw admin boundary load : {0}".format(start_time))
-    # load_raw_admin_boundaries(pg_cur, settings)
-    # prep_admin_bdys(pg_cur, settings)
-    # create_admin_bdys_for_analysis(settings)
-    # logger.info("Part 3 of 6 : Raw admin boundaries loaded! : {0}".format(datetime.now() - start_time))
+    # PART 3 - load raw admin boundaries from Shapefiles
+    logger.info("")
+    start_time = datetime.now()
+    logger.info("Part 3 of 6 : Start raw admin boundary load : {0}".format(start_time))
+    load_raw_admin_boundaries(pg_cur, settings)
+    prep_admin_bdys(pg_cur, settings)
+    create_admin_bdys_for_analysis(settings)
+    logger.info("Part 3 of 6 : Raw admin boundaries loaded! : {0}".format(datetime.now() - start_time))
 
-    # # PART 4 - create flattened and standardised GNAF and Administrative Boundary reference tables
-    # logger.info("")
-    # start_time = datetime.now()
-    # logger.info("Part 4 of 6 : Start create reference tables : {0}".format(start_time))
-    # create_reference_tables(pg_cur, settings)
-    # logger.info("Part 4 of 6 : Reference tables created! : {0}".format(datetime.now() - start_time))
-    #
-    # # PART 5 - boundary tag GNAF addresses
-    # logger.info("")
-    # if settings["no_boundary_tag"]:
-    #     logger.warning("Part 5 of 6 : Addresses NOT boundary tagged")
-    # else:
-    #     start_time = datetime.now()
-    #     logger.info("Part 5 of 6 : Start boundary tagging addresses : {0}".format(start_time))
-    #     boundary_tag_gnaf(pg_cur, settings)
-    #     logger.info("Part 5 of 6 : Addresses boundary tagged: {0}".format(datetime.now() - start_time))
-    #
-    # # PART 6 - get record counts for QA
-    # logger.info("")
-    # start_time = datetime.now()
-    # logger.info("Part 6 of 6 : Start row counts : {0}".format(start_time))
-    # create_qa_tables(pg_cur, settings)
-    # logger.info("Part 6 of 6 : Got row counts : {0}".format(datetime.now() - start_time))
+    # PART 4 - create flattened and standardised GNAF and Administrative Boundary reference tables
+    logger.info("")
+    start_time = datetime.now()
+    logger.info("Part 4 of 6 : Start create reference tables : {0}".format(start_time))
+    create_reference_tables(pg_cur, settings)
+    logger.info("Part 4 of 6 : Reference tables created! : {0}".format(datetime.now() - start_time))
+
+    # PART 5 - boundary tag GNAF addresses
+    logger.info("")
+    if settings["no_boundary_tag"]:
+        logger.warning("Part 5 of 6 : Addresses NOT boundary tagged")
+    else:
+        start_time = datetime.now()
+        logger.info("Part 5 of 6 : Start boundary tagging addresses : {0}".format(start_time))
+        boundary_tag_gnaf(pg_cur, settings)
+        logger.info("Part 5 of 6 : Addresses boundary tagged: {0}".format(datetime.now() - start_time))
+
+    # PART 6 - get record counts for QA
+    logger.info("")
+    start_time = datetime.now()
+    logger.info("Part 6 of 6 : Start row counts : {0}".format(start_time))
+    create_qa_tables(pg_cur, settings)
+    logger.info("Part 6 of 6 : Got row counts : {0}".format(datetime.now() - start_time))
 
     # close Postgres connection
     pg_cur.close()
