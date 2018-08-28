@@ -101,7 +101,7 @@ Download Postgres dump files and restore them in your database.
 Should take 15-60 minutes.
 
 ### Pre-requisites
-- Postgres 9.6+ with PostGIS 2.2+
+- Postgres 10+ with PostGIS 2.4+
 - A knowledge of [Postgres pg_restore parameters](http://www.postgresql.org/docs/9.5/static/app-pgrestore.html)
 
 ### Process
