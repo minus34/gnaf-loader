@@ -3,10 +3,10 @@
 # set this to taste - NOTE: can't use "~" for your home folder
 output_folder="/Users/hugh.saalmans/tmp"
 
-/Applications/Postgres.app/Contents/Versions/10/bin/pg_dump -Fc -d geo -n gnaf_201808 -p 5433 -U postgres -f ${output_folder}/gnaf-201808.dmp
+/Applications/Postgres.app/Contents/Versions/10/bin/pg_dump -Fc -d geo -n gnaf_201808 -p 5433 -U postgres -f ${output_folder}/gnaf-201808.dmp --no-owner
 echo "GNAF schema exported to dump file"
 
-/Applications/Postgres.app/Contents/Versions/10/bin/pg_dump -Fc -d geo -n admin_bdys_201808 -p 5433 -U postgres -f ${output_folder}/admin-bdys-201808.dmp
+/Applications/Postgres.app/Contents/Versions/10/bin/pg_dump -Fc -d geo -n admin_bdys_201808 -p 5433 -U postgres -f ${output_folder}/admin-bdys-201808.dmp --no-owner
 echo "Admin Bdys schema exported to dump file"
 
 # OPTIONAL - copy files to AWS S3 and allow public read access (requires awscli installed)
