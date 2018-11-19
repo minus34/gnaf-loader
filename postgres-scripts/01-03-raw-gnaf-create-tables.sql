@@ -557,7 +557,7 @@ CREATE TABLE address_feature (
     address_detail_pid character varying(15) NOT NULL,
     date_address_detail_created date,
     date_address_detail_retired date,
-    address_change_type_code character varying(50) -- possible data issue - some values are null in the 201808 release
+    address_change_type_code character varying(50) -- possible data issue - some values were null in the 201808 release
 );
 
 
