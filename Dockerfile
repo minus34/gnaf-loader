@@ -1,4 +1,4 @@
-FROM python:3.6
+FROM python:3.6-jessie
 MAINTAINER Grahame Bowland <grahame@angrygoats.net>
 
 RUN echo deb http://apt.postgresql.org/pub/repos/apt/ jessie-pgdg main > /etc/apt/sources.list.d/jessie-pgdg.list
