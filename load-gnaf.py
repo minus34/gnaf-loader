@@ -23,7 +23,7 @@
 #   5. Splits the locality boundary for Melbourne into 2, one for each of its postcodes (3000 & 3004)
 #   6. Creates final principal & alias address tables containing fixes based on the above locality customisations
 #   7. Creates an almost correct Postcode Boundary table from locality boundary aggregates with address based postcodes
-#   8. Adds primary and foreign keys to confirm data integrity across the reference tables
+#   8. Adds primary and foreign keys to confirm data integrity across the output tables
 #
 # *********************************************************************************************************************
 
@@ -176,9 +176,9 @@ def set_arguments():
         help='Creates unlogged raw GNAF tables, speeding up the import. Only specify this option if you don\'t care '
              'about the raw data afterwards - they will be lost if the server crashes!')
     parser.add_argument(
-        '--max-processes', type=int, default=6,
+        '--max-processes', type=int, default=4,
         help='Maximum number of parallel processes to use for the data load. (Set it to the number of cores on the '
-             'Postgres server minus 2, limit to 12 if 16+ cores - there is minimal benefit beyond 12). Defaults to 6.')
+             'Postgres server minus 2, limit to 12 if 16+ cores - there is minimal benefit beyond 12). Defaults to 4.')
     parser.add_argument(
         '--no-boundary-tag', action='store_true', dest='no_boundary_tag',
         help='DO NOT tag all addresses with admin boundary IDs for creating aggregates and choropleth maps. '
