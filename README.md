@@ -46,7 +46,7 @@ The behaviour of gnaf-loader can be controlled by specifying various command lin
 * `--pgpassword` password for accessing the Postgres server. This defaults to the `PGPASSWORD` environment variable if set, otherwise `password`.
 
 #### Optional Arguments
-* `--psma-version` PSMA version number in YYYYMM format. Defaults to current year and last release month. e.g. `201902`.
+* `--psma-version` PSMA version number in YYYYMM format. Defaults to current year and last release month. e.g. `201905`.
 * `--raw-gnaf-schema` schema name to store raw GNAF tables in. Defaults to `raw_gnaf_<psma_version>`.
 * `--raw-admin-schema` schema name to store raw admin boundary tables in. Defaults to `raw_admin_bdys_<psma_version>`.
 * `--gnaf-schema` destination schema name to store final GNAF tables in. Defaults to `gnaf_<psma_version>`.
@@ -105,8 +105,8 @@ Should take 15-60 minutes.
 - A knowledge of [Postgres pg_restore parameters](https://www.postgresql.org/docs/10/app-pgrestore.html)
 
 ### Process
-1. Download [gnaf-201902.dmp](http://minus34.com/opendata/psma-201902/gnaf-201902.dmp) (~1.2Gb)
-2. Download [admin-bdys-201902.dmp](http://minus34.com/opendata/psma-201902/admin-bdys-201902.dmp) (~2.4Gb)
+1. Download [gnaf-201905.dmp](http://minus34.com/opendata/psma-201905/gnaf-201905.dmp) (~1.2Gb)
+2. Download [admin-bdys-201905.dmp](http://minus34.com/opendata/psma-201905/admin-bdys-201905.dmp) (~2.4Gb)
 3. Edit the restore-gnaf-admin-bdys.bat or .sh script in the supporting-files folder for your database parameters and for the location of pg_restore
 5. Run the script, come back in 15-60 minutes and enjoy!
 
