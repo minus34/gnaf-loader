@@ -14,7 +14,7 @@
 #  - Code is licensed under an Apache License, version 2.0
 #  - Data is copyright PSMA - licensed under a Creative Commons (By Attribution) license.
 #    See http://data.gov.au for the correct attribution to use
-
+#
 # Process:
 #   1. Loads raw GNAF into Postgres from PSV files, using COPY
 #   2. Loads raw PSMA Admin Boundaries from Shapefiles into Postgres using shp2pgsql (part of PostGIS)
