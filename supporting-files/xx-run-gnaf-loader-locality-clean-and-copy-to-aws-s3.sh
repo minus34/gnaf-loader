@@ -3,6 +3,9 @@
 # set this to taste - NOTE: you can't use "~" for your home folder
 output_folder="/Users/hugh.saalmans/tmp"
 
+# run gnaf-loader
+python3 /Users/hugh.saalmans/git/minus34/gnaf_loader/load-gnaf.py --pgdb=geo --raw-fk --max-processes=4 --gnaf-tables-path=/Users/hugh.saalmans/tmp/MAY19_GNAF_PipeSeparatedValue_20190520202601 --admin-bdys-path=/Users/hugh.saalmans/tmp/JUN19_AdminBounds_ESRIShapefileorDBFfile_20190617120057
+
 # run locality clean
 python3 /Users/hugh.saalmans/git/iag_geo/psma_admin_bdys/locality-clean.py --output-path=${output_folder}
 
