@@ -101,8 +101,8 @@ Download Postgres dump files and restore them in your database.
 Should take 15-60 minutes.
 
 ### Pre-requisites
-- Postgres 10+ with PostGIS 2.4+
-- A knowledge of [Postgres pg_restore parameters](https://www.postgresql.org/docs/10/app-pgrestore.html)
+- Postgres 11+ with PostGIS 2.5+
+- A knowledge of [Postgres pg_restore parameters](https://www.postgresql.org/docs/11/app-pgrestore.html)
 
 ### Process
 1. Download [gnaf-201908.dmp](http://minus34.com/opendata/psma-201908/gnaf-201908.dmp) (~1.2Gb)
