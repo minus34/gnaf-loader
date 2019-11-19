@@ -7,7 +7,7 @@ Have a look at [these intro slides](http://minus34.com/opendata/intro-to-gnaf.pp
 ### There are 3 options for loading the data
 1. [Run](https://github.com/minus34/gnaf-loader#option-1---run-loadgnafpy) the load-gnaf Python script and build the database in a single step
 2. [Build](https://github.com/minus34/gnaf-loader#option-2---build-the-database-in-a-docker-environment) the database in a docker environment
-3. [Download](https://github.com/minus34/gnaf-loader#option-3---load-pg_dump-files) the GNAF and/or Admin Bdys Postgres dump files & restore them in your database
+3. [Download](https://github.com/minus34/gnaf-loader#option-3---load-pg_dump-files) the GNAF and/or Admin Bdys Postgres dump files & restore them in your Postgres 11+ database
 
 ## Option 1 - Run load.gnaf.py
 Running the Python script takes 30-120 minutes on a Postgres server configured to take advantage of the RAM available.
@@ -41,12 +41,12 @@ The behaviour of gnaf-loader can be controlled by specifying various command lin
 #### Postgres Parameters
 * `--pghost` the host name for the Postgres server. This defaults to the `PGHOST` environment variable if set, otherwise defaults to `localhost`.
 * `--pgport` the port number for the Postgres server. This defaults to the `PGPORT` environment variable if set, otherwise `5432`.
-* `--pgdb` the database name for Postgres server. This defaults to the `PGDATABASE` environment variable if set, otherwise `psma_201908`.
+* `--pgdb` the database name for Postgres server. This defaults to the `PGDATABASE` environment variable if set, otherwise `psma_201911`.
 * `--pguser` the username for accessing the Postgres server. This defaults to the `PGUSER` environment variable if set, otherwise `postgres`.
 * `--pgpassword` password for accessing the Postgres server. This defaults to the `PGPASSWORD` environment variable if set, otherwise `password`.
 
 #### Optional Arguments
-* `--psma-version` PSMA version number in YYYYMM format. Defaults to current year and last release month. e.g. `201908`.
+* `--psma-version` PSMA version number in YYYYMM format. Defaults to current year and last release month. e.g. `201911`.
 * `--raw-gnaf-schema` schema name to store raw GNAF tables in. Defaults to `raw_gnaf_<psma_version>`.
 * `--raw-admin-schema` schema name to store raw admin boundary tables in. Defaults to `raw_admin_bdys_<psma_version>`.
 * `--gnaf-schema` destination schema name to store final GNAF tables in. Defaults to `gnaf_<psma_version>`.
@@ -61,7 +61,7 @@ primary and foreign keys set.
 * `--no-boundary-tag` DO NOT tag all addresses with some of the key admin boundary IDs for creating aggregates and choropleth maps.
 
 ### Example Command Line Arguments
-* Local Postgres server: `python load-gnaf.py --gnaf-tables-path="C:\temp\psma_201908\G-NAF" --admin-bdys-path="C:\temp\psma_201908\Administrative Boundaries"` Loads the GNAF tables to a Postgres server running locally. GNAF archives have been extracted to the folder `C:\temp\psma_201908\G-NAF`, and admin boundaries have been extracted to the `C:\temp\psma_201908\Administrative Boundaries` folder.
+* Local Postgres server: `python load-gnaf.py --gnaf-tables-path="C:\temp\psma_201911\G-NAF" --admin-bdys-path="C:\temp\psma_201911\Administrative Boundaries"` Loads the GNAF tables to a Postgres server running locally. GNAF archives have been extracted to the folder `C:\temp\psma_201911\G-NAF`, and admin boundaries have been extracted to the `C:\temp\psma_201911\Administrative Boundaries` folder.
 * Remote Postgres server: `python load-gnaf.py --gnaf-tables-path="\\svr\shared\gnaf" --local-server-dir="f:\shared\gnaf" --admin-bdys-path="c:\temp\unzipped\AdminBounds_ESRI"` Loads the GNAF tables which have been extracted to the shared folder `\\svr\shared\gnaf`. This shared folder corresponds to the local `f:\shared\gnaf` folder on the Postgres server. Admin boundaries have been extracted to the `c:\temp\unzipped\AdminBounds_ESRI` folder.
 * Loading only selected states: `python load-gnaf.py --states VIC TAS NT ...` Loads only the data for Victoria, Tasmania and Northern Territory
 
@@ -105,8 +105,8 @@ Should take 15-60 minutes.
 - A knowledge of [Postgres pg_restore parameters](https://www.postgresql.org/docs/11/app-pgrestore.html)
 
 ### Process
-1. Download [gnaf-201908.dmp](http://minus34.com/opendata/psma-201908/gnaf-201908.dmp) (~1.2Gb)
-2. Download [admin-bdys-201908.dmp](http://minus34.com/opendata/psma-201908/admin-bdys-201908.dmp) (~2.7Gb)
+1. Download [gnaf-201911.dmp](http://minus34.com/opendata/psma-201911/gnaf-201911.dmp) (~1.2Gb)
+2. Download [admin-bdys-201911.dmp](http://minus34.com/opendata/psma-201911/admin-bdys-201911.dmp) (~2.7Gb)
 3. Edit the restore-gnaf-admin-bdys.bat or .sh script in the supporting-files folder for your database parameters and for the location of pg_restore
 5. Run the script, come back in 15-60 minutes and enjoy!
 
