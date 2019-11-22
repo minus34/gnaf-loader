@@ -9,6 +9,7 @@ CREATE TABLE testing.mb_2016_counts (
     person integer,
 	address_count integer,
     state smallint,
+    geom geometry(MultiPolygon, 4283),
     CONSTRAINT abs_2011_mb_pk PRIMARY KEY (mb_2016_code)
 );
 
@@ -16,7 +17,7 @@ COPY testing.mb_2016_counts (mb_2016_code, mb_category_name_2016, area_albers_sq
 FROM '/Users/hugh.saalmans/Downloads/2016 census mesh block counts.csv' WITH (FORMAT CSV, HEADER);
 
 
--- Get address counts per MB
+-- Get meshblock address counts per MB -- 1 min
 WITH counts AS (
 	SELECT mb_2016_code,
 		   count(*) AS address_count
@@ -28,6 +29,21 @@ UPDATE testing.mb_2016_counts AS mb
   FROM counts
   WHERE mb.mb_2016_code = counts.mb_2016_code
 ;
+
+-- add geoms
+UPDATE testing.mb_2016_counts AS mb
+  SET geom = bdys.geom
+  FROM admin_bdys_201911.abs_2016_mb as bdys
+  WHERE mb.mb_2016_code = bdys.mb_16code::bigint;
+
+CREATE INDEX mb_2016_counts_geom_idx ON testing.mb_2016_counts USING gist(geom);
+ALTER TABLE testing.mb_2016_counts CLUSTER ON mb_2016_counts_geom_idx;
+
+
+
+
+
+
 
 SELECT * FROM testing.mb_2016_counts
 WHERE person > 0
