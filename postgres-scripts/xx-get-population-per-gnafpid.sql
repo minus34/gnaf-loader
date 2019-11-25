@@ -14,7 +14,7 @@ CREATE TABLE testing.mb_2016_counts (
 );
 
 COPY testing.mb_2016_counts (mb_2016_code, mb_category_name_2016, area_albers_sqkm, dwelling, person, state)
-FROM '/Users/hugh.saalmans/Downloads/2016 census mesh block counts.csv' WITH (FORMAT CSV, HEADER);
+FROM '/Users/s57405/Downloads/2016 census mesh block counts.csv' WITH (FORMAT CSV, HEADER);
 
 
 -- Get meshblock address counts per MB -- 1 min
@@ -44,8 +44,10 @@ ALTER TABLE testing.mb_2016_counts CLUSTER ON mb_2016_counts_geom_idx;
 
 
 
+-- 26436 MBs with less addresses than dwellings
+SELECT count(*) FROM testing.mb_2016_counts
+WHERE address_count < dwelling;
 
-SELECT * FROM testing.mb_2016_counts
-WHERE person > 0
-limit 100;
-
+-- 280416 MBs with more addresses than dwellings
+SELECT count(*) FROM testing.mb_2016_counts
+WHERE address_count > dwelling;
