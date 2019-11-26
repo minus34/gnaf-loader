@@ -34,3 +34,5 @@ SELECT gnaf_pid, mb_2016_code, geom FROM points
 
 CREATE INDEX basic_address_principals_geom_idx ON gnaf_201608.basic_address_principals USING gist (geom);
 ALTER TABLE gnaf_201608.basic_address_principals CLUSTER ON basic_address_principals_geom_idx;
+
+ANALYSE gnaf_201608.basic_address_principals;
