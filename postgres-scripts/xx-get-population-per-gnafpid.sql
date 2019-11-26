@@ -43,6 +43,7 @@ ANALYSE testing.mb_2016_counts;
 
 
 -- get the correct number of addresses from GNAF for each meshblock
+--    1. where address count is greater than dwelling count
 DROP TABLE IF EXISTS gnaf_201608.basic_address_principals_reduced;
 CREATE TABLE gnaf_201608.basic_address_principals_reduced AS
 WITH adr AS (
@@ -64,6 +65,12 @@ ORDER BY mb_2016_code,
 ;
 
 ANALYSE gnaf_201608.basic_address_principals_reduced;
+
+--    2. where address count is less than dwelling count
+
+
+
+
 
 CREATE INDEX basic_address_principals_reduced_geom_idx ON gnaf_201608.basic_address_principals_reduced USING gist (geom);
 ALTER TABLE gnaf_201608.basic_address_principals_reduced CLUSTER ON basic_address_principals_reduced_geom_idx;
