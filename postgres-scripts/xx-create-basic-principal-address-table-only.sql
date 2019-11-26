@@ -32,7 +32,9 @@ SELECT adr.address_detail_pid AS gnaf_pid,
 SELECT gnaf_pid, mb_2016_code, geom FROM points
     WHERE reliability < 4;
 
+ANALYSE gnaf_201608.basic_address_principals;
+
 CREATE INDEX basic_address_principals_geom_idx ON gnaf_201608.basic_address_principals USING gist (geom);
 ALTER TABLE gnaf_201608.basic_address_principals CLUSTER ON basic_address_principals_geom_idx;
 
-ANALYSE gnaf_201608.basic_address_principals;
+CREATE INDEX basic_address_principals_mb_2016_code_idx ON gnaf_201608.basic_address_principals USING btree(mb_2016_code);

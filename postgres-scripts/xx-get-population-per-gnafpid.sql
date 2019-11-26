@@ -41,8 +41,40 @@ ALTER TABLE testing.mb_2016_counts CLUSTER ON mb_2016_counts_geom_idx;
 
 ANALYSE testing.mb_2016_counts;
 
+
+-- get the correct number of addresses from GNAF for each meshblock
+DROP TABLE IF EXISTS gnaf_201608.basic_address_principals_reduced;
+CREATE TABLE gnaf_201608.basic_address_principals_reduced AS
+WITH adr AS (
+	SELECT mb.dwelling,
+	       mb.person,
+	       gnaf.*
+	FROM gnaf_201608.basic_address_principals as gnaf
+	INNER JOIN testing.mb_2016_counts AS mb on gnaf.mb_2016_code = mb.mb_2016_code
+	WHERE mb.address_count >= mb.dwelling
+), rows as (
+    SELECT *, row_number() OVER (PARTITION BY mb_2016_code ORDER BY random()) as row_num
+    FROM adr
+)
+SELECT * FROM rows
+WHERE row_num > 0
+    AND row_num <= dwelling
+ORDER BY mb_2016_code,
+         row_num
+;
+
+ANALYSE gnaf_201608.basic_address_principals_reduced;
+
+CREATE INDEX basic_address_principals_reduced_geom_idx ON gnaf_201608.basic_address_principals_reduced USING gist (geom);
+ALTER TABLE gnaf_201608.basic_address_principals_reduced CLUSTER ON basic_address_principals_reduced_geom_idx;
+
+CREATE INDEX basic_address_principals_reduced_mb_2016_code_idx ON gnaf_201608.basic_address_principals_reduced USING btree(mb_2016_code);
+
+
 -- 32509 MBs with less addresses than dwellings
-SELECT count(*) FROM testing.mb_2016_counts
+SELECT count(*) as cnt,
+       avg(dwelling - address_count)
+FROM testing.mb_2016_counts
 WHERE address_count < dwelling;
 
 -- 269858 MBs with more addresses than dwellings
