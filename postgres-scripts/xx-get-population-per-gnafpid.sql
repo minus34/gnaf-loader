@@ -14,7 +14,7 @@ CREATE TABLE testing.mb_2016_counts (
 );
 
 COPY testing.mb_2016_counts (mb_2016_code, mb_category_name_2016, area_albers_sqkm, dwelling, person, state)
-FROM '/Users/s57405/Downloads/2016 census mesh block counts.csv' WITH (FORMAT CSV, HEADER);
+FROM '/Users/hugh.saalmans/Downloads/2016 census mesh block counts.csv' WITH (FORMAT CSV, HEADER);
 
 
 -- Get meshblock address counts per MB -- 1 min

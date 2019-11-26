@@ -208,18 +208,18 @@ def set_arguments():
     psma_version = psma.get_psma_version(datetime.today())
     parser.add_argument(
         '--psma-version', default=psma_version,
-        help='PSMA Version number as YYYYMM. Defaults to last release year and month \'' + psma_version + '\'.')
+        help='PSMA Version number as YYYYMM. Defaults to last release year and month \'<psma-version>\'.')
     parser.add_argument(
-        '--raw-gnaf-schema', default='raw_gnaf_' + psma_version,
-        help='Schema name to store raw GNAF tables in. Defaults to \'raw_gnaf_' + psma_version + '\'.')
+        '--raw-gnaf-schema',
+        help='Schema name to store raw GNAF tables in. Defaults to \'raw_gnaf_<psma-version>\'.')
     parser.add_argument(
-        '--raw-admin-schema', default='raw_admin_bdys_' + psma_version,
-        help='Schema name to store raw admin boundary tables in. Defaults to \'raw_admin_bdys_' + psma_version + '\'.')
+        '--raw-admin-schema',
+        help='Schema name to store raw admin boundary tables in. Defaults to \'raw_admin_bdys_<psma-version>\'.')
     parser.add_argument(
-        '--gnaf-schema', default='gnaf_' + psma_version,
-        help='Destination schema name to store final GNAF tables in. Defaults to \'gnaf_' + psma_version + '\'.')
+        '--gnaf-schema',
+        help='Destination schema name to store final GNAF tables in. Defaults to \'gnaf_<psma-version>\'.')
     parser.add_argument(
-        '--admin-schema', default='admin_bdys_' + psma_version,
+        '--admin-schema',
         help='Destination schema name to store final admin boundary tables in. Defaults to \'admin_bdys_'
              + psma_version + '\'.')
 
@@ -254,10 +254,10 @@ def get_settings(args):
     settings['psma_version'] = args.psma_version
     settings['states_to_load'] = args.states
     settings['no_boundary_tag'] = args.no_boundary_tag
-    settings['raw_gnaf_schema'] = args.raw_gnaf_schema
-    settings['raw_admin_bdys_schema'] = args.raw_admin_schema
-    settings['gnaf_schema'] = args.gnaf_schema
-    settings['admin_bdys_schema'] = args.admin_schema
+    settings['raw_gnaf_schema'] = args.raw_gnaf_schema or 'raw_gnaf_' + settings['psma_version']
+    settings['raw_admin_bdys_schema'] = args.raw_admin_schema or 'raw_admin_bdys_' + settings['psma_version']
+    settings['gnaf_schema'] = args.gnaf_schema or 'gnaf_' + settings['psma_version']
+    settings['admin_bdys_schema'] = args.admin_schema or 'admin_bdys_' + settings['psma_version']
     settings['gnaf_network_directory'] = args.gnaf_tables_path.replace("\\", "/")
     if args.local_server_dir:
         settings['gnaf_pg_server_local_directory'] = args.local_server_dir.replace("\\", "/")
