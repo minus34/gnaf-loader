@@ -21,7 +21,7 @@ FROM '/Users/hugh.saalmans/Downloads/2016 census mesh block counts.csv' WITH (FO
 WITH counts AS (
 	SELECT mb_2016_code,
 		   count(*) AS address_count
-	FROM gnaf_201911.address_principals
+	FROM gnaf_201608.basic_address_principals
 	GROUP BY mb_2016_code
 )
 UPDATE testing.mb_2016_counts AS mb
@@ -39,15 +39,16 @@ UPDATE testing.mb_2016_counts AS mb
 CREATE INDEX mb_2016_counts_geom_idx ON testing.mb_2016_counts USING gist(geom);
 ALTER TABLE testing.mb_2016_counts CLUSTER ON mb_2016_counts_geom_idx;
 
+ANALYSE testing.mb_2016_counts;
 
-
-
-
-
--- 26436 MBs with less addresses than dwellings
+-- 32509 MBs with less addresses than dwellings
 SELECT count(*) FROM testing.mb_2016_counts
 WHERE address_count < dwelling;
 
--- 280416 MBs with more addresses than dwellings
+-- 269858 MBs with more addresses than dwellings
 SELECT count(*) FROM testing.mb_2016_counts
 WHERE address_count > dwelling;
+
+-- 15363 MBs with the same address count as dwellings
+SELECT count(*) FROM testing.mb_2016_counts
+WHERE address_count = dwelling;
