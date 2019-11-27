@@ -136,7 +136,7 @@ ALTER TABLE testing.address_principals_dwelling CLUSTER ON basic_address_princip
 CREATE INDEX basic_address_principals_dwelling_mb_2016_code_idx ON testing.address_principals_dwelling USING btree(mb_2016_code);
 
 
--- get the correct number of addresses from GNAF for each meshblock, based on population -- 10 mins
+-- get the correct number of addresses from GNAF for each meshblock, based on population -- 23 mins
 
 --    1. where dwellings are greater than population
 DROP TABLE IF EXISTS testing.address_principals_persons;
@@ -184,9 +184,6 @@ WITH adr AS (
 	FROM testing.address_principals_dwelling as gnaf
 	INNER JOIN testing.mb_2016_counts AS mb on gnaf.mb_2016_code = mb.mb_2016_code
 	WHERE mb.dwelling < mb.person
-	--and mb.mb_2016_code = 11205625300
-	order by gnaf.mb_2016_code, duplicate_number, gnaf.gnaf_pid
-	limit 1000
 ), rows as (
     SELECT *, row_number() OVER (PARTITION BY mb_2016_code ORDER BY duplicate_number, random()) as row_num
     FROM adr
@@ -228,11 +225,6 @@ CREATE INDEX basic_address_principals_persons_geom_idx ON testing.address_princi
 ALTER TABLE testing.address_principals_persons CLUSTER ON basic_address_principals_persons_geom_idx;
 
 CREATE INDEX basic_address_principals_persons_mb_2016_code_idx ON testing.address_principals_persons USING btree(mb_2016_code);
-
-
-
-
-
 
 
 -- QA
