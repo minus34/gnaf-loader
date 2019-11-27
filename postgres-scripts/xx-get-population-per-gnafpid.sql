@@ -14,7 +14,7 @@ CREATE TABLE testing.mb_2016_counts (
 );
 
 COPY testing.mb_2016_counts (mb_2016_code, mb_category_name_2016, area_albers_sqkm, dwelling, person, state)
-FROM '/Users/hugh.saalmans/Downloads/2016 census mesh block counts.csv' WITH (FORMAT CSV, HEADER);
+FROM '/Users/s57405/Downloads/2016 census mesh block counts.csv' WITH (FORMAT CSV, HEADER);
 
 ANALYSE testing.mb_2016_counts;
 
@@ -62,7 +62,7 @@ WITH adr AS (
 	INNER JOIN testing.mb_2016_counts AS mb on gnaf.mb_2016_code = mb.mb_2016_code
 	WHERE mb.address_count >= mb.dwelling
 	  AND mb.dwelling > 0
-), rows as (
+), row_nums as (
     SELECT *, row_number() OVER (PARTITION BY mb_2016_code ORDER BY random()) as row_num
     FROM adr
 )
@@ -73,7 +73,7 @@ SELECT gnaf_pid,
 	   person,
 	   'too many addresses'::text as dwelling_count_type,
 	   geom
-FROM rows
+FROM row_nums
 WHERE row_num <= dwelling
 ORDER BY mb_2016_code,
          row_num
@@ -94,7 +94,7 @@ WITH adr AS (
 	FROM gnaf_201911.address_principals as gnaf
 	INNER JOIN testing.mb_2016_counts AS mb on gnaf.mb_2016_code = mb.mb_2016_code
 	WHERE mb.address_count < mb.dwelling
-), rows as (
+), row_nums as (
     SELECT *, row_number() OVER (PARTITION BY mb_2016_code ORDER BY duplicate_number, random()) as row_num
     FROM adr
 )
@@ -105,7 +105,7 @@ SELECT gnaf_pid,
 	   person,
 	   'too few addresses' as dwelling_count_type,
 	   geom
-FROM rows
+FROM row_nums
 WHERE row_num <= dwelling
 ORDER BY mb_2016_code,
          row_num
@@ -154,7 +154,7 @@ WITH adr AS (
 	INNER JOIN testing.mb_2016_counts AS mb on gnaf.mb_2016_code = mb.mb_2016_code
 	WHERE mb.dwelling >= mb.person
 	  AND mb.dwelling > 0
-), rows as (
+), row_nums as (
     SELECT *, row_number() OVER (PARTITION BY mb_2016_code ORDER BY random()) as row_num
     FROM adr
 )
@@ -165,7 +165,7 @@ SELECT gnaf_pid,
 	   person,
 	   'too many dwellings'::text as person_count_type,
 	   geom
-FROM rows
+FROM row_nums
 WHERE row_num <= person
 ORDER BY mb_2016_code,
          row_num
@@ -186,7 +186,7 @@ WITH adr AS (
 	FROM testing.address_principals_dwelling as gnaf
 	INNER JOIN testing.mb_2016_counts AS mb on gnaf.mb_2016_code = mb.mb_2016_code
 	WHERE mb.dwelling < mb.person
-), rows as (
+), row_nums as (
     SELECT *, row_number() OVER (PARTITION BY mb_2016_code ORDER BY duplicate_number, random()) as row_num
     FROM adr
 )
@@ -197,7 +197,7 @@ SELECT gnaf_pid,
 	   person,
 	   'too few dwellings' as person_count_type,
 	   geom
-FROM rows
+FROM row_nums
 WHERE row_num <= person
 ORDER BY mb_2016_code,
          row_num
@@ -218,7 +218,7 @@ WITH adr AS (
 	INNER JOIN testing.mb_2016_counts AS mb on gnaf.mb_2016_code = mb.mb_2016_code
 	WHERE mb.address_count >= mb.person
 	  AND mb.dwelling = 0
-), rows as (
+), row_nums as (
     SELECT *, row_number() OVER (PARTITION BY mb_2016_code ORDER BY random()) as row_num
     FROM adr
 )
@@ -229,7 +229,7 @@ SELECT gnaf_pid,
 	   person,
 	   'too many addresses'::text as person_count_type,
 	   geom
-FROM rows
+FROM row_nums
 WHERE row_num <= person
 ORDER BY mb_2016_code,
          row_num
@@ -251,7 +251,7 @@ WITH adr AS (
 	INNER JOIN testing.mb_2016_counts AS mb on gnaf.mb_2016_code = mb.mb_2016_code
 	WHERE mb.address_count < mb.person
 	  AND mb.dwelling = 0
-), rows as (
+), row_nums as (
     SELECT *, row_number() OVER (PARTITION BY mb_2016_code ORDER BY duplicate_number, random()) as row_num
     FROM adr
 )
@@ -262,7 +262,7 @@ SELECT gnaf_pid,
 	   person,
 	   'too few addresses' as person_count_type,
 	   geom
-FROM rows
+FROM row_nums
 WHERE row_num <= person
 ORDER BY mb_2016_code,
          row_num
@@ -286,7 +286,7 @@ AND dwelling = 0
 AND person > 0
 ;
 
-ANALYSE testing.address_principals_dwelling;
+ANALYSE testing.address_principals_persons;
 
 CREATE INDEX basic_address_principals_persons_geom_idx ON testing.address_principals_persons USING gist (geom);
 ALTER TABLE testing.address_principals_persons CLUSTER ON basic_address_principals_persons_geom_idx;
@@ -372,10 +372,3 @@ and mb.person <> gnaf.person;
 --FROM testing.mb_2016_counts
 --WHERE person < dwelling
 --order by extra_dwellings desc;
-
-
-
-
-
-
-
