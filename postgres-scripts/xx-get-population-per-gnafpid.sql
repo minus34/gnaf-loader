@@ -268,6 +268,25 @@ ORDER BY mb_2016_code,
 
 ANALYSE testing.address_principals_persons;
 
+--   5. add random points in meshblocks that have no addresses (8,903 dwellings affected)
+INSERT INTO testing.address_principals_persons
+SELECT 'MB' || mb_2016_code::text || '_' || (row_number() OVER ())::text as gnaf_pid,
+	   mb_2016_code,
+	   address_count,
+	   dwelling,
+	   person,
+	   'no addresses' as dwelling_count_type,
+	   ST_RandomPointsInPolygon(geom, person) as geom
+FROM testing.mb_2016_counts
+WHERE geom is not null
+AND address_count = 0
+AND dwelling = 0
+AND person > 0
+;
+
+ANALYSE testing.address_principals_dwelling;
+
+
 CREATE INDEX basic_address_principals_persons_geom_idx ON testing.address_principals_persons USING gist (geom);
 ALTER TABLE testing.address_principals_persons CLUSTER ON basic_address_principals_persons_geom_idx;
 
@@ -296,13 +315,12 @@ and mb.dwelling <> gnaf.dwelling;
 -- check population counts by meshblock -- all good!
 select sum(person) from testing.mb_2016_counts where geom is not null; -- 23351637
 select sum(person) from testing.mb_2016_counts where geom is null; -- 46354
-select count(*) from testing.address_principals_persons; -- 23238736
+select count(*) from testing.address_principals_persons; -- 23351637
 
 select * from testing.mb_2016_counts
 where mb_2016_code NOT IN (select distinct mb_2016_code from testing.address_principals_persons)
 and geom is not null
 and person > 0
-and person < address_count
 ;
 
 with gnaf as (
