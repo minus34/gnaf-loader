@@ -45,6 +45,7 @@ CREATE INDEX mb_2016_counts_geom_idx ON testing.mb_2016_counts USING gist(geom);
 ALTER TABLE testing.mb_2016_counts CLUSTER ON mb_2016_counts_geom_idx;
 
 
+-- create an address accurate dwelling map of Australia
 -- get the correct number of addresses from GNAF for each meshblock, based on dwelling counts -- 10 mins
 
 --    1. where address count is greater than dwelling count
@@ -136,6 +137,7 @@ ALTER TABLE testing.address_principals_dwelling CLUSTER ON basic_address_princip
 CREATE INDEX basic_address_principals_dwelling_mb_2016_code_idx ON testing.address_principals_dwelling USING btree(mb_2016_code);
 
 
+-- create an address accurate population map of Australia
 -- get the correct number of addresses from GNAF for each meshblock, based on population -- 23 mins
 
 --    1. where dwellings are greater than population
@@ -286,7 +288,6 @@ AND person > 0
 
 ANALYSE testing.address_principals_dwelling;
 
-
 CREATE INDEX basic_address_principals_persons_geom_idx ON testing.address_principals_persons USING gist (geom);
 ALTER TABLE testing.address_principals_persons CLUSTER ON basic_address_principals_persons_geom_idx;
 
@@ -332,24 +333,24 @@ and mb.person <> gnaf.person;
 
 
 -- TO DO
--- create a table of points per person
-
-
-sdvsdvs
+-- create a table of random points per person based on meshblocks
 
 
 
--- 32509 MBs with less addresses than dwellings
-SELECT count(*) as cnt,
-       avg(dwelling - address_count),
-	   max(dwelling - address_count)
-FROM testing.mb_2016_counts
-WHERE address_count < dwelling;
 
-select *, dwelling - address_count as extra_dwellings
-FROM testing.mb_2016_counts
-WHERE address_count < dwelling
-order by extra_dwellings desc;
+-- testing
+
+---- 32509 MBs with less addresses than dwellings
+--SELECT count(*) as cnt,
+--       avg(dwelling - address_count),
+--	   max(dwelling - address_count)
+--FROM testing.mb_2016_counts
+--WHERE address_count < dwelling;
+--
+--select *, dwelling - address_count as extra_dwellings
+--FROM testing.mb_2016_counts
+--WHERE address_count < dwelling
+--order by extra_dwellings desc;
 
 -- -- 269858 MBs with more addresses than dwellings
 -- SELECT count(*) FROM testing.mb_2016_counts
@@ -360,17 +361,17 @@ order by extra_dwellings desc;
 -- WHERE address_count = dwelling;
 
 
--- 8484 MBs with less population than dwellings
-SELECT count(*) as cnt,
-       avg(dwelling - person),
-	   max(dwelling - person)
-FROM testing.mb_2016_counts
-WHERE person < dwelling;
-
-select *, dwelling - person as extra_dwellings
-FROM testing.mb_2016_counts
-WHERE person < dwelling
-order by extra_dwellings desc;
+---- 8484 MBs with less population than dwellings
+--SELECT count(*) as cnt,
+--       avg(dwelling - person),
+--	   max(dwelling - person)
+--FROM testing.mb_2016_counts
+--WHERE person < dwelling;
+--
+--select *, dwelling - person as extra_dwellings
+--FROM testing.mb_2016_counts
+--WHERE person < dwelling
+--order by extra_dwellings desc;
 
 
 
