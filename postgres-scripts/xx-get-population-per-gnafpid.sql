@@ -140,6 +140,7 @@ CREATE INDEX basic_address_principals_dwelling_geom_idx ON testing.address_princ
 ALTER TABLE testing.address_principals_dwelling CLUSTER ON basic_address_principals_dwelling_geom_idx;
 
 CREATE INDEX basic_address_principals_dwelling_mb_2016_code_idx ON testing.address_principals_dwelling USING btree(mb_2016_code);
+CREATE INDEX basic_address_principals_dwelling_postcode_idx ON testing.address_principals_dwelling USING btree(postcode);
 
 
 -- create an address accurate population map of Australia
@@ -306,7 +307,7 @@ CREATE INDEX basic_address_principals_persons_geom_idx ON testing.address_princi
 ALTER TABLE testing.address_principals_persons CLUSTER ON basic_address_principals_persons_geom_idx;
 
 CREATE INDEX basic_address_principals_persons_mb_2016_code_idx ON testing.address_principals_persons USING btree(mb_2016_code);
-
+CREATE INDEX basic_address_principals_persons_postcode_idx ON testing.address_principals_persons USING btree(postcode);
 
 -- QA
 
