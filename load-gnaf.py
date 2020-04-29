@@ -587,6 +587,11 @@ def create_admin_bdys_for_analysis(settings):
             if table[0] == 'locality_bdys':  # special case, need to change schema name
                 # sql = sql.replace(settings['raw_admin_bdys_schema'], settings['admin_bdys_schema'])
                 sql = sql.replace("name", "locality_name")
+                # add postcodes
+                sql = sql.replace("locality_name text NOT NULL,",
+                                  "locality_name text NOT NULL, postcode text NULL,")
+                sql = sql.replace("locality_name,", "locality_name, postcode,")
+
             sql_list.append(sql)
         psma.multiprocess_list("sql", sql_list, settings, logger)
         logger.info("\t- Step 3 of 3 : admin boundaries for analysis created : {0}".format(datetime.now() - start_time))
