@@ -2,8 +2,8 @@
 
 # set these to taste - NOTE: you can't use "~" for your home folder
 output_folder="/Users/hugh.saalmans/tmp"
-gnaf_path="/Users/hugh.saalmans/Downloads/MAY20_GNAF_PipeSeparatedValue"
-bdys_path="/Users/hugh.saalmans/Downloads/MAY20_AdminBounds_ESRIShapefileorDBFfile"
+gnaf_path="/Users/hugh.saalmans/Downloads/aug20_gnaf_pipeseparatedvalue/G-NAF"
+bdys_path="/Users/hugh.saalmans/Downloads/PSMA Admin Boundaries - ESRI Shapefile/Administrative Boundaries"
 
 # run gnaf-loader
 python3 /Users/hugh.saalmans/git/minus34/gnaf-loader/load-gnaf.py --pgdb=geo --raw-fk --max-processes=4 --gnaf-tables-path=${gnaf_path} --admin-bdys-path=${bdys_path}
