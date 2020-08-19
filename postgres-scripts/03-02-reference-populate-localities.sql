@@ -25,7 +25,7 @@ ORDER BY st.state_abbreviation,
          loc.locality_name,
          loc.primary_postcode;
 
--- standardise locality names to check for uniqueness and for addres validation purposes
+-- standardise locality names to check for uniqueness and for address validation purposes
 UPDATE gnaf.localities SET std_locality_name = REPLACE(locality_name, '''','') WHERE POSITION('''' IN locality_name) > 0;
 UPDATE gnaf.localities SET std_locality_name = REPLACE(locality_name, '-','') WHERE POSITION('-' IN locality_name) > 0;
 UPDATE gnaf.localities SET std_locality_name = REPLACE(locality_name, '.','') WHERE POSITION('.' IN locality_name) > 0;
