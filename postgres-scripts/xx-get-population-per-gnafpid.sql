@@ -22,7 +22,7 @@ ANALYSE testing.mb_2016_counts;
 WITH counts AS (
 	SELECT mb_2016_code,
 		   count(*) AS address_count
-	FROM gnaf_202005.address_principals
+	FROM gnaf_202008.address_principals
 	GROUP BY mb_2016_code
 )
 UPDATE testing.mb_2016_counts AS mb
@@ -36,7 +36,7 @@ ANALYSE testing.mb_2016_counts;
 -- add geoms
 UPDATE testing.mb_2016_counts AS mb
   SET geom = bdys.geom
-  FROM admin_bdys_202005.abs_2016_mb as bdys
+  FROM admin_bdys_202008.abs_2016_mb as bdys
   WHERE mb.mb_2016_code = bdys.mb_16code::bigint;
 
 ANALYSE testing.mb_2016_counts;
@@ -59,7 +59,7 @@ SELECT gnaf.gnaf_pid,
        mb.person,
         mb.address_count,
         gnaf.geom
-FROM gnaf_202005.address_principals as gnaf
+FROM gnaf_202008.address_principals as gnaf
 INNER JOIN testing.mb_2016_counts AS mb on gnaf.mb_2016_code = mb.mb_2016_code
 WHERE mb.address_count >= mb.dwelling
   AND mb.dwelling > 0
@@ -94,7 +94,7 @@ SELECT gnaf.gnaf_pid,
         mb.address_count,
         gnaf.geom,
        generate_series(1, ceiling(mb.dwelling::float / mb.address_count::float)::integer) as duplicate_number
-FROM gnaf_202005.address_principals as gnaf
+FROM gnaf_202008.address_principals as gnaf
 INNER JOIN testing.mb_2016_counts AS mb on gnaf.mb_2016_code = mb.mb_2016_code
 WHERE mb.address_count < mb.dwelling
 ), row_nums as (
@@ -225,7 +225,7 @@ WITH adr AS (
 	       mb.person,
            mb.address_count,
            gnaf.geom
-	FROM gnaf_202005.address_principals as gnaf
+	FROM gnaf_202008.address_principals as gnaf
 	INNER JOIN testing.mb_2016_counts AS mb on gnaf.mb_2016_code = mb.mb_2016_code
 	WHERE mb.address_count >= mb.person
 	  AND mb.dwelling = 0
@@ -260,7 +260,7 @@ WITH adr AS (
            mb.address_count,
            gnaf.geom,
 		   generate_series(1, ceiling(mb.person::float / mb.address_count::float)::integer) as duplicate_number
-	FROM gnaf_202005.address_principals as gnaf
+	FROM gnaf_202008.address_principals as gnaf
 	INNER JOIN testing.mb_2016_counts AS mb on gnaf.mb_2016_code = mb.mb_2016_code
 	WHERE mb.address_count < mb.person
 	  AND mb.dwelling = 0
