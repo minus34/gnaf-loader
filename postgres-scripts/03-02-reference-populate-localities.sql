@@ -5,15 +5,22 @@ SELECT loc.locality_pid,
        loc.locality_name,
        loc.primary_postcode AS postcode,
        st.state_abbreviation AS state,
-       pnt.latitude,
-	     pnt.longitude,
+       avg(pnt.latitude) as latitude,
+	   avg(pnt.longitude) as longitude,
        aut.name AS locality_class,
        loc.gnaf_reliability_code,
-	     st_setsrid(st_makepoint(pnt.longitude, pnt.latitude), 4283) AS geom
-FROM raw_gnaf.locality AS loc
-INNER JOIN raw_gnaf.state AS st ON loc.state_pid = st.state_pid
-INNER JOIN raw_gnaf.locality_class_aut AS aut ON loc.locality_class_code = aut.code
-LEFT OUTER JOIN raw_gnaf.locality_point AS pnt ON loc.locality_pid = pnt.locality_pid
+	     st_setsrid(st_makepoint(avg(pnt.longitude), avg(pnt.latitude)), 4283) AS geom
+FROM raw_gnaf_202008.locality AS loc
+INNER JOIN raw_gnaf_202008.state AS st ON loc.state_pid = st.state_pid
+INNER JOIN raw_gnaf_202008.locality_class_aut AS aut ON loc.locality_class_code = aut.code
+LEFT OUTER JOIN raw_gnaf_202008.locality_point AS pnt ON loc.locality_pid = pnt.locality_pid
+GROUP BY loc.locality_pid,
+       loc.locality_name,
+       loc.primary_postcode,
+       st.state_abbreviation,
+       aut.name,
+       loc.gnaf_reliability_code
+--HAVING count(*) > 1
 ORDER BY st.state_abbreviation,
          loc.locality_name,
          loc.primary_postcode;
