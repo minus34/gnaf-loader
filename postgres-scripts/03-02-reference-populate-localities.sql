@@ -10,10 +10,10 @@ SELECT loc.locality_pid,
        aut.name AS locality_class,
        loc.gnaf_reliability_code,
 	     st_setsrid(st_makepoint(avg(pnt.longitude), avg(pnt.latitude)), 4283) AS geom
-FROM raw_gnaf_202008.locality AS loc
-INNER JOIN raw_gnaf_202008.state AS st ON loc.state_pid = st.state_pid
-INNER JOIN raw_gnaf_202008.locality_class_aut AS aut ON loc.locality_class_code = aut.code
-LEFT OUTER JOIN raw_gnaf_202008.locality_point AS pnt ON loc.locality_pid = pnt.locality_pid
+FROM raw_gnaf.locality AS loc
+INNER JOIN raw_gnaf.state AS st ON loc.state_pid = st.state_pid
+INNER JOIN raw_gnaf.locality_class_aut AS aut ON loc.locality_class_code = aut.code
+LEFT OUTER JOIN raw_gnaf.locality_point AS pnt ON loc.locality_pid = pnt.locality_pid
 GROUP BY loc.locality_pid,
        loc.locality_name,
        loc.primary_postcode,
