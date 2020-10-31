@@ -17,13 +17,3 @@ SELECT *,
        ST_MakeEnvelope(longitude, -43.58311104::double precision, lead(longitude) OVER (ORDER BY partition_id), -9.22990371::double precision, 4823) AS geom
 FROM parts2
 ;
-
-
-
-
-
-
-
-ST_MakeEnvelope(float xmin, -43.58311104, float xmax, -9.22990371, integer srid=unknown);
-
-select max(latitude) FROM gnaf_202008.address_principals
