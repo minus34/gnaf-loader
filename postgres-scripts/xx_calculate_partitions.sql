@@ -1,7 +1,7 @@
 
 -- Get partitions of equal record counts
-DROP TABLE IF EXISTS testing.gnaf_partitions;
-CREATE TABLE testing.gnaf_partitions AS
+DROP TABLE IF EXISTS testing2.gnaf_partitions;
+CREATE TABLE testing2.gnaf_partitions AS
 WITH parts AS(
     SELECT unnest((select array_agg(counter) from generate_series(2, 20, 1) AS counter)) as partition_id,
            unnest((select array_agg(fraction) from generate_series(0.05, 0.95, 0.05) AS fraction)) as percentile,
@@ -14,6 +14,48 @@ UNION ALL
 SELECT 21 AS partition_id, 1.0 AS percentile, max(longitude) - 0.0001 AS longitude FROM gnaf_202008.address_principals
 )
 SELECT *,
-       ST_MakeEnvelope(longitude, -43.58311104::double precision, lead(longitude) OVER (ORDER BY partition_id), -9.22990371::double precision, 4823) AS geom
+       st_multi(ST_MakeEnvelope(longitude, -43.58311104::double precision, lead(longitude) OVER (ORDER BY partition_id), -9.22990371::double precision, 4283)) AS geom
 FROM parts2
 ;
+
+ANALYZE testing2.gnaf_partitions;
+
+
+DROP TABLE IF EXISTS testing2.commonwealth_electorates_partitioned CASCADE;
+CREATE TABLE testing2.commonwealth_electorates_partitioned (
+  gid SERIAL NOT NULL PRIMARY KEY,
+  ce_pid text NOT NULL,
+  name text NOT NULL,
+  state text NOT NULL,
+  geom geometry(Polygon, 4283, 2) NOT NULL
+) WITH (OIDS=FALSE);
+ALTER TABLE testing2.commonwealth_electorates_partitioned OWNER TO postgres
+;
+
+WITH merge AS (
+    SELECT ce_pid,
+           name,
+           state,
+           st_intersection(bdy.geom, part.geom) AS geom
+    FROM admin_bdys_202008.commonwealth_electorates as bdy
+    INNER JOIN testing2.gnaf_partitions as part ON st_intersects(bdy.geom, part.geom)
+)
+INSERT INTO testing2.commonwealth_electorates_partitioned (ce_pid, name, state, geom)
+SELECT ce_pid,
+       name,
+       state, 
+       ST_Subdivide((ST_Dump(ST_Buffer(geom, 0.0))).geom, 512)
+  FROM merge
+;
+
+CREATE INDEX commonwealth_electorates_partitioned_geom_idx ON testing2.commonwealth_electorates_partitioned USING gist(geom);
+ALTER TABLE testing2.commonwealth_electorates_partitioned CLUSTER ON commonwealth_electorates_partitioned_geom_idx;
+
+ANALYZE testing2.commonwealth_electorates_partitioned;
+
+commit;
+
+
+select count(*) from testing2.commonwealth_electorates_partitioned;
+
+select count(*) from admin_bdys_202008.commonwealth_electorates_analysis;
