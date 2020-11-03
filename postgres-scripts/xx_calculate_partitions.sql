@@ -3,15 +3,15 @@
 DROP TABLE IF EXISTS testing2.gnaf_partitions;
 CREATE TABLE testing2.gnaf_partitions AS
 WITH parts AS(
-    SELECT unnest((select array_agg(counter) from generate_series(2, 100, 1) AS counter)) as partition_id,
+    SELECT unnest((select array_agg(counter) from generate_series(1, 99, 1) AS counter)) as partition_id,
            unnest((select array_agg(fraction) from generate_series(0.01, 0.99, 0.01) AS fraction)) as percentile,
            unnest((select percentile_cont((select array_agg(s) from generate_series(0.01, 0.99, 0.01) as s)) WITHIN GROUP (ORDER BY longitude) FROM gnaf_202008.address_principals)) as longitude
 ), parts2 AS (
-SELECT 1 AS partition_id, 0.0 AS percentile, min(longitude) - 0.0001 AS longitude FROM gnaf_202008.address_principals
+SELECT 0 AS partition_id, 0.0 AS percentile, min(longitude) - 0.0001 AS longitude FROM gnaf_202008.address_principals
 UNION ALL
 SELECT * FROM parts
 UNION ALL
-SELECT 101 AS partition_id, 1.0 AS percentile, max(longitude) - 0.0001 AS longitude FROM gnaf_202008.address_principals
+SELECT 100 AS partition_id, 1.0 AS percentile, max(longitude) - 0.0001 AS longitude FROM gnaf_202008.address_principals
 )
 SELECT partition_id,
        percentile,
