@@ -254,8 +254,9 @@ def copy_to_s3(schema_name, name):
     for root,dirs,files in os.walk(os.path.join(output_path, name)):
         for file in files:
             response = s3_client\
-                .upload_file(os.path.join(output_path, name, file), s3_bucket, os.path.join(s3_folder, schema_name, name, file)
-                             , Config=config)
+                .upload_file(os.path.join(output_path, name, file), s3_bucket,
+                             os.path.join(s3_folder, schema_name, name, file),
+                             Config=config, ExtraArgs={'ACL': 'public-read'})
 
             if response is not None:
                 logger.warning("\t\t\t - {} copy to S3 problem : {}".format(name, response))
