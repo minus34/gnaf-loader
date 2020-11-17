@@ -1,6 +1,6 @@
 # ---------------------------------------------------------------------------------------------------------------------
 #
-# script to import each PSMA administrative boundary tab;e from Postgres & export to GZIPped Parquet files in AWS S3
+# script to import each GNAF & administrative boundary table from Postgres & export as GZIPped Parquet files to AWS S3
 #
 # PROCESS
 #

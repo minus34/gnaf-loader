@@ -33,8 +33,8 @@ SPARK_VERSION="3.0.1"
 
 # --------------------------------------------------------------------------------------------------------------------
 
-# get directory this script is running from
-SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+## get directory this script is running from
+#SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
 SPARK_HOME_DIR="${HOME}/spark-${SPARK_VERSION}-with-psycopg2"
 
@@ -46,7 +46,7 @@ echo "Downloading and Installing Apache Spark"
 echo "-------------------------------------------------------------------------"
 
 mkdir ${SPARK_HOME_DIR}
-cd ${SPARK_HOME_DIR}
+cd ${SPARK_HOME_DIR} || exit
 
 # download and untar Spark files
 wget https://archive.apache.org/dist/spark/spark-${SPARK_VERSION}/spark-${SPARK_VERSION}-bin-hadoop3.2.tgz
