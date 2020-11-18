@@ -2,7 +2,7 @@
 A quick way to load the complete Geocoded National Address File of Australia (GNAF) and Australian Administrative Boundaries into Postgres, simplified and ready to use as reference data for geocoding, analysis, visualisation and aggregation.
 
 ### What's GNAF?
-Have a look at [these intro slides](http://minus34.com/opendata/intro-to-gnaf.pptx) ([PDF](http://minus34.com/opendata/intro-to-gnaf.pdf)), as well as the [data.gov.au page](http://data.gov.au/dataset/geocoded-national-address-file-g-naf).
+Have a look at [these intro slides](http://minus34.com/opendata/intro-to-gnaf.pptx) ([PDF](http://minus34.com/opendata/intro-to-gnaf.pdf)), as well as the [data.gov.au page](https://data.gov.au/dataset/geocoded-national-address-file-g-naf).
 
 ### There are 3 options for loading the data
 1. [Run](https://github.com/minus34/gnaf-loader#option-1---run-loadgnafpy) the load-gnaf Python script and build the database in a single step
@@ -21,8 +21,8 @@ To get a good load time you'll need to configure your Postgres server for perfor
 - Python 2.7+ or Python 3.6+ with Psycopg2 2.6+
 
 ### Process
-1. Download [PSMA GNAF from data.gov.au](http://data.gov.au/dataset/geocoded-national-address-file-g-naf)
-2. Download [PSMA Administrative Boundaries from data.gov.au](http://data.gov.au/dataset/psma-administrative-boundaries) (**download the ESRI Shapefile version**)
+1. Download [PSMA GNAF from data.gov.au](https://data.gov.au/dataset/geocoded-national-address-file-g-naf)
+2. Download [PSMA Administrative Boundaries from data.gov.au](https://data.gov.au/dataset/geoscape-administrative-boundaries) (**download the ESRI Shapefile version**)
 3. Unzip GNAF to a directory on your Postgres server
 4. Alter security on the directory to grant Postgres read access
 5. Unzip Admin Bdys to a local directory
@@ -71,7 +71,7 @@ You can load the Admin Boundaries without GNAF. To do this: comment out steps 1,
 Note: you can't load GNAF without the Admin Bdys due to dependencies required to split Melbourne and to fix non-boundary locality_pids on addresses.
 
 ### Attribution
-When using the resulting data from this process - you will need to adhere to the attribution requirements on the data.gov.au pages for [GNAF](http://data.gov.au/dataset/geocoded-national-address-file-g-naf) and the [Admin Bdys](http://data.gov.au/dataset/psma-administrative-boundaries), as part of the open data licensing requirements.
+When using the resulting data from this process - you will need to adhere to the attribution requirements on the data.gov.au pages for [GNAF](https://data.gov.au/dataset/geocoded-national-address-file-g-naf) and the [Admin Bdys](https://data.gov.au/dataset/geoscape-administrative-boundaries), as part of the open data licensing requirements.
 
 ### WARNING:
 - The scripts will DROP ALL TABLES using CASCADE in the GNAF and Admin Bdy schemas and then recreate them; meaning you'll LOSE YOUR VIEWS if you have created any! If you want to keep the existing data - you'll need to change the schema names in the script or use a different database
@@ -89,8 +89,8 @@ When using the resulting data from this process - you will need to adhere to the
 Create a Docker container with GNAF and the Admin Bdys ready to go, so they can be deployed anywhere.
 
 ### Process
-1. Download [PSMA GNAF from data.gov.au](http://data.gov.au/dataset/geocoded-national-address-file-g-naf)
-2. Download [PSMA Administrative Boundaries from data.gov.au](http://data.gov.au/dataset/psma-administrative-boundaries) (download the ESRI Shapefile version)
+1. Download [PSMA GNAF from data.gov.au](https://data.gov.au/dataset/geocoded-national-address-file-g-naf)
+2. Download [PSMA Administrative Boundaries from data.gov.au](https://data.gov.au/dataset/geoscape-administrative-boundaries) (download the ESRI Shapefile version)
 3. Unzip GNAF and the Admin Bdys in the data/ directory of this repository
 4. Run docker-compose: `docker-compose up`. The database will be built.
 5. Use the constructed database as you wish.
@@ -112,7 +112,7 @@ Should take 15-60 minutes.
 
 ### Data Licenses
 
-Incorporates or developed using G-NAF ©PSMA Australia Limited licensed by the Commonwealth of Australia under the [Open Geo-coded National Address File (G-NAF) End User Licence Agreement](http://data.gov.au/dataset/19432f89-dc3a-4ef3-b943-5326ef1dbecc/resource/09f74802-08b1-4214-a6ea-3591b2753d30/download/20160226---EULA---Open-G-NAF.pdf).
+Incorporates or developed using G-NAF ©PSMA Australia Limited licensed by the Commonwealth of Australia under the [Open Geo-coded National Address File (G-NAF) End User Licence Agreement](https://data.gov.au/data/dataset/19432f89-dc3a-4ef3-b943-5326ef1dbecc/resource/09f74802-08b1-4214-a6ea-3591b2753d30/download/20160226-eula-open-g-naf.pdf).
 
 Incorporates or developed using Administrative Boundaries ©PSMA Australia Limited licensed by the Commonwealth of Australia under [Creative Commons Attribution 4.0 International licence (CC BY 4.0)](https://creativecommons.org/licenses/by/4.0/).
 
