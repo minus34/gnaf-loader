@@ -113,7 +113,6 @@ def main():
                    AND table_type='BASE TABLE'
                    AND table_name <> 'qa'
                    AND table_name NOT LIKE '%_2011_%'
-                   AND table_name NOT LIKE '%_analysis%'
                    AND table_name NOT LIKE '%_display%'""".format(schema_name)
         pg_cur.execute(sql)
 
