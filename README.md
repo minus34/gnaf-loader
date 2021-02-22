@@ -16,7 +16,7 @@ Running the Python script takes 30-120 minutes on a Postgres server configured t
 To get a good load time you'll need to configure your Postgres server for performance. There's a good guide [here](http://revenant.ca/www/postgis/workshop/tuning.html), noting it's a few years old and some of the memory parameters can be beefed up if you have the RAM.
 
 ### Pre-requisites
-- Postgres 9.3+ with PostGIS 2.2+ (tested on 9.3, 9.4, 9.5 on Windows and 9.5, 9.6, 10, 11, 12 on macOS)
+- Postgres 10.x and above with PostGIS 2.2+
 - Add the Postgres bin directory to your system PATH
 - Python 2.7+ or Python 3.6+ with Psycopg2 2.6+
 
