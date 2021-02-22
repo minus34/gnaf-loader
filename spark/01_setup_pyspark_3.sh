@@ -9,26 +9,36 @@ echo " Start time : $(date)"
 # Script installs Apache Spark locally on a Mac in standalone mode
 # --------------------------------------------------------------------------------------------------------------------
 #
-# Author: Hugh Saalmans, IAG Strategy & Innovation
+# Author: Hugh Saalmans
 # Date: 2020-09-25
 #
 # WARNINGS:
 #   - Removes existing Spark install in $HOME/spark-$SPARK_VERSION-with-psycopg2 folder
-#   - Removes existing 'spark3_env' Conda environment
+#   - Removes existing 'spark3' Conda environment
 #
 # PRE_REQUISITES:
 #   1. Java 8 OpenJDK is installed
-#        - Install using Homebrew: brew cask install adoptopenjdk8
+#        - Install using Homebrew:
+#            brew install openjdk@8
+#        - Add the following lines to your .bash_profile file:
+#            export PATH="/usr/local/opt/openjdk@8/bin:$PATH"
+#            export JAVA_HOME="/usr/local/opt/openjdk@8"
+#        - Reload .bash_profile:
+#            source .bash_profile
 #
 #   2. Miniconda installed in default directory ($HOME/opt/miniconda3)
 #        - Get the installer here: https://repo.anaconda.com/miniconda/Miniconda3-latest-MacOSX-x86_64.pkg
 #
+# ISSUES:
+#   1. Conda environment variables aren't accessible in IntelliJ/Pycharm due to a missing feature
+#        - Pyspark scripts will fail in IntelliJ/Pycharm as Spark env vars aren't set (e.g. $SPARK_HOME)
+#
 # --------------------------------------------------------------------------------------------------------------------
 #
 # SETUP:
-#   - edit these if its now the future and versions have changed
+#   - edit these if it's the future and versions have changed
 
-PYTHON_VERSION="3.8"
+PYTHON_VERSION="3.9"
 SPARK_VERSION="3.0.1"
 
 # --------------------------------------------------------------------------------------------------------------------
@@ -53,9 +63,9 @@ wget https://archive.apache.org/dist/spark/spark-${SPARK_VERSION}/spark-${SPARK_
 tar -xzf spark-${SPARK_VERSION}-bin-hadoop3.2.tgz --directory ${SPARK_HOME_DIR} --strip-components=1
 rm spark-${SPARK_VERSION}-bin-hadoop3.2.tgz
 
-# add Postgres JDBC driver to Spark (optional - included for running xx_prep_abs_boundaries.py)
+# add Postgres JDBC driver to Spark (required to export GNAF and Admin Bdys)
 cd ${SPARK_HOME_DIR}/jars || exit
-wget https://jdbc.postgresql.org/download/postgresql-42.2.18.jar
+wget https://jdbc.postgresql.org/download/postgresql-42.2.19.jar
 
 # create folder for Spark temp files
 mkdir -p ${HOME}/tmp/spark
@@ -63,23 +73,23 @@ mkdir -p ${HOME}/tmp/spark
 cd ${HOME} || exit
 
 echo "-------------------------------------------------------------------------"
-echo "Creating new Conda Environment 'spark3_env'"
+echo "Creating new Conda Environment 'spark3'"
 echo "-------------------------------------------------------------------------"
 
 # stop the Conda environment currently running
 conda deactivate
 
 # WARNING - remove existing environment
-conda env remove --name spark3_env
+conda env remove --name spark3
 
 # update Conda platform
 echo "y" | conda update conda
 
 # Create Conda environment
-echo "y" | conda create -n spark3_env python=${PYTHON_VERSION}
+echo "y" | conda create -n spark3 python=${PYTHON_VERSION}
 
 # activate and setup env
-conda activate spark3_env
+conda activate spark3
 conda config --env --add channels conda-forge
 conda config --env --set channel_priority strict
 
@@ -88,12 +98,12 @@ conda env config vars set JAVA_HOME="/Library/Java/JavaVirtualMachines/adoptopen
 conda env config vars set SPARK_HOME="${SPARK_HOME_DIR}"
 conda env config vars set SPARK_LOCAL_IP="127.0.0.1"
 conda env config vars set SPARK_LOCAL_DIRS="${HOME}/tmp/spark"
-conda env config vars set PYSPARK_PYTHON="${HOME}/opt/miniconda3/envs/spark3_env/bin/python"
-conda env config vars set PYSPARK_DRIVER_PYTHON="${HOME}/opt/miniconda3/envs/spark3_env/bin/ipython"
+conda env config vars set PYSPARK_PYTHON="${HOME}/opt/miniconda3/envs/spark3/bin/python"
+conda env config vars set PYSPARK_DRIVER_PYTHON="${HOME}/opt/miniconda3/envs/spark3/bin/ipython"
 conda env config vars set PYLIB="${SPARK_HOME_DIR}/python/lib"
 
 # reactivate for env vars to take effect
-conda activate spark3_env
+conda activate spark3
 
 # install conda packages for Spark
 echo "y" | conda install -c conda-forge pyspark=${SPARK_VERSION} psycopg2 boto3
