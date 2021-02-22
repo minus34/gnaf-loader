@@ -93,8 +93,8 @@ conda activate spark3
 conda config --env --add channels conda-forge
 conda config --env --set channel_priority strict
 
-# add environment variables
-conda env config vars set JAVA_HOME="/Library/Java/JavaVirtualMachines/adoptopenjdk-8.jdk/Contents/Home"
+# add environment variables for Pyspark
+conda env config vars set JAVA_HOME="/usr/local/opt/openjdk@8"
 conda env config vars set SPARK_HOME="${SPARK_HOME_DIR}"
 conda env config vars set SPARK_LOCAL_IP="127.0.0.1"
 conda env config vars set SPARK_LOCAL_DIRS="${HOME}/tmp/spark"
