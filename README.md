@@ -21,8 +21,8 @@ To get a good load time you'll need to configure your Postgres server for perfor
 - Python 2.7+ or Python 3.6+ with Psycopg2 2.6+
 
 ### Process
-1. Download [PSMA GNAF from data.gov.au](https://data.gov.au/dataset/geocoded-national-address-file-g-naf)
-2. Download [PSMA Administrative Boundaries from data.gov.au](https://data.gov.au/dataset/geoscape-administrative-boundaries) (**download the ESRI Shapefile version**)
+1. Download [Geoscape GNAF from data.gov.au](https://data.gov.au/dataset/geocoded-national-address-file-g-naf)
+2. Download [Geoscape Administrative Boundaries from data.gov.au](https://data.gov.au/dataset/geoscape-administrative-boundaries) (**download the ESRI Shapefile version**)
 3. Unzip GNAF to a directory on your Postgres server
 4. Alter security on the directory to grant Postgres read access
 5. Unzip Admin Bdys to a local directory
@@ -89,8 +89,8 @@ When using the resulting data from this process - you will need to adhere to the
 Create a Docker container with GNAF and the Admin Bdys ready to go, so they can be deployed anywhere.
 
 ### Process
-1. Download [PSMA GNAF from data.gov.au](https://data.gov.au/dataset/geocoded-national-address-file-g-naf)
-2. Download [PSMA Administrative Boundaries from data.gov.au](https://data.gov.au/dataset/geoscape-administrative-boundaries) (download the ESRI Shapefile version)
+1. Download [Geoscape GNAF from data.gov.au](https://data.gov.au/dataset/geocoded-national-address-file-g-naf)
+2. Download [Geoscape Administrative Boundaries from data.gov.au](https://data.gov.au/dataset/geoscape-administrative-boundaries) (download the ESRI Shapefile version)
 3. Unzip GNAF and the Admin Bdys in the data/ directory of this repository
 4. Run docker-compose: `docker-compose up`. The database will be built.
 5. Use the constructed database as you wish.
@@ -122,4 +122,4 @@ GNAF and the Admin Bdys have been customised to remove some of the known, minor 
 - Localities have had address and street counts added to them
 - Suburb-Locality bdys have been flattened into a single continuous layer of localities - South Australian Hundreds have been removed and ACT districts have been added where there are no gazetted localities
 - The Melbourne, VIC locality has been split into Melbourne, 3000 and Melbourne 3004 localities (the new locality PIDs are VIC 1634_1 & VIC 1634_2). The split occurs at the Yarra River (based on the postcodes in the Melbourne addresses)
-- A postcode boundaries layer has been created using the postcodes in the address tables. Whilst this closely emulates the official PSMA postcode boundaries, there are several hundred addresses that are in the wrong postcode bdy. Do not treat this data as authoritative
+- A postcode boundaries layer has been created using the postcodes in the address tables. Whilst this closely emulates the official Geoscape postcode boundaries, there are several hundred addresses that are in the wrong postcode bdy. Do not treat this data as authoritative

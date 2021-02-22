@@ -56,10 +56,10 @@ def get_password(connection_name):
 pg_settings = get_password("localhost_super")
 
 # create Postgres JDBC url
-jdbc_url = "jdbc:postgresql://{HOST}:{PORT}/{DB}".format(**pg_settings)
+jdbc_url = "jdbc:postgresql://{HOST}:5433/{DB}".format(**pg_settings)
 
 # get connect string for psycopg2
-pg_connect_string = "dbname={DB} host={HOST} port={PORT} user={USER} password={PASS}".format(**pg_settings)
+pg_connect_string = "dbname={DB} host={HOST} port=5433 user={USER} password={PASS}".format(**pg_settings)
 
 # aws details
 s3_bucket = "minus34.com"
@@ -240,6 +240,9 @@ def export_to_parquet(df, name):
 
 
 def copy_to_s3(schema_name, name):
+
+    # set correct AWS user
+    boto3.setup_default_session(profile_name="minus34")
 
     # delete existing files (each time you run this Spark creates new, random parquet file names)
     s3 = boto3.resource('s3')
