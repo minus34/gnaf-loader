@@ -37,5 +37,5 @@ for state in states:
 
             output_urls.append(output_url)
 
-with open('weather_observations_urls.csv', 'w', newline='') as output_file:
+with open('weather_observations_urls.txt', 'w', newline='') as output_file:
     output_file.write("\n".join(output_urls))
