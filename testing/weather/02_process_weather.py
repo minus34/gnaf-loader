@@ -1,13 +1,16 @@
 # script gets URLs of all Australian BoM weather station observations
 # ... and saves them to text files
 
+import geopandas
+import geovoronoi
 import json
 import logging
 import multiprocessing
 import os
-# import pandas
+import pandas
 # import matplotlib.pyplot as plt
 import requests
+import shapely.ops
 
 from bs4 import BeautifulSoup
 from datetime import datetime
@@ -65,20 +68,40 @@ def main():
     pool.close()
     pool.join()
 
-    obs_list = list(results)
-    num_results = len(obs_list)
+    # get results and remove any failures
+    obs_list = list()
 
-    if num_jobs > num_results:
-        logger.warning("\t- A MULTIPROCESSING PROCESS FAILED WITHOUT AN ERROR\nACTION: Check the record counts")
-
-    for obs in obs_list:
-        if obs.get("error") is not None:
-            logger.warning("\t- Failed to parse {}".format(obs["error"]))
-
-        # logger.info(obs)
+    for result in list(results):
+        if result.get("error") is not None:
+            logger.warning("\t- Failed to parse {}".format(result["error"]))
+        else:
+            obs_list.append(result)
 
     logger.info("Downloaded all obs files : {}".format(datetime.now() - start_time))
     # start_time = datetime.now()
+
+    # create geopandas dataframe of weather obs
+    df = pandas.DataFrame(obs_list)
+    gdf = geopandas.GeoDataFrame(df, geometry=geopandas.points_from_xy(df.lon, df.lat), crs="EPSG:4326")
+
+    # print(gdf)
+
+    # get the border of Australia to limit the voronoi polygons
+    world = geopandas.read_file(geopandas.datasets.get_path('naturalearth_lowres'))
+    boundary = world[world.name == 'Australia']
+
+    # convert bdy and points to Web Mercator
+    boundary = boundary.to_crs(epsg=3395)
+    gdf_proj = gdf.to_crs(boundary.crs)
+
+    # get bdy geometry
+    boundary_shape = shapely.ops.cascaded_union(boundary.geometry)   # get the Polygon
+
+    # get weather station coords
+    coords = geovoronoi.points_to_coords(gdf_proj.geometry)
+
+    # Calculate Voronoi Regions
+    poly_shapes, pts, poly_to_pt_assignments = geovoronoi.voronoi_regions_from_coords(coords, boundary_shape)
 
     return True
 
