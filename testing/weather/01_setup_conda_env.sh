@@ -37,8 +37,12 @@ conda config --env --set channel_priority strict
 # reactivate for env vars to take effect
 conda activate minus34
 
-# install conda packages for Spark
-echo "y" | conda install -c conda-forge psycopg2 geopandas matplotlib bs4 boto3 awscli requests
+# install conda packages
+echo "y" | conda install -c conda-forge psycopg2 geopandas matplotlib scipy descartes bs4 boto3 awscli requests
+
+# install pypi packages
+pip install geovoronoi[plotting]
+
 
 echo "----------------------------------------------------------------------------------------------------------------"
 

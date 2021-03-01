@@ -1,7 +1,7 @@
 # script gets URLs of all Australian BoM weather station observations
-# ... and saves them to a CSV
+# ... and saves them to text files
 
-import csv
+import json
 import logging
 import multiprocessing
 import os
@@ -65,15 +65,17 @@ def main():
     pool.close()
     pool.join()
 
-    result_list = list(results)
-    num_results = len(result_list)
+    obs_list = list(results)
+    num_results = len(obs_list)
 
     if num_jobs > num_results:
         logger.warning("\t- A MULTIPROCESSING PROCESS FAILED WITHOUT AN ERROR\nACTION: Check the record counts")
 
-    for result in result_list:
-        if result != "SUCCESS":
-            logger.warning(result)
+    for obs in obs_list:
+        if obs.get("error") is not None:
+            logger.warning("\t- Failed to parse {}".format(obs["error"]))
+
+        # logger.info(obs)
 
     logger.info("Downloaded all obs files : {}".format(datetime.now() - start_time))
     # start_time = datetime.now()
@@ -84,14 +86,27 @@ def main():
 def run_multiprocessing(url):
     file_path = os.path.join(output_path, "obs", url.split("/")[-1])
 
-    try:
-        with open(file_path, 'w', newline='') as output_file:
-            output_file.write(requests.get(url).text)
+    # try:
+    obs_text = requests.get(url).text
 
-        result = "SUCCESS"
-        # print("Saved {}".format(file_path))
+    with open(file_path, 'w', newline='') as output_file:
+        output_file.write(obs_text)
+
+    obs_json = json.loads(obs_text)
+    obs_list = obs_json["observations"]["data"]
+
+    try:
+        # default is an error fopr when there are no observations
+        result = dict()
+        result["error"] = "{} : No observations".format(url)
+
+        for obs in obs_list:
+            if obs["sort_order"] == 0:
+                result = obs
+
     except Exception as ex:
-        result = "\t- FAILED! : {} : {}".format(file_path, ex)
+        result = dict()
+        result["error"] = "{} : {}".format(url, ex)
         # print(result)
 
     return result
