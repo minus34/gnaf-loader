@@ -25,8 +25,15 @@ from datetime import datetime
 # where to save the files
 output_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "data")
 
-# states to include (note: no "OT" state in BoM observations)
-states = ["ACT", "NSW", "NT", "QLD", "SA", "TAS", "VIC", "WA"]
+# states to include (note: no "ACT" or "OT" state, Antarctica is part of TAS in BoM observations)
+states = [{"name": "NSW", "product": "IDN60801"},
+          {"name": "NT", "product": "IDD60801"},
+          {"name": "QLD", "product": "IDQ60801"},
+          {"name": "SA", "product": "IDS60801"},
+          {"name": "TAS", "product": "IDT60801"},
+          {"name": "VIC", "product": "IDV60801"},
+          {"name": "WA", "product": "IDW60801"},
+          {"name": "ANT", "product": "IDT60801"}]
 
 # urls for each state's weather observations
 base_url = "http://www.bom.gov.au/{0}/observations/{0}all.shtml"
@@ -90,10 +97,11 @@ def main():
     start_time = datetime.now()
 
     obs_urls = list()
+    obs_list = list()
 
     for state in states:
         # get URL for web page to scrape
-        input_url = base_url.format(state.lower())
+        input_url = base_url.format(state["name"].lower())
 
         # load and parse web page
         r = requests.get(input_url)
@@ -105,7 +113,7 @@ def main():
         for link in links:
             url = link['href']
 
-            if "/products/" in url:
+            if "/products/{}/".format(state["product"]) in url:
 
                 # change URL to get JSON file of weather obs
                 obs_url = url.replace("/products/", "http://www.bom.gov.au/fwo/").replace(".shtml", ".json")
@@ -113,11 +121,11 @@ def main():
 
                 obs_urls.append(obs_url)
 
-    with open(os.path.join(output_path, 'weather_observations_urls.txt'), 'w', newline='') as output_file:
-        output_file.write("\n".join(obs_urls))
+        # with open(os.path.join(output_path, 'weather_observations_urls.txt'), 'w', newline='') as output_file:
+        #     output_file.write("\n".join(obs_urls))
 
-    logger.info("Got obs file list : {}".format(datetime.now() - start_time))
-    start_time = datetime.now()
+        logger.info("\t - {} : got obs file list : {}".format(state["name"], datetime.now() - start_time))
+        start_time = datetime.now()
 
     # download each obs file using multiprocessing
     pool = multiprocessing.Pool(processes=12)
@@ -126,17 +134,14 @@ def main():
     pool.close()
     pool.join()
 
-    # get results and remove any failures
-    obs_list = list()
-
     for result in list(results):
         if result.get("error") is not None:
             logger.warning("\t- Failed to parse {}".format(result["error"]))
         else:
             obs_list.append(result)
 
-    logger.info("Downloaded all obs files : {}".format(datetime.now() - start_time))
-    # start_time = datetime.now()
+    logger.info("Downloaded observations data : {}".format(datetime.now() - start_time))
+    start_time = datetime.now()
 
     # create geopandas dataframe of weather obs
     obs_df = pandas.DataFrame(obs_list)
@@ -147,12 +152,12 @@ def main():
     # gdf.to_file(os.path.join(output_path, "weather_observations"))
 
     df = obs_df.merge(station_df, on="wmo")
-    print(df)
+    # print(df)
 
     gdf = geopandas.GeoDataFrame(df, geometry=geopandas.points_from_xy(df.longitude, df.latitude), crs="EPSG:4283")
 
     # write to (bleh!) shapefile for QA
-    gdf.to_file(os.path.join(output_path, "weather_stations"))
+    gdf.to_file(os.path.join(output_path, "weather_stations.gpkg"), driver="GPKG")
 
     return True
 
@@ -187,6 +192,8 @@ def run_multiprocessing(url):
 
 
 if __name__ == '__main__':
+    full_start_time = datetime.now()
+
     logger = logging.getLogger()
 
     # set logger
@@ -210,7 +217,7 @@ if __name__ == '__main__':
     # psma.check_python_version(logger)
 
     if main():
-        logger.info("Finished successfully!")
+        logger.info("Finished successfully! : {}".format(datetime.now() - full_start_time))
     else:
         logger.fatal("Something bad happened!")
 
