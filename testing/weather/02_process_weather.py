@@ -9,8 +9,8 @@ import multiprocessing
 import os
 import pandas
 import psycopg2
-# import matplotlib.pyplot as plt
 import requests
+import sqlalchemy
 import struct
 import zipfile
 
@@ -18,7 +18,6 @@ import urllib.request
 
 from bs4 import BeautifulSoup
 from datetime import datetime
-from sqlalchemy import create_engine
 
 # where to save the files
 output_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "data")
@@ -45,13 +44,103 @@ def main():
 
     # download weather stations
     station_list = get_weather_stations()
-
     logger.info("Got weather stations : {}".format(datetime.now() - start_time))
+
+    obs_list = get_weather_observations(station_list)
+    logger.info("Downloaded observations data : {}".format(datetime.now() - start_time))
+    start_time = datetime.now()
+
+    # create dataframe of weather stations
+    station_df = pandas.DataFrame(station_list)
+
+    # create dataframe of weather obs
+    obs_df = pandas.DataFrame(obs_list).drop_duplicates()
+
+    # merge data and add points to dataframe
+    df = (obs_df.merge(station_df, on="wmo")
+          .drop(["lat", "lon"], axis=1)
+          )
+    gdf = geopandas.GeoDataFrame(df, geometry=geopandas.points_from_xy(df.longitude, df.latitude), crs="EPSG:4283")
+
+    # select rows with air temps
+    temp_df = df[df["air_temp"].notna()]
+
+    logger.info("Created obs dataframes : {}".format(datetime.now() - start_time))
+    start_time = datetime.now()
+
+    # extract lat, long and air temp as arrays
+    x = temp_df["longitude"].to_numpy()
+    y = temp_df["latitude"].to_numpy()
+    z = temp_df["air_temp"].to_numpy()
+
+    import matplotlib.pyplot as plt
+    import numpy as np
+    from scipy.interpolate import griddata
+
+    # target grid to interpolate to
+    xi = np.arange(112.0, 165.0, 0.01)
+    yi = np.arange(-45.0, -5.0, 0.01)
+    xi, yi = np.meshgrid(xi,yi)
+
+    # set mask
+    mask = (xi > 0.5) & (xi < 0.6) & (yi > 0.5) & (yi < 0.6)
+
+    # interpolate
+    zi = griddata((x, y), z, (xi, yi), method='linear')
+
+    # mask out the field
+    zi[mask] = np.nan
+
+    # plot
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    plt.contourf(xi, yi, zi, np.arange(0, 1.01, 0.01))
+    plt.plot(x, y, 'k.')
+    plt.xlabel('xi', fontsize=16)
+    plt.ylabel('yi', fontsize=16)
+    plt.savefig('interpolated.png', dpi=100)
+    plt.close(fig)
+
+
+
+
+
+
+    # # write to GeoPackage
+    # gdf.to_file(os.path.join(output_path, "weather_stations.gpkg"), driver="GPKG")
+
+    # export to PostGIS
+    engine = sqlalchemy.create_engine(sql_alchemy_engine_string)
+    gdf.to_postgis("weather_stations", engine, schema="testing", if_exists="replace")
+
+    # connect to Postgres
+    try:
+        pg_conn = psycopg2.connect(pg_connect_string)
+    except psycopg2.Error:
+        logger.fatal("Unable to connect to database\nACTION: Check your Postgres parameters and/or database security")
+        return False
+
+    pg_conn.autocommit = True
+    pg_cur = pg_conn.cursor()
+
+    pg_cur.execute("ANALYSE testing.weather_stations")
+    pg_cur.execute("ALTER TABLE testing.weather_stations ADD CONSTRAINT weather_stations_pkey PRIMARY KEY (wmo)")
+    pg_cur.execute("ALTER TABLE testing.weather_stations RENAME COLUMN geometry TO geom")
+    pg_cur.execute("CREATE INDEX sidx_weather_stations_geom ON testing.weather_stations USING gist (geom)")
+    pg_cur.execute("ALTER TABLE testing.weather_stations CLUSTER ON sidx_weather_stations_geom")
+
+    logger.info("Exported dataframe to PostGIS: {}".format(datetime.now() - start_time))
+    start_time = datetime.now()
+
+
+    return True
+
+
+def get_weather_observations(station_list):
     start_time = datetime.now()
 
     obs_urls = list()
     obs_list = list()
-
     for state in states:
         # get URL for web page to scrape
         input_url = base_url.format(state["name"].lower())
@@ -93,52 +182,7 @@ def main():
         else:
             obs_list.append(result)
 
-    logger.info("Downloaded observations data : {}".format(datetime.now() - start_time))
-    # start_time = datetime.now()
-
-
-    # create geopandas dataframe of weather stations
-    station_df = pandas.DataFrame(station_list)
-    # gdf = geopandas.GeoDataFrame(df, geometry=geopandas.points_from_xy(df.longitude, df.latitude), crs="EPSG:4283")
-    #
-    # # write to (bleh!) shapefile for QA
-    # gdf.to_file(os.path.join(output_path, "weather_stations"))
-
-    # create geopandas dataframe of weather obs
-    obs_df = pandas.DataFrame(obs_list).drop_duplicates()
-
-    # print(gdf)
-
-    # write to (bleh!) shapefile for QA
-    # gdf.to_file(os.path.join(output_path, "weather_observations"))
-
-    df = obs_df.merge(station_df, on="wmo")
-    gdf = geopandas.GeoDataFrame(df, geometry=geopandas.points_from_xy(df.longitude, df.latitude), crs="EPSG:4283")
-
-    # # write to GeoPackage
-    # gdf.to_file(os.path.join(output_path, "weather_stations.gpkg"), driver="GPKG")
-
-    # export to PostGIS
-    engine = create_engine(sql_alchemy_engine_string)
-    gdf.to_postgis("weather_stations", engine, schema="testing", if_exists="replace")
-
-    # connect to Postgres
-    try:
-        pg_conn = psycopg2.connect(pg_connect_string)
-    except psycopg2.Error:
-        logger.fatal("Unable to connect to database\nACTION: Check your Postgres parameters and/or database security")
-        return False
-
-    pg_conn.autocommit = True
-    pg_cur = pg_conn.cursor()
-
-    pg_cur.execute("ANALYSE testing.weather_stations")
-    pg_cur.execute("ALTER TABLE testing.weather_stations ADD CONSTRAINT weather_stations_pkey PRIMARY KEY (wmo)")
-    pg_cur.execute("ALTER TABLE testing.weather_stations RENAME COLUMN geometry TO geom")
-    pg_cur.execute("CREATE INDEX sidx_weather_stations_geom ON testing.weather_stations USING gist (geom)")
-    pg_cur.execute("ALTER TABLE testing.weather_stations CLUSTER ON sidx_weather_stations_geom")
-
-    return True
+    return obs_list
 
 
 def get_weather_stations():
