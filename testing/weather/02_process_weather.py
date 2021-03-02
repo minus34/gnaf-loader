@@ -80,11 +80,11 @@ def main():
                 station_list.append((station_dict))
 
     # create geopandas dataframe of weather stations
-    df = pandas.DataFrame(station_list)
-    gdf = geopandas.GeoDataFrame(df, geometry=geopandas.points_from_xy(df.longitude, df.latitude), crs="EPSG:4283")
-
-    # write to (bleh!) shapefile for QA
-    gdf.to_file(os.path.join(output_path, "weather_stations"))
+    station_df = pandas.DataFrame(station_list)
+    # gdf = geopandas.GeoDataFrame(df, geometry=geopandas.points_from_xy(df.longitude, df.latitude), crs="EPSG:4283")
+    #
+    # # write to (bleh!) shapefile for QA
+    # gdf.to_file(os.path.join(output_path, "weather_stations"))
 
     logger.info("Got weather stations : {}".format(datetime.now() - start_time))
     start_time = datetime.now()
@@ -121,9 +121,6 @@ def main():
 
     # download each obs file using multiprocessing
     pool = multiprocessing.Pool(processes=12)
-
-    num_jobs = len(obs_urls)
-
     results = pool.imap_unordered(run_multiprocessing, obs_urls)
 
     pool.close()
@@ -142,13 +139,20 @@ def main():
     # start_time = datetime.now()
 
     # create geopandas dataframe of weather obs
-    df = pandas.DataFrame(obs_list)
-    gdf = geopandas.GeoDataFrame(df, geometry=geopandas.points_from_xy(df.lon, df.lat), crs="EPSG:4326")
+    obs_df = pandas.DataFrame(obs_list)
 
     # print(gdf)
 
     # write to (bleh!) shapefile for QA
-    gdf.to_file(os.path.join(output_path, "weather_observations"))
+    # gdf.to_file(os.path.join(output_path, "weather_observations"))
+
+    df = obs_df.merge(station_df, on="wmo")
+    print(df)
+
+    gdf = geopandas.GeoDataFrame(df, geometry=geopandas.points_from_xy(df.longitude, df.latitude), crs="EPSG:4283")
+
+    # write to (bleh!) shapefile for QA
+    gdf.to_file(os.path.join(output_path, "weather_stations"))
 
     return True
 
