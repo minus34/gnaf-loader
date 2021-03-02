@@ -43,56 +43,8 @@ sql_alchemy_engine_string = "postgresql+psycopg2://postgres:password@localhost/g
 def main():
     start_time = datetime.now()
 
-    # get weather stations list - obs have poor coordinates
-    response = urllib.request.urlopen("ftp://ftp.bom.gov.au/anon2/home/ncc/metadata/sitelists/stations.zip")
-    data = io.BytesIO(response.read())
-
-    station_file = zipfile.ZipFile(data, 'r', zipfile.ZIP_DEFLATED).read("stations.txt").decode("utf-8")
-    stations = station_file.split("\r\n")
-
-    station_list = list()
-
-    # split fixed width file
-    field_widths = (-8, -6, 41, -8, -7, 9, 10, -15, 4, 11, -9, 7)  # negative widths represent ignored fields
-    format_string = " ".join('{}{}'.format(abs(fw), 'x' if fw < 0 else 's') for fw in field_widths)
-    field_struct = struct.Struct(format_string)
-    parser = field_struct.unpack_from
-    # print('fmtstring: {!r}, recsize: {} chars'.format(fmtstring, fieldstruct.size))
-
-    stations.pop(0)
-    stations.pop(0)
-    stations.pop(0)
-    stations.pop(0)
-    stations.pop(0)
-
-    for station in stations:
-        if len(station) > 128:
-            fields = parser(bytes(station, "utf-8"))
-
-            # convert to list
-            field_list = list()
-
-            for field in fields:
-                field_list.append(field.decode("utf-8").lstrip().rstrip())
-
-            if field_list[5] != "..":
-                station_dict = dict()
-                station_dict["name"] = field_list[0]
-                station_dict["latitude"] = float(field_list[1])
-                station_dict["longitude"] = float(field_list[2])
-                station_dict["state"] = field_list[3]
-                if field_list[4] != "..":
-                    station_dict["altitude"] = float(field_list[4])
-                station_dict["wmo"] = int(field_list[5])
-
-                station_list.append((station_dict))
-
-    # create geopandas dataframe of weather stations
-    station_df = pandas.DataFrame(station_list)
-    # gdf = geopandas.GeoDataFrame(df, geometry=geopandas.points_from_xy(df.longitude, df.latitude), crs="EPSG:4283")
-    #
-    # # write to (bleh!) shapefile for QA
-    # gdf.to_file(os.path.join(output_path, "weather_stations"))
+    # download weather stations
+    station_list = get_weather_stations()
 
     logger.info("Got weather stations : {}".format(datetime.now() - start_time))
     start_time = datetime.now()
@@ -114,13 +66,13 @@ def main():
         for link in links:
             url = link['href']
 
-            if "/products/{}/".format(state["product"]) in url:
-
-                # change URL to get JSON file of weather obs
-                obs_url = url.replace("/products/", "http://www.bom.gov.au/fwo/").replace(".shtml", ".json")
-                # logger.info(obs_url)
-
-                obs_urls.append(obs_url)
+            if "/products/" in url:
+                # only include weather station observations in their home state (border weather obs are duplicated)
+                for station in station_list:
+                    if station["state"] == state["name"] and station["wmo"] == int(url.split(".")[1]):
+                        # change URL to get JSON file of weather obs and add to list
+                        obs_url = url.replace("/products/", "http://www.bom.gov.au/fwo/").replace(".shtml", ".json")
+                        obs_urls.append(obs_url)
 
         # with open(os.path.join(output_path, 'weather_observations_urls.txt'), 'w', newline='') as output_file:
         #     output_file.write("\n".join(obs_urls))
@@ -144,8 +96,16 @@ def main():
     logger.info("Downloaded observations data : {}".format(datetime.now() - start_time))
     # start_time = datetime.now()
 
+
+    # create geopandas dataframe of weather stations
+    station_df = pandas.DataFrame(station_list)
+    # gdf = geopandas.GeoDataFrame(df, geometry=geopandas.points_from_xy(df.longitude, df.latitude), crs="EPSG:4283")
+    #
+    # # write to (bleh!) shapefile for QA
+    # gdf.to_file(os.path.join(output_path, "weather_stations"))
+
     # create geopandas dataframe of weather obs
-    obs_df = pandas.DataFrame(obs_list)
+    obs_df = pandas.DataFrame(obs_list).drop_duplicates()
 
     # print(gdf)
 
@@ -174,26 +134,76 @@ def main():
 
     pg_cur.execute("ANALYSE testing.weather_stations")
     pg_cur.execute("ALTER TABLE testing.weather_stations ADD CONSTRAINT weather_stations_pkey PRIMARY KEY (wmo)")
+    pg_cur.execute("ALTER TABLE testing.weather_stations RENAME COLUMN geometry TO geom")
     pg_cur.execute("CREATE INDEX sidx_weather_stations_geom ON testing.weather_stations USING gist (geom)")
     pg_cur.execute("ALTER TABLE testing.weather_stations CLUSTER ON sidx_weather_stations_geom")
 
     return True
 
 
+def get_weather_stations():
+    # get weather stations - obs have poor coordinates
+    response = urllib.request.urlopen("ftp://ftp.bom.gov.au/anon2/home/ncc/metadata/sitelists/stations.zip")
+    data = io.BytesIO(response.read())
+    station_file = zipfile.ZipFile(data, 'r', zipfile.ZIP_DEFLATED).read("stations.txt").decode("utf-8")
+    stations = station_file.split("\r\n")
+
+    station_list = list()
+
+    # split fixed width file and get the fields we want
+    field_widths = (-8, -6, 41, -8, -7, 9, 10, -15, 4, 11, -9, 7)  # negative widths represent ignored fields
+    format_string = " ".join('{}{}'.format(abs(fw), 'x' if fw < 0 else 's') for fw in field_widths)
+    field_struct = struct.Struct(format_string)
+    parser = field_struct.unpack_from
+    # print('fmtstring: {!r}, recsize: {} chars'.format(fmtstring, fieldstruct.size))
+
+    # skip first 5 rows (lazy coding!)
+    stations.pop(0)
+    stations.pop(0)
+    stations.pop(0)
+    stations.pop(0)
+    stations.pop(0)
+
+    # add each station to a list of dictionaries
+    for station in stations:
+        if len(station) > 128:
+            fields = parser(bytes(station, "utf-8"))
+
+            # convert to list
+            field_list = list()
+
+            for field in fields:
+                field_list.append(field.decode("utf-8").lstrip().rstrip())
+
+            if field_list[5] != "..":
+                station_dict = dict()
+                station_dict["name"] = field_list[0]
+                station_dict["latitude"] = float(field_list[1])
+                station_dict["longitude"] = float(field_list[2])
+                station_dict["state"] = field_list[3]
+                if field_list[4] != "..":
+                    station_dict["altitude"] = float(field_list[4])
+                station_dict["wmo"] = int(field_list[5])
+
+                station_list.append(station_dict)
+
+    return station_list
+
+
 def run_multiprocessing(url):
-    file_path = os.path.join(output_path, "obs", url.split("/")[-1])
+    # file_path = os.path.join(output_path, "obs", url.split("/")[-1])
 
     # try:
     obs_text = requests.get(url).text
 
-    with open(file_path, 'w', newline='') as output_file:
-        output_file.write(obs_text)
+    # with open(file_path, 'w', newline='') as output_file:
+    #     output_file.write(obs_text)
 
     obs_json = json.loads(obs_text)
     obs_list = obs_json["observations"]["data"]
 
     try:
-        # default is an error fopr when there are no observations
+        # default is an error for when there are no observations
         result = dict()
         result["error"] = "{} : No observations".format(url)
 

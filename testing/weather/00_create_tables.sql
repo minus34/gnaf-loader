@@ -1,5 +1,5 @@
 --
--- DROP TABLE IF EXISTS testing.weather_stations;
+ DROP TABLE IF EXISTS testing.weather_stations;
 -- CREATE TABLE testing.weather_stations
 -- (
 --     sort_order integer,
@@ -57,14 +57,12 @@ from testing.weather_stations;
 
 DROP TABLE IF EXISTS testing.weather_voronoi;
 CREATE TABLE testing.weather_voronoi as
-select (st_dump(ST_VoronoiPolygons(st_collect(geometry), 0.0, ST_MakeEnvelope(112.0, -45.0, 165.0, 5.0, 4283)))).geom as geom
+select (st_dump(ST_VoronoiPolygons(st_collect(geom), 0.0, ST_MakeEnvelope(112.0, -45.0, 165.0, 5.0, 4283)))).geom as geom
 -- select ST_VoronoiPolygons(st_collect(geometry), 0.0, ST_MakeEnvelope(90.0, -50.0, 180.0, 0.0, 4283)) as geom
 from testing.weather_stations
 where air_temp is not null
 ;
 
-select (st_dump(geom)).geom
-from testing.weather_voronoi;
 
 
 
@@ -75,44 +73,7 @@ select wmo, count(*)
 from testing.weather_stations
 group by wmo
 having count(*) > 1
---
--- select *
--- from testing.weather_stations
--- where wmo in (
--- 99468,
--- 95896,
--- 95214,
--- 95101,
--- 94949,
--- 94933,
--- 94862,
--- 94843,
--- 94693,
--- 94592,
--- 94564,
--- 94553,
--- 94474,
--- 94461,
--- 94457,
--- 94255,
--- 94217,
--- 94216,
--- 94102,
--- 94100)
--- order by wmo, history_product
--- ;
---
---
--- select *
--- from testing.weather_stations
--- where history_product = 'IDD60801'
--- ;
---
--- -- history_product
--- -- IDS60801
--- -- IDT60801
--- -- IDQ60801
--- -- IDN60801
--- -- IDW60801
--- -- IDV60801
--- -- IDD60801
+
+select *
+from testing.weather_stations
+where wmo = 94564;
