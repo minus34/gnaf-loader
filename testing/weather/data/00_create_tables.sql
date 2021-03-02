@@ -2,8 +2,6 @@
 DROP TABLE IF EXISTS testing.weather_stations;
 CREATE TABLE testing.weather_stations
 (
-    geom geometry(Point,4283),
-    fid integer,
     sort_order integer,
     wmo integer,
     name_x text,
@@ -44,55 +42,61 @@ CREATE TABLE testing.weather_stations
     longitude double precision,
     state text,
     altitude double precision,
-    CONSTRAINT weather_stations_pkey PRIMARY KEY (id)
+    geom geometry(Point,4283),
+    CONSTRAINT weather_stations_pkey PRIMARY KEY (wmo)
 );
 ALTER TABLE testing.weather_stations OWNER to postgres;
 
 CREATE INDEX sidx_weather_stations_geom ON testing.weather_stations USING gist (geom);
+ALTER TABLE testing.weather_stations CLUSTER ON sidx_weather_stations_geom;
 
 
-select wmo, count(*)
-from testing.weather_stations
-group by wmo
-having count(*) > 1
-
-select *
-from testing.weather_stations
-where wmo in (
-99468,
-95896,
-95214,
-95101,
-94949,
-94933,
-94862,
-94843,
-94693,
-94592,
-94564,
-94553,
-94474,
-94461,
-94457,
-94255,
-94217,
-94216,
-94102,
-94100)
-order by wmo, history_product
-;
 
 
-select *
-from testing.weather_stations
-where history_product = 'IDD60801'
-;
 
--- history_product
--- IDS60801
--- IDT60801
--- IDQ60801
--- IDN60801
--- IDW60801
--- IDV60801
--- IDD60801
+
+-- select wmo, count(*)
+-- from testing.weather_stations
+-- group by wmo
+-- having count(*) > 1
+--
+-- select *
+-- from testing.weather_stations
+-- where wmo in (
+-- 99468,
+-- 95896,
+-- 95214,
+-- 95101,
+-- 94949,
+-- 94933,
+-- 94862,
+-- 94843,
+-- 94693,
+-- 94592,
+-- 94564,
+-- 94553,
+-- 94474,
+-- 94461,
+-- 94457,
+-- 94255,
+-- 94217,
+-- 94216,
+-- 94102,
+-- 94100)
+-- order by wmo, history_product
+-- ;
+--
+--
+-- select *
+-- from testing.weather_stations
+-- where history_product = 'IDD60801'
+-- ;
+--
+-- -- history_product
+-- -- IDS60801
+-- -- IDT60801
+-- -- IDQ60801
+-- -- IDN60801
+-- -- IDW60801
+-- -- IDV60801
+-- -- IDD60801

@@ -2,25 +2,23 @@
 # ... and saves them to text files
 
 import geopandas
-# import geovoronoi
 import io
 import json
 import logging
 import multiprocessing
 import os
 import pandas
+import psycopg2
 # import matplotlib.pyplot as plt
 import requests
-# import shapely.ops
 import struct
 import zipfile
 
-import shutil
 import urllib.request
-from contextlib import closing
 
 from bs4 import BeautifulSoup
 from datetime import datetime
+from sqlalchemy import create_engine
 
 # where to save the files
 output_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "data")
@@ -38,6 +36,9 @@ states = [{"name": "NSW", "product": "IDN60801"},
 # urls for each state's weather observations
 base_url = "http://www.bom.gov.au/{0}/observations/{0}all.shtml"
 
+# postgres connect strings
+pg_connect_string = "dbname='geo' host='localhost' port='5432' user='postgres' password='password'"
+sql_alchemy_engine_string = "postgresql+psycopg2://postgres:password@localhost/geo"
 
 def main():
     start_time = datetime.now()
@@ -141,7 +142,7 @@ def main():
             obs_list.append(result)
 
     logger.info("Downloaded observations data : {}".format(datetime.now() - start_time))
-    start_time = datetime.now()
+    # start_time = datetime.now()
 
     # create geopandas dataframe of weather obs
     obs_df = pandas.DataFrame(obs_list)
@@ -152,12 +153,29 @@ def main():
     # gdf.to_file(os.path.join(output_path, "weather_observations"))
 
     df = obs_df.merge(station_df, on="wmo")
-    # print(df)
-
     gdf = geopandas.GeoDataFrame(df, geometry=geopandas.points_from_xy(df.longitude, df.latitude), crs="EPSG:4283")
 
-    # write to (bleh!) shapefile for QA
-    gdf.to_file(os.path.join(output_path, "weather_stations.gpkg"), driver="GPKG")
+    # # write to GeoPackage
+    # gdf.to_file(os.path.join(output_path, "weather_stations.gpkg"), driver="GPKG")
+
+    # export to PostGIS
+    engine = create_engine(sql_alchemy_engine_string)
+    gdf.to_postgis("weather_stations", engine, schema="testing", if_exists="replace")
+
+    # connect to Postgres
+    try:
+        pg_conn = psycopg2.connect(pg_connect_string)
+    except psycopg2.Error:
+        logger.fatal("Unable to connect to database\nACTION: Check your Postgres parameters and/or database security")
+        return False
+
+    pg_conn.autocommit = True
+    pg_cur = pg_conn.cursor()
+
+    pg_cur.execute("ANALYSE testing.weather_stations")
+    pg_cur.execute("ALTER TABLE testing.weather_stations ADD CONSTRAINT weather_stations_pkey PRIMARY KEY (wmo)")
+    pg_cur.execute("CREATE INDEX sidx_weather_stations_geom ON testing.weather_stations USING gist (geom)")
+    pg_cur.execute("ALTER TABLE testing.weather_stations CLUSTER ON sidx_weather_stations_geom")
 
     return True
 

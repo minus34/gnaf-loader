@@ -38,7 +38,9 @@ conda config --env --set channel_priority strict
 conda activate minus34
 
 # install conda packages
-echo "y" | conda install -c conda-forge psycopg2 geopandas matplotlib bs4 boto3 awscli requests
+echo "y" | conda install -c conda-forge psycopg2 geopandas matplotlib bs4 boto3 awscli requests sqlalchemy
+
+echo "y" | conda install -c conda-forge sqlalchemy
 
 #scipy descartes
 
