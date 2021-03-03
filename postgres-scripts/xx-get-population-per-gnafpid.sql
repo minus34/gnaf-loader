@@ -123,7 +123,7 @@ SELECT 'MB' || mb_2016_code::text || '_' || (row_number() OVER ())::text as gnaf
    dwelling,
    person,
    'no addresses' as dwelling_count_type,
-   ST_GeneratePoints(geom, dwelling) as geom
+   (ST_Dump(ST_GeneratePoints(geom, dwelling))).geom as geom
 FROM testing.mb_2016_counts
 WHERE geom is not null
 AND address_count = 0
@@ -173,7 +173,6 @@ WHERE row_num <= person
 ORDER BY mb_2016_code,
          row_num
 ;
-
 ANALYSE testing.address_principals_persons;
 
 --    2. where dwelling count is less than population (in other words - multiple people live at each address)
@@ -285,7 +284,7 @@ SELECT 'MB' || mb_2016_code::text || '_' || (row_number() OVER ())::text as gnaf
 	   dwelling,
 	   person,
 	   'no addresses' as dwelling_count_type,
-	   ST_GeneratePoints(geom, person) as geom
+       (ST_Dump(ST_GeneratePoints(geom, person))).geom as geom
 FROM testing.mb_2016_counts
 WHERE geom is not null
 AND address_count = 0
