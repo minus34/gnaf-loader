@@ -83,15 +83,15 @@ def main():
     import numpy as np
     import scipy.interpolate
 
-    # target grid to interpolate to
-    xi = np.arange(112.0, 162.0, 0.01)
-    yi = np.arange(-45.0, -8.0, 0.01)
-    xi, yi = np.meshgrid(xi, yi)
-
-    # interpolate temperatures across the grid
-    zi = scipy.interpolate.griddata((x, y), z, (xi, yi), method='linear')
-
-    logger.info("Got interpolated temperature grid : {}".format(datetime.now() - start_time))
+    # # target grid to interpolate to
+    # xi = np.arange(112.0, 162.0, 0.01)
+    # yi = np.arange(-45.0, -8.0, 0.01)
+    # xi, yi = np.meshgrid(xi, yi)
+    #
+    # # interpolate temperatures across the grid
+    # zi = scipy.interpolate.griddata((x, y), z, (xi, yi), method='linear')
+    #
+    # logger.info("Got interpolated temperature grid : {}".format(datetime.now() - start_time))
 
     # connect to Postgres
     try:
@@ -107,6 +107,7 @@ def main():
 
     gnaf_x = gnaf_df["longitude"].to_numpy()
     gnaf_y = gnaf_df["latitude"].to_numpy()
+    gnaf_counts = gnaf_df["address_count"].to_numpy()
     # gnaf_x, gnaf_y = np.meshgrid(gnaf_x, gnaf_y)
 
     logger.info("Got GNAF coordinates : {}".format(datetime.now() - start_time))
@@ -118,8 +119,13 @@ def main():
 
     gnaf_points = np.array((gnaf_x.flatten(), gnaf_y.flatten())).T
 
-    fred = scipy.interpolate.griddata((x, y), z, gnaf_points, method='linear')
+    gnaf_temps = scipy.interpolate.griddata((x, y), z, gnaf_points, method='linear')
     # fred = scipy.interpolate.griddata(grid_points, values, gnaf_points)
+
+    # create dataframe with
+    temperature_df = pandas.DataFrame({'latitude': gnaf_y, 'longitude': gnaf_x, 'address_count': gnaf_counts, 'air_temp': gnaf_temps})
+
+    print(temperature_df)
 
     logger.info("Got interpolated temperatures for GNAF points : {}".format(datetime.now() - start_time))
 
@@ -133,9 +139,12 @@ def main():
     # zi[mask] = np.nan
 
     # plot
-    plt.contourf(xi, yi, zi, np.arange(-6.1, 45.1, 0.2), extend="both", cmap="Greys")
+    temperature_df.plot.scatter('longitude', 'latitude', c='air_temp', colormap='jet')
+
+    # plt.plot(gnaf_x, gnaf_y, gnaf_temps)
+    # plt.contour(gnaf_x, gnaf_y, gnaf_temps, np.arange(-6.1, 45.1, 0.2), extend="both", cmap="Greys")
     plt.axis('off')
-    plt.savefig('interpolated.png', dpi=300, facecolor="b", edgecolor="red", pad_inches=0.0, metadata=None)
+    plt.savefig('interpolated.png', dpi=300, facecolor="w", pad_inches=0.0, metadata=None)
 
     # # # write to GeoPackage
     # # gdf.to_file(os.path.join(output_path, "weather_stations.gpkg"), driver="GPKG")
