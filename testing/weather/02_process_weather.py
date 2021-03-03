@@ -102,7 +102,7 @@ def main():
     # plot
     # fig = plt.figure()
     # ax = fig.add_subplot(111)
-    plt.contourf(xi, yi, zi, np.arange(-20.0, 50.0, 1.0), extend="both", cmap="Spectral")
+    plt.contourf(xi, yi, zi, np.arange(-20.0, 50.0, 1.0), extend="both", cmap="Greys")
     # plt.plot(x, y, ".k")
     # plt.xlabel('xi', fontsize=16)
     # plt.ylabel('yi', fontsize=16)
