@@ -1,20 +1,22 @@
 # script gets URLs of all Australian BoM weather station observations
 # ... and saves them to text files
 
-import geopandas
+# import geopandas
 import io
 import json
 import logging
+import matplotlib.pyplot as plt
 import multiprocessing
+import numpy
 import os
 import pandas
 import psycopg2
 import requests
-import sqlalchemy
+import scipy.interpolate
+# import sqlalchemy
 import struct
-import zipfile
-
 import urllib.request
+import zipfile
 
 from bs4 import BeautifulSoup
 from datetime import datetime
@@ -43,57 +45,46 @@ sql_alchemy_engine_string = "postgresql+psycopg2://postgres:password@localhost/g
 def main():
     start_time = datetime.now()
 
-    # # download weather stations
-    # station_list = get_weather_stations()
-    # logger.info("Got weather stations : {}".format(datetime.now() - start_time))
-    #
-    # obs_list = get_weather_observations(station_list)
-    # logger.info("Downloaded observations data : {}".format(datetime.now() - start_time))
-    # start_time = datetime.now()
-    #
-    # # create dataframe of weather stations
-    # station_df = pandas.DataFrame(station_list)
-    #
-    # # create dataframe of weather obs
-    # obs_df = pandas.DataFrame(obs_list).drop_duplicates()
-    #
-    # # merge data and add points to dataframe
-    # df = (obs_df.merge(station_df, on="wmo")
-    #       .drop(["lat", "lon"], axis=1)
-    #       )
-    # gdf = geopandas.GeoDataFrame(df, geometry=geopandas.points_from_xy(df.longitude, df.latitude), crs="EPSG:4283")
-    #
-    # # select rows with air temps
-    # temp_df = df[(df["air_temp"].notna()) & (df["longitude"] > 112.0) & (df["longitude"] < 162.0)
-    #              & (df["latitude"] > -45.0) & (df["latitude"] < -8.0)]
-    #
-    # temp_df.to_pickle("temp_df.pkl")
-    #
-    # logger.info("Created obs dataframes : {}".format(datetime.now() - start_time))
-    # start_time = datetime.now()
+    # download weather stations
+    station_list = get_weather_stations()
+    logger.info("Downloaded weather stations : {}".format(datetime.now() - start_time))
 
-    temp_df = pandas.read_pickle("temp_df.pkl")
+    obs_list = get_weather_observations(station_list)
+    logger.info("Downloaded observations : {}".format(datetime.now() - start_time))
+    start_time = datetime.now()
+
+    # create dataframe of weather stations
+    station_df = pandas.DataFrame(station_list)
+
+    # create dataframe of weather obs
+    obs_df = pandas.DataFrame(obs_list).drop_duplicates()
+
+    # merge data and add points to dataframe
+    df = (obs_df.merge(station_df, on="wmo")
+          .drop(["lat", "lon"], axis=1)
+          )
+    # gdf = geopandas.GeoDataFrame(df, geometry=geopandas.points_from_xy(df.longitude, df.latitude), crs="EPSG:4283")
+
+    # select rows with air temps
+    air_temp_df = df[(df["air_temp"].notna()) & (df["longitude"] > 112.0) & (df["longitude"] < 162.0)
+                 & (df["latitude"] > -45.0) & (df["latitude"] < -8.0)]
+
+    # # save to disk if needed for debugging
+    # air_temp_df.to_pickle("temp_df.pkl")
+
+    logger.info("Created observations dataframe with weather station coordinates : {}"
+                .format(datetime.now() - start_time))
+    start_time = datetime.now()
+
+    # # load from disk if debugging
+    # temp_df = pandas.read_pickle("temp_df.pkl")
 
     # extract lat, long and air temp as arrays
-    x = temp_df["longitude"].to_numpy()
-    y = temp_df["latitude"].to_numpy()
-    z = temp_df["air_temp"].to_numpy()
+    x = air_temp_df["longitude"].to_numpy()
+    y = air_temp_df["latitude"].to_numpy()
+    z = air_temp_df["air_temp"].to_numpy()
 
-    import matplotlib.pyplot as plt
-    import numpy as np
-    import scipy.interpolate
-
-    # # target grid to interpolate to
-    # xi = np.arange(112.0, 162.0, 0.01)
-    # yi = np.arange(-45.0, -8.0, 0.01)
-    # xi, yi = np.meshgrid(xi, yi)
-    #
-    # # interpolate temperatures across the grid
-    # zi = scipy.interpolate.griddata((x, y), z, (xi, yi), method='linear')
-    #
-    # logger.info("Got interpolated temperature grid : {}".format(datetime.now() - start_time))
-
-    # connect to Postgres
+    # connect to Postgres to get GNAF points
     try:
         pg_conn = psycopg2.connect(pg_connect_string)
     except psycopg2.Error:
@@ -101,50 +92,36 @@ def main():
         return False
 
     sql = """SELECT latitude::numeric(5,3) as latitude, longitude::numeric(6,3) as longitude, count(*) as address_count
-             FROM gnaf_202011.address_aliases
+             FROM gnaf_202011.address_principals
              GROUP BY latitude::numeric(5,3), longitude::numeric(6,3)"""
     gnaf_df = pandas.read_sql_query(sql, pg_conn)
 
     gnaf_x = gnaf_df["longitude"].to_numpy()
     gnaf_y = gnaf_df["latitude"].to_numpy()
     gnaf_counts = gnaf_df["address_count"].to_numpy()
-    # gnaf_x, gnaf_y = np.meshgrid(gnaf_x, gnaf_y)
 
-    logger.info("Got GNAF coordinates : {}".format(datetime.now() - start_time))
+    logger.info("Got GNAF points : {}".format(datetime.now() - start_time))
     start_time = datetime.now()
 
     # # interpolate temperatures for GNAF coordinates
-    # grid_points = np.array((xi.flatten(), yi.flatten())).T
-    # values = zi.flatten()
-
-    gnaf_points = np.array((gnaf_x.flatten(), gnaf_y.flatten())).T
-
+    gnaf_points = numpy.array((gnaf_x.flatten(), gnaf_y.flatten())).T
     gnaf_temps = scipy.interpolate.griddata((x, y), z, gnaf_points, method='linear')
-    # fred = scipy.interpolate.griddata(grid_points, values, gnaf_points)
 
-    # create dataframe with
-    temperature_df = pandas.DataFrame({'latitude': gnaf_y, 'longitude': gnaf_x, 'address_count': gnaf_counts, 'air_temp': gnaf_temps})
-
-    print(temperature_df)
+    # create results dataframe
+    temperature_df = pandas.DataFrame({'latitude': gnaf_y, 'longitude': gnaf_x,
+                                       'address_count': gnaf_counts, 'air_temp': gnaf_temps})
+    # print(temperature_df)
 
     logger.info("Got interpolated temperatures for GNAF points : {}".format(datetime.now() - start_time))
+    start_time = datetime.now()
 
-    # # check there's data in the zi array - yes!
-    # for row in zi:
-    #     for item in row:
-    #         print(item)
-
-    # TODO: set mask to clip interpolated data to AU border (somehow)!
-    # mask = (xi > 0.5) & (xi < 0.6) & (yi > 0.5) & (yi < 0.6)
-    # zi[mask] = np.nan
-
-    # plot
+    # plot gnaf points by temperature
     temperature_df.plot.scatter('longitude', 'latitude', c='air_temp', colormap='jet')
-
-    # plt.plot(gnaf_x, gnaf_y, gnaf_temps)
-    # plt.contour(gnaf_x, gnaf_y, gnaf_temps, np.arange(-6.1, 45.1, 0.2), extend="both", cmap="Greys")
     plt.axis('off')
     plt.savefig('interpolated.png', dpi=300, facecolor="w", pad_inches=0.0, metadata=None)
+
+    logger.info("Plotted points to PNG file : {}".format(datetime.now() - start_time))
+    start_time = datetime.now()
 
     # # # write to GeoPackage
     # # gdf.to_file(os.path.join(output_path, "weather_stations.gpkg"), driver="GPKG")
@@ -152,13 +129,6 @@ def main():
     # # export to PostGIS
     # engine = sqlalchemy.create_engine(sql_alchemy_engine_string)
     # gdf.to_postgis("weather_stations", engine, schema="testing", if_exists="replace")
-    #
-    # # connect to Postgres
-    # try:
-    #     pg_conn = psycopg2.connect(pg_connect_string)
-    # except psycopg2.Error:
-    #     logger.fatal("Unable to connect to database\nACTION: Check your Postgres parameters and/or database security")
-    #     return False
     #
     # pg_conn.autocommit = True
     # pg_cur = pg_conn.cursor()
