@@ -1,7 +1,7 @@
 # script gets URLs of all Australian BoM weather station observations
 # ... and saves them to text files
 
-# import geopandas
+import geopandas
 import io
 import json
 import logging
@@ -13,7 +13,7 @@ import pandas
 import psycopg2
 import requests
 import scipy.interpolate
-# import sqlalchemy
+import sqlalchemy
 import struct
 import urllib.request
 import zipfile
@@ -130,9 +130,12 @@ def main():
     logger.info("Plotted points to PNG file : {}".format(datetime.now() - start_time))
     start_time = datetime.now()
 
-    # # # write to GeoPackage
-    # # gdf.to_file(os.path.join(output_path, "weather_stations.gpkg"), driver="GPKG")
-    #
+    # write to GeoPackage
+    gdf = geopandas.GeoDataFrame(temperature_df,
+                                 geometry=geopandas.points_from_xy(temperature_df.longitude, temperature_df.latitude),
+                                 crs="EPSG:4283")
+    gdf.to_file(os.path.join(output_path, "gnaf_temperatures.gpkg"), driver="GPKG")
+
     # # export to PostGIS
     # engine = sqlalchemy.create_engine(sql_alchemy_engine_string)
     # gdf.to_postgis("weather_stations", engine, schema="testing", if_exists="replace")
