@@ -47,10 +47,10 @@ def main():
 
     # download weather stations
     station_list = get_weather_stations()
-    logger.info("Downloaded {} weather stations : {}".format(len(station_list), datetime.now() - start_time))
+    logger.info("Downloaded {:,} weather stations : {}".format(len(station_list), datetime.now() - start_time))
 
     obs_list = get_weather_observations(station_list)
-    logger.info("Downloaded {} latest observations : {}".format(len(obs_list), datetime.now() - start_time))
+    logger.info("Downloaded {:,} latest observations : {}".format(len(obs_list), datetime.now() - start_time))
     start_time = datetime.now()
 
     # create dataframe of weather stations
@@ -91,22 +91,22 @@ def main():
         logger.fatal("Unable to connect to database\nACTION: Check your Postgres parameters and/or database security")
         return False
 
-    sql = """SELECT latitude::numeric(5,3) as latitude, longitude::numeric(6,3) as longitude, count(*) as address_count
-             FROM gnaf_202011.address_principals
-             GROUP BY latitude::numeric(5,3), longitude::numeric(6,3)"""
-    gnaf_df = pandas.read_sql_query(sql, pg_conn)
+    # sql = """SELECT latitude::numeric(5,3) as latitude, longitude::numeric(6,3) as longitude, count(*) as address_count
+    #          FROM gnaf_202011.address_principals
+    #          GROUP BY latitude::numeric(5,3), longitude::numeric(6,3)"""
+    # gnaf_df = pandas.read_sql_query(sql, pg_conn)
+    #
+    # # save to feather files for future use (GNAF only changes once every 3 months)
+    # gnaf_df.to_feather(os.path.join(output_path, "gnaf.ipc"))
 
-    # save to feather files for future use (GNAF only changes once every 3 months)
-    gnaf_df.to_feather(os.path.join(output_path, "gnaf.ipc"))
-
-    # # load from feather file
-    # gnaf_df = pandas.read_feather(os.path.join(output_path, "gnaf.ipc"))
+    # load from feather file
+    gnaf_df = pandas.read_feather(os.path.join(output_path, "gnaf.ipc"))
 
     gnaf_x = gnaf_df["longitude"].to_numpy()
     gnaf_y = gnaf_df["latitude"].to_numpy()
     gnaf_counts = gnaf_df["address_count"].to_numpy()
 
-    logger.info("Loaded {} GNAF points : {}".format(len(gnaf_df.index), datetime.now() - start_time))
+    logger.info("Loaded {:,} GNAF points : {}".format(len(gnaf_df.index), datetime.now() - start_time))
     start_time = datetime.now()
 
     # # interpolate temperatures for GNAF coordinates
@@ -118,8 +118,11 @@ def main():
                                        'address_count': gnaf_counts, 'air_temp': gnaf_temps})
     # print(temperature_df)
 
-    logger.info("Got {} interpolated temperatures for GNAF points : {}"
-                .format(len(temperature_df.index), datetime.now() - start_time))
+    # get count of rows with a temperature
+    row_count = len(temperature_df[temperature_df["air_temp"].notna()].index)
+
+    logger.info("Got {:,} interpolated temperatures for GNAF points : {}"
+                .format(row_count, datetime.now() - start_time))
     start_time = datetime.now()
 
     # plot gnaf points by temperature
@@ -130,27 +133,30 @@ def main():
     logger.info("Plotted points to PNG file : {}".format(datetime.now() - start_time))
     start_time = datetime.now()
 
-    # write to GeoPackage
+    # export to GeoPackage - TOO SLOW!
     gdf = geopandas.GeoDataFrame(temperature_df,
                                  geometry=geopandas.points_from_xy(temperature_df.longitude, temperature_df.latitude),
                                  crs="EPSG:4283")
-    gdf.to_file(os.path.join(output_path, "gnaf_temperatures.gpkg"), driver="GPKG")
-
-    # # export to PostGIS
-    # engine = sqlalchemy.create_engine(sql_alchemy_engine_string)
-    # gdf.to_postgis("weather_stations", engine, schema="testing", if_exists="replace")
+    # gdf.to_file(os.path.join(output_path, "gnaf_temperatures.gpkg"), driver="GPKG")
     #
-    # pg_conn.autocommit = True
-    # pg_cur = pg_conn.cursor()
-    #
-    # pg_cur.execute("ANALYSE testing.weather_stations")
-    # pg_cur.execute("ALTER TABLE testing.weather_stations ADD CONSTRAINT weather_stations_pkey PRIMARY KEY (wmo)")
-    # pg_cur.execute("ALTER TABLE testing.weather_stations RENAME COLUMN geometry TO geom")
-    # pg_cur.execute("CREATE INDEX sidx_weather_stations_geom ON testing.weather_stations USING gist (geom)")
-    # pg_cur.execute("ALTER TABLE testing.weather_stations CLUSTER ON sidx_weather_stations_geom")
-    #
-    # logger.info("Exported dataframe to PostGIS: {}".format(datetime.now() - start_time))
+    # logger.info("Exported points to GeoPackage : {}".format(datetime.now() - start_time))
     # start_time = datetime.now()
+
+    # export to PostGIS
+    engine = sqlalchemy.create_engine(sql_alchemy_engine_string)
+    gdf.to_postgis("gnaf_temperature", engine, schema="testing", if_exists="replace")
+
+    pg_conn.autocommit = True
+    pg_cur = pg_conn.cursor()
+
+    pg_cur.execute("ANALYSE testing.gnaf_temperature")
+    # pg_cur.execute("ALTER TABLE testing.weather_stations ADD CONSTRAINT weather_stations_pkey PRIMARY KEY (wmo)")
+    pg_cur.execute("ALTER TABLE testing.gnaf_temperature RENAME COLUMN geometry TO geom")
+    pg_cur.execute("CREATE INDEX sidx_gnaf_temperature_geom ON testing.gnaf_temperature USING gist (geom)")
+    pg_cur.execute("ALTER TABLE testing.gnaf_temperature CLUSTER ON sidx_gnaf_temperature_geom")
+
+    logger.info("Exported dataframe to PostGIS: {}".format(datetime.now() - start_time))
+    start_time = datetime.now()
 
     return True
 
