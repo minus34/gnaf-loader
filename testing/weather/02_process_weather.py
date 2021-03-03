@@ -70,14 +70,14 @@ def main():
                  & (df["latitude"] > -45.0) & (df["latitude"] < -8.0)]
 
     # # save to disk if needed for debugging
-    # air_temp_df.to_pickle("temp_df.pkl")
+    # air_temp_df.to_pickle(os.path.join(output_path, "data", "temp_df.pkl"))
 
     logger.info("Created observations dataframe with weather station coordinates : {}"
                 .format(datetime.now() - start_time))
     start_time = datetime.now()
 
     # # load from disk if debugging
-    # temp_df = pandas.read_pickle("temp_df.pkl")
+    # temp_df = pandas.read_pickle(os.path.join(output_path, "data", "temp_df.pkl"))
 
     # extract lat, long and air temp as arrays
     x = air_temp_df["longitude"].to_numpy()
@@ -95,6 +95,12 @@ def main():
              FROM gnaf_202011.address_principals
              GROUP BY latitude::numeric(5,3), longitude::numeric(6,3)"""
     gnaf_df = pandas.read_sql_query(sql, pg_conn)
+
+    # save to feather files for future use (GNAF only changes once every 3 months)
+    gnaf_df.to_feather(os.path.join(output_path, "data", "gnaf"))
+
+    # load from feather files
+    # gnaf_df.read_feather(os.path.join(output_path, "data", "gnaf"))
 
     gnaf_x = gnaf_df["longitude"].to_numpy()
     gnaf_y = gnaf_df["latitude"].to_numpy()
@@ -118,7 +124,7 @@ def main():
     # plot gnaf points by temperature
     temperature_df.plot.scatter('longitude', 'latitude', c='air_temp', colormap='jet')
     plt.axis('off')
-    plt.savefig('interpolated.png', dpi=300, facecolor="w", pad_inches=0.0, metadata=None)
+    plt.savefig(os.path.join(output_path, "data", "interpolated.png"), dpi=300, facecolor="w", pad_inches=0.0, metadata=None)
 
     logger.info("Plotted points to PNG file : {}".format(datetime.now() - start_time))
     start_time = datetime.now()
