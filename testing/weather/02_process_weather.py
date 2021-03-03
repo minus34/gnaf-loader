@@ -87,6 +87,8 @@ def main():
     # connect to Postgres to get GNAF points
     try:
         pg_conn = psycopg2.connect(pg_connect_string)
+        pg_conn.autocommit = True
+        pg_cur = pg_conn.cursor()
     except psycopg2.Error:
         logger.fatal("Unable to connect to database\nACTION: Check your Postgres parameters and/or database security")
         return False
@@ -94,17 +96,20 @@ def main():
     # sql = """SELECT latitude::numeric(5,3) as latitude, longitude::numeric(6,3) as longitude, count(*) as address_count
     #          FROM gnaf_202011.address_principals
     #          GROUP BY latitude::numeric(5,3), longitude::numeric(6,3)"""
-    # gnaf_df = pandas.read_sql_query(sql, pg_conn)
-    #
-    # # save to feather files for future use (GNAF only changes once every 3 months)
-    # gnaf_df.to_feather(os.path.join(output_path, "gnaf.ipc"))
+    sql = """SELECT st_y(geom)::numeric(5,3) as latitude, st_x(geom)::numeric(6,3) as longitude, sum(person) as persons
+             FROM testing.address_principals_persons
+             GROUP BY latitude, longitude"""
+    gnaf_df = pandas.read_sql_query(sql, pg_conn)
 
-    # load from feather file
-    gnaf_df = pandas.read_feather(os.path.join(output_path, "gnaf.ipc"))
+    # save to feather files for future use (GNAF only changes once every 3 months)
+    gnaf_df.to_feather(os.path.join(output_path, "gnaf.ipc"))
+
+    # # load from feather file
+    # gnaf_df = pandas.read_feather(os.path.join(output_path, "gnaf.ipc"))
 
     gnaf_x = gnaf_df["longitude"].to_numpy()
     gnaf_y = gnaf_df["latitude"].to_numpy()
-    gnaf_counts = gnaf_df["address_count"].to_numpy()
+    gnaf_counts = gnaf_df["persons"].to_numpy()
 
     logger.info("Loaded {:,} GNAF points : {}".format(len(gnaf_df.index), datetime.now() - start_time))
     start_time = datetime.now()
@@ -115,7 +120,7 @@ def main():
 
     # create results dataframe
     temperature_df = pandas.DataFrame({'latitude': gnaf_y, 'longitude': gnaf_x,
-                                       'address_count': gnaf_counts, 'air_temp': gnaf_temps})
+                                       'persons': gnaf_counts, 'air_temp': gnaf_temps})
     # print(temperature_df)
 
     # get count of rows with a temperature
@@ -125,7 +130,7 @@ def main():
                 .format(row_count, datetime.now() - start_time))
     start_time = datetime.now()
 
-    # plot gnaf points by temperature
+    # plot a map of gnaf points by temperature
     temperature_df.plot.scatter('longitude', 'latitude', c='air_temp', colormap='jet')
     plt.axis('off')
     plt.savefig(os.path.join(output_path, "interpolated.png"), dpi=300, facecolor="w", pad_inches=0.0, metadata=None)
@@ -145,9 +150,6 @@ def main():
     # export to PostGIS
     engine = sqlalchemy.create_engine(sql_alchemy_engine_string)
     gdf.to_postgis("gnaf_temperature", engine, schema="testing", if_exists="replace")
-
-    pg_conn.autocommit = True
-    pg_cur = pg_conn.cursor()
 
     pg_cur.execute("ANALYSE testing.gnaf_temperature")
     # pg_cur.execute("ALTER TABLE testing.weather_stations ADD CONSTRAINT weather_stations_pkey PRIMARY KEY (wmo)")
