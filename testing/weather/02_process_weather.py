@@ -91,6 +91,38 @@ def main():
     # interpolate temperatures across the grid
     zi = scipy.interpolate.griddata((x, y), z, (xi, yi), method='linear')
 
+    logger.info("Got interpolated temperature grid : {}".format(datetime.now() - start_time))
+
+    # connect to Postgres
+    try:
+        pg_conn = psycopg2.connect(pg_connect_string)
+    except psycopg2.Error:
+        logger.fatal("Unable to connect to database\nACTION: Check your Postgres parameters and/or database security")
+        return False
+
+    sql = """SELECT latitude::numeric(5,3) as latitude, longitude::numeric(6,3) as longitude, count(*) as address_count
+             FROM gnaf_202011.address_aliases
+             GROUP BY latitude::numeric(5,3), longitude::numeric(6,3)"""
+    gnaf_df = pandas.read_sql_query(sql, pg_conn)
+
+    gnaf_x = gnaf_df["longitude"].to_numpy()
+    gnaf_y = gnaf_df["latitude"].to_numpy()
+    # gnaf_x, gnaf_y = np.meshgrid(gnaf_x, gnaf_y)
+
+    logger.info("Got GNAF coordinates : {}".format(datetime.now() - start_time))
+    start_time = datetime.now()
+
+    # # interpolate temperatures for GNAF coordinates
+    # grid_points = np.array((xi.flatten(), yi.flatten())).T
+    # values = zi.flatten()
+
+    gnaf_points = np.array((gnaf_x.flatten(), gnaf_y.flatten())).T
+
+    fred = scipy.interpolate.griddata((x, y), z, gnaf_points, method='linear')
+    # fred = scipy.interpolate.griddata(grid_points, values, gnaf_points)
+
+    logger.info("Got interpolated temperatures for GNAF points : {}".format(datetime.now() - start_time))
+
     # # check there's data in the zi array - yes!
     # for row in zi:
     #     for item in row:
@@ -101,15 +133,9 @@ def main():
     # zi[mask] = np.nan
 
     # plot
-    # fig = plt.figure()
-    # ax = fig.add_subplot(111)
     plt.contourf(xi, yi, zi, np.arange(-6.1, 45.1, 0.2), extend="both", cmap="Greys")
-    # plt.plot(x, y, ".k")
-    # plt.xlabel('xi', fontsize=16)
-    # plt.ylabel('yi', fontsize=16)
     plt.axis('off')
     plt.savefig('interpolated.png', dpi=300, facecolor="b", edgecolor="red", pad_inches=0.0, metadata=None)
-    # plt.close(fig)
 
     # # # write to GeoPackage
     # # gdf.to_file(os.path.join(output_path, "weather_stations.gpkg"), driver="GPKG")
