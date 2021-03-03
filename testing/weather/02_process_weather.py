@@ -47,10 +47,10 @@ def main():
 
     # download weather stations
     station_list = get_weather_stations()
-    logger.info("Downloaded weather stations : {}".format(datetime.now() - start_time))
+    logger.info("Downloaded {} weather stations : {}".format(len(station_list), datetime.now() - start_time))
 
     obs_list = get_weather_observations(station_list)
-    logger.info("Downloaded observations : {}".format(datetime.now() - start_time))
+    logger.info("Downloaded {} latest observations : {}".format(len(obs_list), datetime.now() - start_time))
     start_time = datetime.now()
 
     # create dataframe of weather stations
@@ -72,8 +72,8 @@ def main():
     # # save to disk if needed for debugging
     # air_temp_df.to_pickle(os.path.join(output_path, "data", "temp_df.pkl"))
 
-    logger.info("Created observations dataframe with weather station coordinates : {}"
-                .format(datetime.now() - start_time))
+    logger.info("Created observations dataframe with weather station coordinates : {} rows : {}"
+                .format(len(air_temp_df.index), datetime.now() - start_time))
     start_time = datetime.now()
 
     # # load from disk if debugging
@@ -97,16 +97,16 @@ def main():
     # gnaf_df = pandas.read_sql_query(sql, pg_conn)
     #
     # # save to feather files for future use (GNAF only changes once every 3 months)
-    # gnaf_df.to_feather(os.path.join(output_path, "gnaf"))
+    # gnaf_df.to_feather(os.path.join(output_path, "gnaf.ipc"))
 
     # load from feather files
-    gnaf_df = pandas.read_feather(os.path.join(output_path, "data", "gnaf"))
+    gnaf_df = pandas.read_feather(os.path.join(output_path, "gnaf.ipc"))
 
     gnaf_x = gnaf_df["longitude"].to_numpy()
     gnaf_y = gnaf_df["latitude"].to_numpy()
     gnaf_counts = gnaf_df["address_count"].to_numpy()
 
-    logger.info("Got GNAF points : {}".format(datetime.now() - start_time))
+    logger.info("Loaded {} GNAF points : {}".format(len(gnaf_df.index), datetime.now() - start_time))
     start_time = datetime.now()
 
     # # interpolate temperatures for GNAF coordinates
@@ -118,7 +118,8 @@ def main():
                                        'address_count': gnaf_counts, 'air_temp': gnaf_temps})
     # print(temperature_df)
 
-    logger.info("Got interpolated temperatures for GNAF points : {}".format(datetime.now() - start_time))
+    logger.info("Got {} interpolated temperatures for GNAF points : {}"
+                .format(len(temperature_df.index), datetime.now() - start_time))
     start_time = datetime.now()
 
     # plot gnaf points by temperature
