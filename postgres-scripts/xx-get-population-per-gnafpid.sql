@@ -30,7 +30,6 @@ UPDATE testing.mb_2016_counts AS mb
   FROM counts
   WHERE mb.mb_2016_code = counts.mb_2016_code
 ;
-
 ANALYSE testing.mb_2016_counts;
 
 -- add geoms
@@ -132,7 +131,6 @@ AND dwelling > 0
 ;
 ANALYSE testing.address_principals_dwelling;
 
-
 CREATE INDEX basic_address_principals_dwelling_geom_idx ON testing.address_principals_dwelling USING gist (geom);
 ALTER TABLE testing.address_principals_dwelling CLUSTER ON basic_address_principals_dwelling_geom_idx;
 
@@ -209,7 +207,6 @@ WHERE row_num <= person
 ORDER BY mb_2016_code,
          row_num
 ;
-
 ANALYSE testing.address_principals_persons;
 
 --    3. where dwellings = 0 and addresses are greater than population
