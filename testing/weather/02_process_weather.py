@@ -39,6 +39,7 @@ base_url = "http://www.bom.gov.au/{0}/observations/{0}all.shtml"
 pg_connect_string = "dbname='geo' host='localhost' port='5432' user='postgres' password='password'"
 sql_alchemy_engine_string = "postgresql+psycopg2://postgres:password@localhost/geo"
 
+
 def main():
     start_time = datetime.now()
 
@@ -83,8 +84,8 @@ def main():
     import scipy.interpolate
 
     # target grid to interpolate to
-    xi = np.arange(112.0, 162.0, 0.01)
-    yi = np.arange(-45.0, -8.0, 0.01)
+    xi = np.arange(112.0, 162.0, 0.001)
+    yi = np.arange(-45.0, -8.0, 0.001)
     xi, yi = np.meshgrid(xi, yi)
 
     # interpolate temperatures across the grid
@@ -102,13 +103,12 @@ def main():
     # plot
     # fig = plt.figure()
     # ax = fig.add_subplot(111)
-    plt.contourf(xi, yi, zi, np.arange(-20.0, 50.0, 1.0), extend="both", cmap="Greys")
+    plt.contourf(xi, yi, zi, np.arange(-20.0, 50.0, 0.1), extend="both", cmap="Greys")
     # plt.plot(x, y, ".k")
     # plt.xlabel('xi', fontsize=16)
     # plt.ylabel('yi', fontsize=16)
     plt.axis('off')
-    plt.savefig('interpolated.png', dpi=300, facecolor="b", edgecolor="red", pad_inches=0.0,
-                metadata=None)
+    plt.savefig('interpolated.png', dpi=300, facecolor="b", edgecolor="red", pad_inches=0.0, metadata=None)
     # plt.close(fig)
 
     # # # write to GeoPackage
