@@ -69,15 +69,15 @@ def main():
     air_temp_df = df[(df["air_temp"].notna()) & (df["longitude"] > 112.0) & (df["longitude"] < 162.0)
                  & (df["latitude"] > -45.0) & (df["latitude"] < -8.0)]
 
-    # # save to disk if needed for debugging
-    # air_temp_df.to_pickle(os.path.join(output_path, "data", "temp_df.pkl"))
+    # # save to disk for debugging
+    # air_temp_df.to_feather(os.path.join(output_path "temp_df.ipc"))
 
     logger.info("Created observations dataframe with weather station coordinates : {} rows : {}"
                 .format(len(air_temp_df.index), datetime.now() - start_time))
     start_time = datetime.now()
 
     # # load from disk if debugging
-    # temp_df = pandas.read_pickle(os.path.join(output_path, "data", "temp_df.pkl"))
+    # temp_df = pandas.read_feather(os.path.join(output_path "temp_df.ipc"))
 
     # extract lat, long and air temp as arrays
     x = air_temp_df["longitude"].to_numpy()
@@ -93,15 +93,16 @@ def main():
         logger.fatal("Unable to connect to database\nACTION: Check your Postgres parameters and/or database security")
         return False
 
+    # select GNAF coordinates - group by 3 decimal places to create a ~100m grid of addresses
     # sql = """SELECT latitude::numeric(5,3) as latitude, longitude::numeric(6,3) as longitude, count(*) as address_count
     #          FROM gnaf_202011.address_principals
     #          GROUP BY latitude::numeric(5,3), longitude::numeric(6,3)"""
-    sql = """SELECT st_y(geom)::numeric(5,3) as latitude, st_x(geom)::numeric(6,3) as longitude, sum(person) as persons
+    sql = """SELECT st_y(geom)::numeric(5,3) as latitude, st_x(geom)::numeric(6,3) as longitude, sum(person) as count
              FROM testing.address_principals_persons
              GROUP BY latitude, longitude"""
     gnaf_df = pandas.read_sql_query(sql, pg_conn)
 
-    # save to feather files for future use (GNAF only changes once every 3 months)
+    # save to feather file for future use (GNAF only changes once every 3 months)
     gnaf_df.to_feather(os.path.join(output_path, "gnaf.ipc"))
 
     # # load from feather file
@@ -109,7 +110,7 @@ def main():
 
     gnaf_x = gnaf_df["longitude"].to_numpy()
     gnaf_y = gnaf_df["latitude"].to_numpy()
-    gnaf_counts = gnaf_df["persons"].to_numpy()
+    gnaf_counts = gnaf_df["count"].to_numpy()
 
     logger.info("Loaded {:,} GNAF points : {}".format(len(gnaf_df.index), datetime.now() - start_time))
     start_time = datetime.now()
@@ -120,7 +121,7 @@ def main():
 
     # create results dataframe
     temperature_df = pandas.DataFrame({'latitude': gnaf_y, 'longitude': gnaf_x,
-                                       'persons': gnaf_counts, 'air_temp': gnaf_temps})
+                                       'count': gnaf_counts, 'air_temp': gnaf_temps})
     # print(temperature_df)
 
     # get count of rows with a temperature
