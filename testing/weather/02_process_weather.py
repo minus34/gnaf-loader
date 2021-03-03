@@ -84,8 +84,8 @@ def main():
     import scipy.interpolate
 
     # target grid to interpolate to
-    xi = np.arange(112.0, 162.0, 0.001)
-    yi = np.arange(-45.0, -8.0, 0.001)
+    xi = np.arange(112.0, 162.0, 0.01)
+    yi = np.arange(-45.0, -8.0, 0.01)
     xi, yi = np.meshgrid(xi, yi)
 
     # interpolate temperatures across the grid
@@ -103,7 +103,7 @@ def main():
     # plot
     # fig = plt.figure()
     # ax = fig.add_subplot(111)
-    plt.contourf(xi, yi, zi, np.arange(-20.0, 50.0, 0.1), extend="both", cmap="Greys")
+    plt.contourf(xi, yi, zi, np.arange(-6.1, 45.1, 0.2), extend="both", cmap="Greys")
     # plt.plot(x, y, ".k")
     # plt.xlabel('xi', fontsize=16)
     # plt.ylabel('yi', fontsize=16)
@@ -136,7 +136,6 @@ def main():
     #
     # logger.info("Exported dataframe to PostGIS: {}".format(datetime.now() - start_time))
     # start_time = datetime.now()
-
 
     return True
 
