@@ -14,7 +14,7 @@ CREATE TABLE testing.mb_2016_counts (
 );
 
 COPY testing.mb_2016_counts (mb_2016_code, mb_category_name_2016, area_albers_sqkm, dwelling, person, state)
-FROM '/Users/hugh.saalmans/Downloads/2016 census mesh block counts.csv' WITH (FORMAT CSV, HEADER);
+FROM '/Users/s57405/git/minus34/gnaf-loader/supporting-files/2016 census mesh block counts.csv' WITH (FORMAT CSV, HEADER);
 
 ANALYSE testing.mb_2016_counts;
 
@@ -80,7 +80,6 @@ WHERE row_num <= dwelling
 ORDER BY mb_2016_code,
       row_num
 ;
-
 ANALYSE testing.address_principals_dwelling;
 
 --    2. where address count is less than dwelling count
@@ -114,7 +113,6 @@ WHERE row_num <= dwelling
 ORDER BY mb_2016_code,
       row_num
 ;
-
 ANALYSE testing.address_principals_dwelling;
 
 --   3. add random points in meshblocks that have no addresses (8,903 dwellings affected)
@@ -126,13 +124,12 @@ SELECT 'MB' || mb_2016_code::text || '_' || (row_number() OVER ())::text as gnaf
    dwelling,
    person,
    'no addresses' as dwelling_count_type,
-   ST_RandomPointsInPolygon(geom, dwelling) as geom
+   ST_GeneratePoints(geom, dwelling) as geom
 FROM testing.mb_2016_counts
 WHERE geom is not null
 AND address_count = 0
 AND dwelling > 0
 ;
-
 ANALYSE testing.address_principals_dwelling;
 
 
@@ -246,7 +243,6 @@ WHERE row_num <= person
 ORDER BY mb_2016_code,
          row_num
 ;
-
 ANALYSE testing.address_principals_persons;
 
 --    4. where dwellings = 0 and addresses are less than population
@@ -281,7 +277,6 @@ WHERE row_num <= person
 ORDER BY mb_2016_code,
          row_num
 ;
-
 ANALYSE testing.address_principals_persons;
 
 --   5. add random points in meshblocks that have no addresses (8,903 dwellings affected)
@@ -293,14 +288,13 @@ SELECT 'MB' || mb_2016_code::text || '_' || (row_number() OVER ())::text as gnaf
 	   dwelling,
 	   person,
 	   'no addresses' as dwelling_count_type,
-	   ST_RandomPointsInPolygon(geom, person) as geom
+	   ST_GeneratePoints(geom, person) as geom
 FROM testing.mb_2016_counts
 WHERE geom is not null
 AND address_count = 0
 AND dwelling = 0
 AND person > 0
 ;
-
 ANALYSE testing.address_principals_persons;
 
 CREATE INDEX basic_address_principals_persons_geom_idx ON testing.address_principals_persons USING gist (geom);
@@ -308,6 +302,12 @@ ALTER TABLE testing.address_principals_persons CLUSTER ON basic_address_principa
 
 CREATE INDEX basic_address_principals_persons_mb_2016_code_idx ON testing.address_principals_persons USING btree(mb_2016_code);
 CREATE INDEX basic_address_principals_persons_postcode_idx ON testing.address_principals_persons USING btree(postcode);
+
+
+
+
+
+
 
 -- QA
 

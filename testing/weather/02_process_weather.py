@@ -95,7 +95,7 @@ def main():
 
     # select GNAF coordinates - group by 3 decimal places to create a ~100m grid of addresses
     # sql = """SELECT latitude::numeric(5,3) as latitude, longitude::numeric(6,3) as longitude, count(*) as address_count
-    #          FROM gnaf_202011.address_principals
+    #          FROM gnaf_202102.address_principals
     #          GROUP BY latitude::numeric(5,3), longitude::numeric(6,3)"""
     sql = """SELECT st_y(geom)::numeric(5,3) as latitude, st_x(geom)::numeric(6,3) as longitude, sum(person) as count
              FROM testing.address_principals_persons
