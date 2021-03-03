@@ -42,36 +42,36 @@ sql_alchemy_engine_string = "postgresql+psycopg2://postgres:password@localhost/g
 def main():
     start_time = datetime.now()
 
-    # download weather stations
-    station_list = get_weather_stations()
-    logger.info("Got weather stations : {}".format(datetime.now() - start_time))
+    # # download weather stations
+    # station_list = get_weather_stations()
+    # logger.info("Got weather stations : {}".format(datetime.now() - start_time))
+    #
+    # obs_list = get_weather_observations(station_list)
+    # logger.info("Downloaded observations data : {}".format(datetime.now() - start_time))
+    # start_time = datetime.now()
+    #
+    # # create dataframe of weather stations
+    # station_df = pandas.DataFrame(station_list)
+    #
+    # # create dataframe of weather obs
+    # obs_df = pandas.DataFrame(obs_list).drop_duplicates()
+    #
+    # # merge data and add points to dataframe
+    # df = (obs_df.merge(station_df, on="wmo")
+    #       .drop(["lat", "lon"], axis=1)
+    #       )
+    # gdf = geopandas.GeoDataFrame(df, geometry=geopandas.points_from_xy(df.longitude, df.latitude), crs="EPSG:4283")
+    #
+    # # select rows with air temps
+    # temp_df = df[(df["air_temp"].notna()) & (df["longitude"] > 112.0) & (df["longitude"] < 162.0)
+    #              & (df["latitude"] > -45.0) & (df["latitude"] < -8.0)]
+    #
+    # temp_df.to_pickle("temp_df.pkl")
+    #
+    # logger.info("Created obs dataframes : {}".format(datetime.now() - start_time))
+    # start_time = datetime.now()
 
-    obs_list = get_weather_observations(station_list)
-    logger.info("Downloaded observations data : {}".format(datetime.now() - start_time))
-    start_time = datetime.now()
-
-    # create dataframe of weather stations
-    station_df = pandas.DataFrame(station_list)
-
-    # create dataframe of weather obs
-    obs_df = pandas.DataFrame(obs_list).drop_duplicates()
-
-    # merge data and add points to dataframe
-    df = (obs_df.merge(station_df, on="wmo")
-          .drop(["lat", "lon"], axis=1)
-          )
-    gdf = geopandas.GeoDataFrame(df, geometry=geopandas.points_from_xy(df.longitude, df.latitude), crs="EPSG:4283")
-
-    # select rows with air temps
-    temp_df = df[(df["air_temp"].notna()) & (df["longitude"] > 112.0) & (df["longitude"] < 162.0)
-                 & (df["latitude"] > -45.0) & (df["latitude"] < -8.0)]
-
-    temp_df.to_pickle("temp_df.pkl")
-
-    logger.info("Created obs dataframes : {}".format(datetime.now() - start_time))
-    start_time = datetime.now()
-
-    # temp_df = pandas.read_pickle("temp_df.pkl")
+    temp_df = pandas.read_pickle("temp_df.pkl")
 
     # extract lat, long and air temp as arrays
     x = temp_df["longitude"].to_numpy()
@@ -87,8 +87,8 @@ def main():
     yi = np.arange(-45.0, -8.0, 0.01)
     xi, yi = np.meshgrid(xi, yi)
 
-    # interpolate
-    zi = scipy.interpolate.griddata((x, y), z, (xi, yi), method='nearest')
+    # interpolate temperatures across the grid
+    zi = scipy.interpolate.griddata((x, y), z, (xi, yi), method='linear')
 
     # # check there's data in the zi array - yes!
     # for row in zi:
@@ -100,14 +100,16 @@ def main():
     # zi[mask] = np.nan
 
     # plot
-    fig = plt.figure()
+    # fig = plt.figure()
     # ax = fig.add_subplot(111)
-    plt.contourf(xi, yi, zi, np.arange(-20.0, 50.0, 5.0))
-    plt.plot(x, y, ".k")
+    plt.contourf(xi, yi, zi, np.arange(-20.0, 50.0, 1.0), extend="both", cmap="Spectral")
+    # plt.plot(x, y, ".k")
     # plt.xlabel('xi', fontsize=16)
     # plt.ylabel('yi', fontsize=16)
-    plt.savefig('interpolated.png', dpi=300)
-    plt.close(fig)
+    plt.axis('off')
+    plt.savefig('interpolated.png', dpi=300, facecolor="b", edgecolor="red", pad_inches=0.0,
+                metadata=None)
+    # plt.close(fig)
 
     # # # write to GeoPackage
     # # gdf.to_file(os.path.join(output_path, "weather_stations.gpkg"), driver="GPKG")
