@@ -45,6 +45,15 @@ sql_alchemy_engine_string = "postgresql+psycopg2://postgres:password@localhost/g
 def main():
     start_time = datetime.now()
 
+    # connect to Postgres
+    try:
+        pg_conn = psycopg2.connect(pg_connect_string)
+        pg_conn.autocommit = True
+        pg_cur = pg_conn.cursor()
+    except psycopg2.Error:
+        logger.fatal("Unable to connect to database\nACTION: Check your Postgres parameters and/or database security")
+        return False
+
     # download weather stations
     station_list = get_weather_stations()
     logger.info("Downloaded {:,} weather stations : {}".format(len(station_list), datetime.now() - start_time))
@@ -69,12 +78,18 @@ def main():
     air_temp_df = df[(df["air_temp"].notna()) & (df["longitude"] > 112.0) & (df["longitude"] < 162.0)
                  & (df["latitude"] > -45.0) & (df["latitude"] < -8.0)]
 
+    # # testing - get histogram of observation time
+    # air_temp_df.hist("utc_time")
+    # plt.savefig(os.path.join(output_path, "histogram.png"), dpi=300, facecolor="w", pad_inches=0.0, metadata=None)
+
+    # export dataframe to PostGIS
+    export_dataframe(pg_cur, air_temp_df, "testing", "weather_stations", "replace")
+    logger.info("Exported weather station dataframe to PostGIS: {}".format(datetime.now() - start_time))
+    start_time = datetime.now()
+
+
     # # save to disk for debugging
     # air_temp_df.to_feather(os.path.join(output_path "temp_df.ipc"))
-
-    logger.info("Created observations dataframe with weather station coordinates : {} rows : {}"
-                .format(len(air_temp_df.index), datetime.now() - start_time))
-    start_time = datetime.now()
 
     # # load from disk if debugging
     # temp_df = pandas.read_feather(os.path.join(output_path "temp_df.ipc"))
@@ -84,14 +99,9 @@ def main():
     y = air_temp_df["latitude"].to_numpy()
     z = air_temp_df["air_temp"].to_numpy()
 
-    # connect to Postgres to get GNAF points
-    try:
-        pg_conn = psycopg2.connect(pg_connect_string)
-        pg_conn.autocommit = True
-        pg_cur = pg_conn.cursor()
-    except psycopg2.Error:
-        logger.fatal("Unable to connect to database\nACTION: Check your Postgres parameters and/or database security")
-        return False
+    logger.info("Created observations dataframe with weather station coordinates : {} rows : {}"
+                .format(len(air_temp_df.index), datetime.now() - start_time))
+    start_time = datetime.now()
 
     # select GNAF coordinates - group by 3 decimal places to create a ~100m grid of addresses
     # sql = """SELECT latitude::numeric(5,3) as latitude, longitude::numeric(6,3) as longitude, count(*) as address_count
@@ -139,29 +149,34 @@ def main():
     logger.info("Plotted points to PNG file : {}".format(datetime.now() - start_time))
     start_time = datetime.now()
 
-    # export to GeoPackage - TOO SLOW!
-    gdf = geopandas.GeoDataFrame(temperature_df,
-                                 geometry=geopandas.points_from_xy(temperature_df.longitude, temperature_df.latitude),
-                                 crs="EPSG:4283")
-    # gdf.to_file(os.path.join(output_path, "gnaf_temperatures.gpkg"), driver="GPKG")
+    # export dataframe to PostGIS
+    export_dataframe(pg_cur, temperature_df, "testing", "gnaf_temperature", "replace")
+    logger.info("Exported GNAF temperature dataframe to PostGIS: {}".format(datetime.now() - start_time))
+    # start_time = datetime.now()
+
+    return True
+
+
+def export_dataframe(pg_cur, df, schema_name, table_name, export_mode):
+    # create geodataframe
+    gdf = geopandas.GeoDataFrame(df, geometry=geopandas.points_from_xy(df.longitude, df.latitude), crs="EPSG:4283")
+
+    # export to GeoPackage
+    # gdf.to_file(os.path.join(output_path, "{}.gpkg".format(table_name)), driver="GPKG")
     #
     # logger.info("Exported points to GeoPackage : {}".format(datetime.now() - start_time))
     # start_time = datetime.now()
 
     # export to PostGIS
     engine = sqlalchemy.create_engine(sql_alchemy_engine_string)
-    gdf.to_postgis("gnaf_temperature", engine, schema="testing", if_exists="replace")
+    gdf.to_postgis(table_name, engine, schema=schema_name, if_exists=export_mode)
 
-    pg_cur.execute("ANALYSE testing.gnaf_temperature")
-    # pg_cur.execute("ALTER TABLE testing.weather_stations ADD CONSTRAINT weather_stations_pkey PRIMARY KEY (wmo)")
-    pg_cur.execute("ALTER TABLE testing.gnaf_temperature RENAME COLUMN geometry TO geom")
-    pg_cur.execute("CREATE INDEX sidx_gnaf_temperature_geom ON testing.gnaf_temperature USING gist (geom)")
-    pg_cur.execute("ALTER TABLE testing.gnaf_temperature CLUSTER ON sidx_gnaf_temperature_geom")
-
-    logger.info("Exported dataframe to PostGIS: {}".format(datetime.now() - start_time))
-    start_time = datetime.now()
-
-    return True
+    pg_cur.execute("ANALYSE {}.{}".format(schema_name, table_name))
+    # pg_cur.execute("ALTER TABLE testing.weather_stations ADD CONSTRAINT weather_stations_pkey PRIMARY KEY (wmo)"
+    #                .format(schema_name, table_name))
+    pg_cur.execute("ALTER TABLE {}.{} RENAME COLUMN geometry TO geom".format(schema_name, table_name))
+    pg_cur.execute("CREATE INDEX sidx_{1}_geom ON {0}.{1} USING gist (geom)".format(schema_name, table_name))
+    pg_cur.execute("ALTER TABLE {0}.{1} CLUSTER ON sidx_{1}_geom".format(schema_name, table_name))
 
 
 def get_weather_observations(station_list):
@@ -198,7 +213,7 @@ def get_weather_observations(station_list):
         start_time = datetime.now()
 
     # download each obs file using multiprocessing
-    pool = multiprocessing.Pool(processes=12)
+    pool = multiprocessing.Pool(processes=16)
     results = pool.imap_unordered(run_multiprocessing, obs_urls)
 
     pool.close()
@@ -282,6 +297,9 @@ def run_multiprocessing(url):
         for obs in obs_list:
             if obs["sort_order"] == 0:
                 result = obs
+
+                # add utc time
+                obs["utc_time"] = datetime.strptime(obs["aifstime_utc"], "%Y%m%d%H%M%S")
 
     except Exception as ex:
         result = dict()
