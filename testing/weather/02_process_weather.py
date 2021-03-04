@@ -1,5 +1,13 @@
-# script gets URLs of all Australian BoM weather station observations
-# ... and saves them to text files
+# script gets all Australian BoM weather station observations
+# ... and applies an interpolated temperature to all GNAF points in a 100m grid
+
+# TODO:
+#  1. remove temperature biases due to altitude differences
+#       a. Add SRTM altitudes to GNAF
+#       b. Add interpolated altitude from weather stations to GNAF
+#       c. adjust where the difference is > 100m
+#  2. generate temps outside the weather station network to catch the ~3,100 GNAF points outside the interpolated area
+#
 
 import geopandas
 import io
@@ -74,7 +82,7 @@ def main():
           )
     # gdf = geopandas.GeoDataFrame(df, geometry=geopandas.points_from_xy(df.longitude, df.latitude), crs="EPSG:4283")
 
-    # select rows with air temps
+    # select rows from the last hour with air temps
     air_temp_df = df[(df["utc_time_diff"] < 3600.0) & (df["air_temp"].notna())
                      & (df["longitude"] > 112.0) & (df["longitude"] < 162.0)
                      & (df["latitude"] > -45.0) & (df["latitude"] < -8.0)]
