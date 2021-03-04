@@ -74,6 +74,22 @@ from testing.weather_stations
 group by wmo
 having count(*) > 1
 
-select *
-from testing.weather_stations
+
+with qa as (
+    select extract(epoch from now() - utc_time) as time_diff_s,
+           *
+    from testing.weather_stations
+)
+select utc_time,
+       time_diff_s,
+       count(*) as cnt
+from qa
+group by utc_time,
+         time_diff_s
+order by utc_time desc,
+         time_diff_s
+;
+
+
+
 where wmo = 94564;

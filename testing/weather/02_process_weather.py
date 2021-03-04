@@ -75,8 +75,9 @@ def main():
     # gdf = geopandas.GeoDataFrame(df, geometry=geopandas.points_from_xy(df.longitude, df.latitude), crs="EPSG:4283")
 
     # select rows with air temps
-    air_temp_df = df[(df["air_temp"].notna()) & (df["longitude"] > 112.0) & (df["longitude"] < 162.0)
-                 & (df["latitude"] > -45.0) & (df["latitude"] < -8.0)]
+    air_temp_df = df[(df["utc_time_diff"] < 3600.0) & (df["air_temp"].notna())
+                     & (df["longitude"] > 112.0) & (df["longitude"] < 162.0)
+                     & (df["latitude"] > -45.0) & (df["latitude"] < -8.0)]
 
     # # testing - get histogram of observation time
     # air_temp_df.hist("utc_time")
@@ -86,7 +87,6 @@ def main():
     export_dataframe(pg_cur, air_temp_df, "testing", "weather_stations", "replace")
     logger.info("Exported weather station dataframe to PostGIS: {}".format(datetime.now() - start_time))
     start_time = datetime.now()
-
 
     # # save to disk for debugging
     # air_temp_df.to_feather(os.path.join(output_path "temp_df.ipc"))
@@ -99,7 +99,7 @@ def main():
     y = air_temp_df["latitude"].to_numpy()
     z = air_temp_df["air_temp"].to_numpy()
 
-    logger.info("Created observations dataframe with weather station coordinates : {} rows : {}"
+    logger.info("Filtered observations dataframe with weather station coordinates : {} rows : {}"
                 .format(len(air_temp_df.index), datetime.now() - start_time))
     start_time = datetime.now()
 
@@ -300,6 +300,7 @@ def run_multiprocessing(url):
 
                 # add utc time
                 obs["utc_time"] = datetime.strptime(obs["aifstime_utc"], "%Y%m%d%H%M%S")
+                obs["utc_time_diff"] = (datetime.utcnow() - obs["utc_time"]).total_seconds()
 
     except Exception as ex:
         result = dict()
