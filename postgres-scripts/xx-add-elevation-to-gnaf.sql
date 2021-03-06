@@ -38,7 +38,7 @@ ALTER TABLE testing.gnaf_points_with_pop_and_height OWNER to postgres;
 ANALYZE testing.gnaf_points_with_pop_and_height;
 
 
-
+DROP TABLE IF EXISTS temp_gnaf_100m_points;
 
 --
 -- SELECT ST_Value(dem.rast, gnaf.geom) as elevation,
