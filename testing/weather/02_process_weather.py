@@ -143,9 +143,9 @@ def main():
                                        "count": gnaf_counts, "dem_elevation": gnaf_dem_elevation,
                                        "weather_elevation": gnaf_weather_elevation, "air_temp": gnaf_temps})
 
-    # add column
+    # add temperatures adjusted for altitude differences between GNAF point and nearby weather stations
     temperature_df["adjusted_temp"] = temperature_df["air_temp"] + \
-                                      (temperature_df["weather_elevation"] - temperature_df["dem_elevation"]) / 100.0
+                                      (temperature_df["weather_elevation"] - temperature_df["dem_elevation"]) / 150.0
 
     # print(temperature_df)
 
