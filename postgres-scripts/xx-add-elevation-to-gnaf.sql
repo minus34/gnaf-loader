@@ -47,4 +47,3 @@ ANALYZE testing.gnaf_points_with_pop_and_height;
 -- INNER JOIN gnaf_202102.srtm_3s_dem as dem on ST_Intersects(gnaf.geom, dem.rast) limit 100;
 
 
-
