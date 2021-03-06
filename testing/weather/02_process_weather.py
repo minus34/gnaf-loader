@@ -106,6 +106,7 @@ def main():
     x = air_temp_df["longitude"].to_numpy()
     y = air_temp_df["latitude"].to_numpy()
     z = air_temp_df["air_temp"].to_numpy()
+    h = air_temp_df["altitude"].to_numpy()
 
     logger.info("Filtered observations dataframe with weather station coordinates : {} rows : {}"
                 .format(len(air_temp_df.index), datetime.now() - start_time))
@@ -115,9 +116,7 @@ def main():
     # sql = """SELECT latitude::numeric(5,3) as latitude, longitude::numeric(6,3) as longitude, count(*) as address_count
     #          FROM gnaf_202102.address_principals
     #          GROUP BY latitude::numeric(5,3), longitude::numeric(6,3)"""
-    sql = """SELECT st_y(geom)::numeric(5,3) as latitude, st_x(geom)::numeric(6,3) as longitude, sum(person) as count
-             FROM testing.address_principals_persons
-             GROUP BY latitude, longitude"""
+    sql = """SELECT * FROM testing.gnaf_points_with_pop_and_height"""
     gnaf_df = pandas.read_sql_query(sql, pg_conn)
 
     # save to feather file for future use (GNAF only changes once every 3 months)
@@ -129,6 +128,7 @@ def main():
     gnaf_x = gnaf_df["longitude"].to_numpy()
     gnaf_y = gnaf_df["latitude"].to_numpy()
     gnaf_counts = gnaf_df["count"].to_numpy()
+    gnaf_dem_elevation = gnaf_df["elevation"].to_numpy()
 
     logger.info("Loaded {:,} GNAF points : {}".format(len(gnaf_df.index), datetime.now() - start_time))
     start_time = datetime.now()
@@ -136,26 +136,28 @@ def main():
     # # interpolate temperatures for GNAF coordinates
     gnaf_points = numpy.array((gnaf_x.flatten(), gnaf_y.flatten())).T
     gnaf_temps = scipy.interpolate.griddata((x, y), z, gnaf_points, method='linear')
+    gnaf_weather_elevation = scipy.interpolate.griddata((x, y), h, gnaf_points, method='linear')
 
     # create results dataframe
     temperature_df = pandas.DataFrame({'latitude': gnaf_y, 'longitude': gnaf_x,
-                                       'count': gnaf_counts, 'air_temp': gnaf_temps})
+                                       'count': gnaf_counts, 'dem_elevation': gnaf_dem_elevation,
+                                       'weather_elevation': gnaf_weather_elevation, 'air_temp': gnaf_temps})
     # print(temperature_df)
 
     # get count of rows with a temperature
     row_count = len(temperature_df[temperature_df["air_temp"].notna()].index)
 
-    logger.info("Got {:,} interpolated temperatures for GNAF points : {}"
+    logger.info("Got {:,} interpolated temperatures and elevations for GNAF points : {}"
                 .format(row_count, datetime.now() - start_time))
     start_time = datetime.now()
 
-    # plot a map of gnaf points by temperature
-    temperature_df.plot.scatter('longitude', 'latitude', c='air_temp', colormap='jet')
-    plt.axis('off')
-    plt.savefig(os.path.join(output_path, "interpolated.png"), dpi=300, facecolor="w", pad_inches=0.0, metadata=None)
-
-    logger.info("Plotted points to PNG file : {}".format(datetime.now() - start_time))
-    start_time = datetime.now()
+    # # plot a map of gnaf points by temperature
+    # temperature_df.plot.scatter('longitude', 'latitude', c='air_temp', colormap='jet')
+    # plt.axis('off')
+    # plt.savefig(os.path.join(output_path, "interpolated.png"), dpi=300, facecolor="w", pad_inches=0.0, metadata=None)
+    #
+    # logger.info("Plotted points to PNG file : {}".format(datetime.now() - start_time))
+    # start_time = datetime.now()
 
     # export dataframe to PostGIS
     export_dataframe(pg_cur, temperature_df, "testing", "gnaf_temperature", "replace")
