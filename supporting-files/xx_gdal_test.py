@@ -21,22 +21,20 @@ from datetime import datetime
 
 from osgeo import gdal
 
-file_name = "/Users/hugh.saalmans/Downloads/3secSRTM_DEM/DEM_ESRI_GRID_16bit_Integer/dem3s_int/hdr.adf"
+dem_file_name = "/Users/hugh.saalmans/Downloads/3secSRTM_DEM/DEM_ESRI_GRID_16bit_Integer/dem3s_int/hdr.adf"
+dem_dataset = gdal.Open(dem_file_name, gdal.GA_ReadOnly)
 
 
-dataset = gdal.Open(file_name, gdal.GA_ReadOnly)
+# print("Driver: {}/{}".format(dataset.GetDriver().ShortName,
+#                              dataset.GetDriver().LongName))
+#
+# print("Size is {} x {} x {}".format(dataset.RasterXSize,
+#                                     dataset.RasterYSize,
+#                                     dataset.RasterCount))
+#
+# print("Projection is {}".format(dataset.GetProjection()))
 
-
-print("Driver: {}/{}".format(dataset.GetDriver().ShortName,
-                             dataset.GetDriver().LongName))
-
-print("Size is {} x {} x {}".format(dataset.RasterXSize,
-                                    dataset.RasterYSize,
-                                    dataset.RasterCount))
-
-print("Projection is {}".format(dataset.GetProjection()))
-
-geotransform = dataset.GetGeoTransform()
+geotransform = dem_dataset.GetGeoTransform()
 
 if geotransform:
     print("Origin = ({}, {})".format(geotransform[0], geotransform[3]))
