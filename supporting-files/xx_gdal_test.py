@@ -1,4 +1,24 @@
 
+import geopandas
+import io
+import json
+import logging
+import matplotlib.pyplot as plt
+import multiprocessing
+import numpy
+import os
+import pandas
+import psycopg2
+import requests
+import scipy.interpolate
+import sqlalchemy
+import struct
+import urllib.request
+import zipfile
+
+from bs4 import BeautifulSoup
+from datetime import datetime
+
 from osgeo import gdal
 
 file_name = "/Users/hugh.saalmans/Downloads/3secSRTM_DEM/DEM_ESRI_GRID_16bit_Integer/dem3s_int/hdr.adf"
@@ -22,5 +42,7 @@ if geotransform:
     print("Origin = ({}, {})".format(geotransform[0], geotransform[3]))
     print("Pixel Size = ({}, {})".format(geotransform[1], geotransform[5]))
 
+# out_arr = dataset.ReadAsArray()
+# print(out_arr)
 
 # if not dataset:
