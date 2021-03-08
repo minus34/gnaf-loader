@@ -38,13 +38,12 @@ ALTER TABLE testing.gnaf_points_with_pop_and_height OWNER to postgres;
 ANALYZE testing.gnaf_points_with_pop_and_height;
 
 
-
+DROP TABLE IF EXISTS temp_gnaf_100m_points;
 
 --
 -- SELECT ST_Value(dem.rast, gnaf.geom) as elevation,
 --        *
 -- FROM gnaf_202102.address_principals as gnaf
 -- INNER JOIN gnaf_202102.srtm_3s_dem as dem on ST_Intersects(gnaf.geom, dem.rast) limit 100;
-
 
 

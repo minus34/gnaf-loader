@@ -28,6 +28,7 @@ import zipfile
 
 from bs4 import BeautifulSoup
 from datetime import datetime
+from osgeo import gdal
 
 # where to save the files
 output_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "data")
@@ -106,18 +107,27 @@ def main():
     x = air_temp_df["longitude"].to_numpy()
     y = air_temp_df["latitude"].to_numpy()
     z = air_temp_df["air_temp"].to_numpy()
+    h = air_temp_df["altitude"].to_numpy()
 
     logger.info("Filtered observations dataframe with weather station coordinates : {} rows : {}"
                 .format(len(air_temp_df.index), datetime.now() - start_time))
     start_time = datetime.now()
 
+    # # open SRTM 3 second DEM of Australia (ESRI Binary Grid format)
+    # dem_file_name = "/Users/hugh.saalmans/Downloads/3secSRTM_DEM/DEM_ESRI_GRID_16bit_Integer/dem3s_int/hdr.adf"
+    # dem_dataset = gdal.Open(dem_file_name, gdal.GA_ReadOnly)
+    # dem_geotransform = dem_dataset.GetGeoTransform()
+    #
+    # # get DEM origin point and pixel size to create numpy arrays from
+    # dem_num_x, dem_num_y = dem_dataset.RasterXSize, dem_dataset.RasterYSize
+    # dem_origin_x, dem_origin_y = dem_geotransform[0], dem_geotransform[3]
+    # dem_origin_delta_x, dem_origin_delta_y = dem_geotransform[1], dem_geotransform[5]
+
     # select GNAF coordinates - group by 3 decimal places to create a ~100m grid of addresses
     # sql = """SELECT latitude::numeric(5,3) as latitude, longitude::numeric(6,3) as longitude, count(*) as address_count
     #          FROM gnaf_202102.address_principals
     #          GROUP BY latitude::numeric(5,3), longitude::numeric(6,3)"""
-    sql = """SELECT st_y(geom)::numeric(5,3) as latitude, st_x(geom)::numeric(6,3) as longitude, sum(person) as count
-             FROM testing.address_principals_persons
-             GROUP BY latitude, longitude"""
+    sql = """SELECT * FROM testing.gnaf_points_with_pop_and_height"""
     gnaf_df = pandas.read_sql_query(sql, pg_conn)
 
     # save to feather file for future use (GNAF only changes once every 3 months)
@@ -129,33 +139,41 @@ def main():
     gnaf_x = gnaf_df["longitude"].to_numpy()
     gnaf_y = gnaf_df["latitude"].to_numpy()
     gnaf_counts = gnaf_df["count"].to_numpy()
+    gnaf_dem_elevation = gnaf_df["elevation"].to_numpy()
 
     logger.info("Loaded {:,} GNAF points : {}".format(len(gnaf_df.index), datetime.now() - start_time))
     start_time = datetime.now()
 
     # # interpolate temperatures for GNAF coordinates
     gnaf_points = numpy.array((gnaf_x.flatten(), gnaf_y.flatten())).T
-    gnaf_temps = scipy.interpolate.griddata((x, y), z, gnaf_points, method='linear')
+    gnaf_temps = scipy.interpolate.griddata((x, y), z, gnaf_points, method="linear")
+    gnaf_weather_elevation = scipy.interpolate.griddata((x, y), h, gnaf_points, method="linear")
 
     # create results dataframe
-    temperature_df = pandas.DataFrame({'latitude': gnaf_y, 'longitude': gnaf_x,
-                                       'count': gnaf_counts, 'air_temp': gnaf_temps})
+    temperature_df = pandas.DataFrame({"latitude": gnaf_y, "longitude": gnaf_x,
+                                       "count": gnaf_counts, "dem_elevation": gnaf_dem_elevation,
+                                       "weather_elevation": gnaf_weather_elevation, "air_temp": gnaf_temps})
+
+    # add temperatures adjusted for altitude differences between GNAF point and nearby weather stations
+    temperature_df["adjusted_temp"] = temperature_df["air_temp"] + \
+                                      (temperature_df["weather_elevation"] - temperature_df["dem_elevation"]) / 150.0
+
     # print(temperature_df)
 
     # get count of rows with a temperature
     row_count = len(temperature_df[temperature_df["air_temp"].notna()].index)
 
-    logger.info("Got {:,} interpolated temperatures for GNAF points : {}"
+    logger.info("Got {:,} interpolated temperatures and elevations for GNAF points : {}"
                 .format(row_count, datetime.now() - start_time))
     start_time = datetime.now()
 
-    # plot a map of gnaf points by temperature
-    temperature_df.plot.scatter('longitude', 'latitude', c='air_temp', colormap='jet')
-    plt.axis('off')
-    plt.savefig(os.path.join(output_path, "interpolated.png"), dpi=300, facecolor="w", pad_inches=0.0, metadata=None)
-
-    logger.info("Plotted points to PNG file : {}".format(datetime.now() - start_time))
-    start_time = datetime.now()
+    # # plot a map of gnaf points by temperature
+    # temperature_df.plot.scatter("longitude", "latitude", c="air_temp", colormap="jet")
+    # plt.axis("off")
+    # plt.savefig(os.path.join(output_path, "interpolated.png"), dpi=300, facecolor="w", pad_inches=0.0, metadata=None)
+    #
+    # logger.info("Plotted points to PNG file : {}".format(datetime.now() - start_time))
+    # start_time = datetime.now()
 
     # export dataframe to PostGIS
     export_dataframe(pg_cur, temperature_df, "testing", "gnaf_temperature", "replace")
@@ -200,10 +218,10 @@ def get_weather_observations(station_list):
         soup = BeautifulSoup(r.content, features="html.parser")
 
         # get all links
-        links = soup.find_all('a', href=True)
+        links = soup.find_all("a", href=True)
 
         for link in links:
-            url = link['href']
+            url = link["href"]
 
             if "/products/" in url:
                 # only include weather station observations in their home state (border weather obs are duplicated)
@@ -213,7 +231,7 @@ def get_weather_observations(station_list):
                         obs_url = url.replace("/products/", "http://www.bom.gov.au/fwo/").replace(".shtml", ".json")
                         obs_urls.append(obs_url)
 
-        # with open(os.path.join(output_path, 'weather_observations_urls.txt'), 'w', newline='') as output_file:
+        # with open(os.path.join(output_path, "weather_observations_urls.txt"), "w", newline="") as output_file:
         #     output_file.write("\n".join(obs_urls))
 
         logger.info("\t - {} : got obs file list : {}".format(state["name"], datetime.now() - start_time))
@@ -239,17 +257,17 @@ def get_weather_stations():
     # get weather stations - obs have poor coordinates
     response = urllib.request.urlopen("ftp://ftp.bom.gov.au/anon2/home/ncc/metadata/sitelists/stations.zip")
     data = io.BytesIO(response.read())
-    station_file = zipfile.ZipFile(data, 'r', zipfile.ZIP_DEFLATED).read("stations.txt").decode("utf-8")
+    station_file = zipfile.ZipFile(data, "r", zipfile.ZIP_DEFLATED).read("stations.txt").decode("utf-8")
     stations = station_file.split("\r\n")
 
     station_list = list()
 
     # split fixed width file and get the fields we want
     field_widths = (-8, -6, 41, -8, -7, 9, 10, -15, 4, 11, -9, 7)  # negative widths represent ignored fields
-    format_string = " ".join('{}{}'.format(abs(fw), 'x' if fw < 0 else 's') for fw in field_widths)
+    format_string = " ".join("{}{}".format(abs(fw), "x" if fw < 0 else "s") for fw in field_widths)
     field_struct = struct.Struct(format_string)
     parser = field_struct.unpack_from
-    # print('fmtstring: {!r}, recsize: {} chars'.format(fmtstring, fieldstruct.size))
+    # print("fmtstring: {!r}, recsize: {} chars".format(fmtstring, fieldstruct.size))
 
     # skip first 5 rows (lazy coding!)
     stations.pop(0)
@@ -290,7 +308,7 @@ def run_multiprocessing(url):
     # try:
     obs_text = requests.get(url).text
 
-    # with open(file_path, 'w', newline='') as output_file:
+    # with open(file_path, "w", newline="") as output_file:
     #     output_file.write(obs_text)
 
     obs_json = json.loads(obs_text)
@@ -317,7 +335,7 @@ def run_multiprocessing(url):
     return result
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     full_start_time = datetime.now()
 
     logger = logging.getLogger()
@@ -332,11 +350,11 @@ if __name__ == '__main__':
     console = logging.StreamHandler()
     console.setLevel(logging.INFO)
     # set a format which is simpler for console use
-    formatter = logging.Formatter('%(name)-12s: %(levelname)-8s %(message)s')
+    formatter = logging.Formatter("%(name)-12s: %(levelname)-8s %(message)s")
     # tell the handler to use this format
     console.setFormatter(formatter)
     # add the handler to the root logger
-    logging.getLogger('').addHandler(console)
+    logging.getLogger("").addHandler(console)
 
     logger.info("")
     logger.info("Start weather obs download")
