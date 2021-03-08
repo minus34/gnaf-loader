@@ -182,9 +182,8 @@ def export_dataframe(pg_cur, df, schema_name, table_name, export_mode):
     pg_cur.execute("ANALYSE {}.{}".format(schema_name, table_name))
     # pg_cur.execute("ALTER TABLE testing.weather_stations ADD CONSTRAINT weather_stations_pkey PRIMARY KEY (wmo)"
     #                .format(schema_name, table_name))
+    pg_cur.execute("ALTER TABLE {0}.{1} CLUSTER ON idx_{1}_geometry".format(schema_name, table_name))
     pg_cur.execute("ALTER TABLE {}.{} RENAME COLUMN geometry TO geom".format(schema_name, table_name))
-    pg_cur.execute("CREATE INDEX sidx_{1}_geom ON {0}.{1} USING gist (geom)".format(schema_name, table_name))
-    pg_cur.execute("ALTER TABLE {0}.{1} CLUSTER ON sidx_{1}_geom".format(schema_name, table_name))
 
 
 def get_weather_observations(station_list):
