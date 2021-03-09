@@ -38,7 +38,10 @@ conda config --env --set channel_priority strict
 conda activate minus34
 
 # install conda packages
-echo "y" | conda install -c conda-forge psycopg2 geopandas pyarrow matplotlib scipy bs4 requests geoalchemy2 boto3 awscli
+echo "y" | conda install -c conda-forge psycopg2 dask geopandas pygeos geoalchemy2 pyarrow matplotlib scipy bs4 requests boto3 awscli
+
+# experimental - can't load WKT geoms
+#pip install git+git://github.com/geopandas/dask-geopandas.git
 
 #scipy descartes
 
