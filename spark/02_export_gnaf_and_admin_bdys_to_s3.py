@@ -146,9 +146,9 @@ def main():
             # note: exported geom field will be WGS84 (EPSG:4326) Well Known Binaries (WKB)
             if geom_field is not None:
                 if "POLYGON" in geom_type or "LINESTRING" in geom_type:
-                    geom_sql = ",ST_AsBinary(ST_Subdivide((ST_Dump(ST_Buffer(geom, 0.0))).geom, 512)) as geom"
+                    geom_sql = ",ST_AsText(ST_Subdivide((ST_Dump(ST_Buffer(geom, 0.0))).geom, 512)) as wkt_geom"
                 else:
-                    geom_sql = ",ST_AsBinary(geom) as geom"
+                    geom_sql = ",ST_AsText(geom) as wkt_geom"
 
                 # transform geom to WGS84 if required
                 if geom_srid != 4326:
