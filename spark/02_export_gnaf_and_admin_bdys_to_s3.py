@@ -14,18 +14,20 @@
 #
 # ---------------------------------------------------------------------------------------------------------------------
 
-import boto3
+# import boto3
 import logging
 import math
 import os
 import psycopg2
 import sys
 
-from boto3.s3.transfer import TransferConfig
+# from boto3.s3.transfer import TransferConfig
 from datetime import datetime
 from multiprocessing import cpu_count
 
-from pyspark.sql import SparkSession
+from pyspark.sql import SparkSession, functions as f
+from sedona.register import SedonaRegistrator
+from sedona.utils import SedonaKryoRegistrator, KryoSerializer
 
 # setup logging - code is here to prevent conflict with logging.basicConfig() from one of the imports below
 log_file = os.path.abspath(__file__).replace(".py", ".log")
@@ -66,7 +68,7 @@ s3_bucket = "minus34.com"
 s3_folder = "opendata/psma-202102/parquet"
 
 # output path for gzipped parquet files
-output_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "data")
+output_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "test")
 
 # database schemas to export to S3
 schema_names = ["gnaf_202102", "admin_bdys_202102"]
@@ -85,12 +87,19 @@ def main():
              .appName("query")
              .config("spark.sql.session.timeZone", "UTC")
              .config("spark.sql.debug.maxToStringFields", 100)
-             .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
              .config("spark.cores.max", num_processors)
+             .config("spark.serializer", KryoSerializer.getName)
+             .config("spark.kryo.registrator", SedonaKryoRegistrator.getName)
+             # .config("spark.jars.packages",
+             #         'org.apache.sedona:sedona-python-adapter-3.0_2.12:1.0.0-incubating,'
+             #         'org.datasyslab:geotools-wrapper:geotools-24.0')
              .config("spark.sql.adaptive.enabled", "true")
              .config("spark.driver.memory", "8g")
              .getOrCreate()
              )
+
+    # Add Sedona functions and types to Spark
+    SedonaRegistrator.registerAll(spark)
 
     logger.info("\t - PySpark {} session initiated: {}".format(spark.sparkContext.version, datetime.now() - start_time))
 
@@ -192,8 +201,17 @@ def main():
             # check table has records
             if max_gid is not None and max_gid > min_gid:
                 bdy_df = import_bdys(spark, query, min_gid, max_gid, 500000)
-                export_to_parquet(bdy_df, table_name)
-                copy_to_s3(schema_name, table_name)
+                # bdy_df.printSchema()
+
+                # add geometry column if required
+                if geom_sql != "":
+                    export_df = bdy_df.withColumn("geom", f.expr("ST_GeomFromWKT(wkt_geom)")) \
+                        .drop("wkt_geom")
+                else:
+                    export_df = bdy_df
+
+                export_to_parquet(export_df, table_name)
+                # copy_to_s3(schema_name, table_name)
 
                 bdy_df.unpersist()
 
