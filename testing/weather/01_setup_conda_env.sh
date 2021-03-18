@@ -10,6 +10,7 @@ echo " Start time : $(date)"
 # --------------------------------------------------------------------------------------------------------------------
 
 PYTHON_VERSION="3.9"
+SPARK_VERSION="3.0.2"
 
 # --------------------------------------------------------------------------------------------------------------------
 
@@ -38,7 +39,10 @@ conda config --env --set channel_priority strict
 conda activate minus34
 
 # install conda packages
-echo "y" | conda install -c conda-forge psycopg2 dask geopandas pygeos geoalchemy2 pyarrow matplotlib scipy bs4 requests boto3 awscli
+echo "y" | conda install -c conda-forge pyspark=${SPARK_VERSION} pyspark-stubs psycopg2 dask geopandas pygeos geoalchemy2 pyarrow matplotlib scipy bs4 requests boto3 awscli
+
+# install Apache Sedona
+pip install apache-sedona
 
 # experimental - can't load WKT geoms
 #pip install git+git://github.com/geopandas/dask-geopandas.git
