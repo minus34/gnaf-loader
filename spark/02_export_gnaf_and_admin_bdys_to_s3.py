@@ -200,7 +200,7 @@ def main():
 
             # check table has records
             if max_gid is not None and max_gid > min_gid:
-                bdy_df = import_bdys(spark, query, min_gid, max_gid, 500000)
+                bdy_df = import_table(spark, query, min_gid, max_gid, 500000)
                 # bdy_df.printSchema()
 
                 # add geometry column if required
@@ -228,7 +228,7 @@ def main():
 
 
 # load bdy table from Postgres and create a geospatial dataframe from it
-def import_bdys(spark, sql, min_gid, max_gid, partition_size):
+def import_table(spark, sql, min_gid, max_gid, partition_size):
 
     # get the number of partitions
     num_partitions = math.ceil(float(max_gid - min_gid) / float(partition_size))
