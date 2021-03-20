@@ -83,10 +83,13 @@ def main():
           )
     # gdf = geopandas.GeoDataFrame(df, geometry=geopandas.points_from_xy(df.longitude, df.latitude), crs="EPSG:4283")
 
-    # select rows from the last hour with air temps
-    rain_trace_df = df[(df["utc_time_diff"] < 3600.0) & (df["rain_trace"].notna()) & (df["rain_trace"] != "-")
-                     & (df["longitude"] > 112.0) & (df["longitude"] < 162.0)
-                     & (df["latitude"] > -45.0) & (df["latitude"] < -8.0)]
+    # replace all missing values ("-") with NaN and change type of field of interest from string
+    df2 = df.replace('-', numpy.nan).astype({'rain_trace': 'float64'})
+
+    # select rows from the last hour with valid data
+    rain_trace_df = df2[(df2["utc_time_diff"] < 3600.0) & (df2["rain_trace"].notna())
+                     & (df2["longitude"] > 112.0) & (df2["longitude"] < 162.0)
+                     & (df2["latitude"] > -45.0) & (df2["latitude"] < -8.0)]
 
     # # testing - get histogram of observation time
     # rain_trace_df.hist("utc_time")

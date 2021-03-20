@@ -108,7 +108,7 @@ def main():
 
     # interpolate data across the grid
     # zi = scipy.interpolate.griddata((x, y), z, (xi, yi), method='cubic')
-    rbf = scipy.interpolate.Rbf(x, y, z, function='inverse', epsilon=0.1)
+    rbf = scipy.interpolate.Rbf(x, y, z, function='inverse', epsilon=0.05)
     zi = rbf(xi, yi)
 
     logger.info("Interpolated results : {}".format(datetime.now() - start_time))
