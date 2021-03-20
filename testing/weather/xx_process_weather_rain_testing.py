@@ -88,97 +88,29 @@ def main():
                      & (df["longitude"] > 112.0) & (df["longitude"] < 162.0)
                      & (df["latitude"] > -45.0) & (df["latitude"] < -8.0)]
 
-    # # testing - get histogram of observation time
-    # rain_trace_df.hist("utc_time")
-    # plt.savefig(os.path.join(output_path, "histogram.png"), dpi=300, facecolor="w", pad_inches=0.0, metadata=None)
-
-    # export dataframe to PostGIS
-    export_dataframe(pg_cur, rain_trace_df, "testing", "weather_stations", "replace")
-    logger.info("Exported weather station dataframe to PostGIS: {}".format(datetime.now() - start_time))
-    start_time = datetime.now()
-
-    # # save to disk for debugging
-    # rain_trace_df.to_feather(os.path.join(output_path "temp_df.ipc"))
-
-    # # load from disk if debugging
-    # temp_df = pandas.read_feather(os.path.join(output_path "temp_df.ipc"))
-
     # extract lat, long and air temp as arrays
     x = rain_trace_df["longitude"].to_numpy()
     y = rain_trace_df["latitude"].to_numpy()
     z = rain_trace_df["rain_trace"].to_numpy()
-    h = rain_trace_df["altitude"].to_numpy()
 
-    logger.info("Filtered observations dataframe with weather station coordinates : {} rows : {}"
-                .format(len(rain_trace_df.index), datetime.now() - start_time))
-    start_time = datetime.now()
+    # target grid to interpolate to
+    xi = numpy.arange(112.0, 162.0, 0.01)
+    yi = numpy.arange(-45.0, -8.0, 0.01)
+    xi, yi = numpy.meshgrid(xi, yi)
 
-    # # open SRTM 3 second DEM of Australia (ESRI Binary Grid format)
-    # dem_file_name = "/Users/hugh.saalmans/Downloads/3secSRTM_DEM/DEM_ESRI_GRID_16bit_Integer/dem3s_int/hdr.adf"
-    # dem_dataset = gdal.Open(dem_file_name, gdal.GA_ReadOnly)
-    # dem_geotransform = dem_dataset.GetGeoTransform()
-    #
-    # # get DEM origin point and pixel size to create numpy arrays from
-    # dem_num_x, dem_num_y = dem_dataset.RasterXSize, dem_dataset.RasterYSize
-    # dem_origin_x, dem_origin_y = dem_geotransform[0], dem_geotransform[3]
-    # dem_origin_delta_x, dem_origin_delta_y = dem_geotransform[1], dem_geotransform[5]
+    # interpolate data across the grid
+    zi = scipy.interpolate.griddata((x, y), z, (xi, yi), method='cubic')
 
-    # select GNAF coordinates - group by 3 decimal places to create a ~100m grid of addresses
-    # sql = """SELECT latitude::numeric(5,3) as latitude, longitude::numeric(6,3) as longitude, count(*) as address_count
-    #          FROM gnaf_202102.address_principals
-    #          GROUP BY latitude::numeric(5,3), longitude::numeric(6,3)"""
-    # sql = """SELECT * FROM testing.gnaf_points_with_pop_and_height"""
-    # gnaf_df = pandas.read_sql_query(sql, pg_conn)
-    #
-    # # save to feather file for future use (GNAF only changes once every 3 months)
-    # gnaf_df.to_feather(os.path.join(output_path, "gnaf.ipc"))
-
-    # load from feather file
-    gnaf_df = pandas.read_feather(os.path.join(output_path, "gnaf.ipc"))
-
-    gnaf_x = gnaf_df["longitude"].to_numpy()
-    gnaf_y = gnaf_df["latitude"].to_numpy()
-    gnaf_counts = gnaf_df["count"].to_numpy()
-    gnaf_dem_elevation = gnaf_df["elevation"].to_numpy()
-
-    logger.info("Loaded {:,} GNAF points : {}".format(len(gnaf_df.index), datetime.now() - start_time))
-    start_time = datetime.now()
-
-    # # interpolate temperatures for GNAF coordinates
-    gnaf_points = numpy.array((gnaf_x.flatten(), gnaf_y.flatten())).T
-    gnaf_temps = scipy.interpolate.griddata((x, y), z, gnaf_points, method="cubic")
-    gnaf_weather_elevation = scipy.interpolate.griddata((x, y), h, gnaf_points, method="cubic")
-
-    # create results dataframe
-    temperature_df = pandas.DataFrame({"latitude": gnaf_y, "longitude": gnaf_x,
-                                       "count": gnaf_counts, "dem_elevation": gnaf_dem_elevation,
-                                       "weather_elevation": gnaf_weather_elevation, "rain_trace": gnaf_temps})
-
-    # add temperatures adjusted for altitude differences between GNAF point and nearby weather stations
-    temperature_df["adjusted_temp"] = temperature_df["rain_trace"] + \
-                                      (temperature_df["weather_elevation"] - temperature_df["dem_elevation"]) / 150.0
-
-    # print(temperature_df)
-
-    # get count of rows with a temperature
-    row_count = len(temperature_df[temperature_df["rain_trace"].notna()].index)
-
-    logger.info("Got {:,} interpolated temperatures and elevations for GNAF points : {}"
-                .format(row_count, datetime.now() - start_time))
-    start_time = datetime.now()
-
-    # # plot a map of gnaf points by temperature
-    # temperature_df.plot.scatter("longitude", "latitude", c="rain_trace", colormap="jet")
-    # plt.axis("off")
-    # plt.savefig(os.path.join(output_path, "interpolated.png"), dpi=300, facecolor="w", pad_inches=0.0, metadata=None)
-    #
-    # logger.info("Plotted points to PNG file : {}".format(datetime.now() - start_time))
-    # start_time = datetime.now()
-
-    # export dataframe to PostGIS
-    export_dataframe(pg_cur, temperature_df, "testing", "gnaf_temperature", "replace")
-    logger.info("Exported GNAF temperature dataframe to PostGIS: {}".format(datetime.now() - start_time))
-    # start_time = datetime.now()
+    # plot
+    # fig = plt.figure()
+    # ax = fig.add_subplot(111)
+    plt.contourf(xi, yi, zi, numpy.arange(-6.1, 45.1, 0.2), extend="both", cmap="Greys")
+    # plt.plot(x, y, ".k")
+    # plt.xlabel('xi', fontsize=16)
+    # plt.ylabel('yi', fontsize=16)
+    plt.axis('off')
+    plt.savefig(os.path.join(output_path, "interpolated.png"), dpi=300, facecolor="b", edgecolor="red", pad_inches=0.0, metadata=None)
+    # plt.close(fig)
 
     return True
 
