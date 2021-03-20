@@ -83,34 +83,49 @@ def main():
           )
     # gdf = geopandas.GeoDataFrame(df, geometry=geopandas.points_from_xy(df.longitude, df.latitude), crs="EPSG:4283")
 
+    # replace all missing values ("-") with NaN and change type of field of interest from string
+    df2 = df.replace('-', numpy.nan).astype({'rain_trace': 'float64'})
+
     # select rows from the last hour with air temps
-    rain_trace_df = df[(df["utc_time_diff"] < 3600.0) & (df["rain_trace"].notna()) & (df["rain_trace"] != "-")
-                     & (df["longitude"] > 112.0) & (df["longitude"] < 162.0)
-                     & (df["latitude"] > -45.0) & (df["latitude"] < -8.0)]
+    rain_trace_df = df2[(df2["utc_time_diff"] < 3600.0) & (df2["rain_trace"].notna())
+                     & (df2["longitude"] > 112.0) & (df2["longitude"] < 162.0)
+                     & (df2["latitude"] > -45.0) & (df2["latitude"] < -8.0)]
+
+    # print(rain_trace_df.info())
 
     # extract lat, long and air temp as arrays
-    x = rain_trace_df["longitude"].to_numpy()
-    y = rain_trace_df["latitude"].to_numpy()
-    z = rain_trace_df["rain_trace"].to_numpy()
+    x = rain_trace_df["longitude"].to_list()
+    y = rain_trace_df["latitude"].to_list()
+    z = rain_trace_df["rain_trace"].to_list()
 
     # target grid to interpolate to
-    xi = numpy.arange(112.0, 162.0, 0.01)
-    yi = numpy.arange(-45.0, -8.0, 0.01)
+    xi = numpy.arange(112.0, 162.0, 0.05)
+    yi = numpy.arange(-45.0, -8.0, 0.05)
     xi, yi = numpy.meshgrid(xi, yi)
 
+    logger.info("Created inputs : {}".format(datetime.now() - start_time))
+    start_time = datetime.now()
+
     # interpolate data across the grid
-    zi = scipy.interpolate.griddata((x, y), z, (xi, yi), method='cubic')
+    # zi = scipy.interpolate.griddata((x, y), z, (xi, yi), method='cubic')
+    rbf = scipy.interpolate.Rbf(x, y, z, function='inverse', epsilon=0.1)
+    zi = rbf(xi, yi)
+
+    logger.info("Interpolated results : {}".format(datetime.now() - start_time))
+    start_time = datetime.now()
 
     # plot
     # fig = plt.figure()
     # ax = fig.add_subplot(111)
-    plt.contourf(xi, yi, zi, numpy.arange(-6.1, 45.1, 0.2), extend="both", cmap="Greys")
+    plt.contourf(xi, yi, zi, numpy.arange(0, 100, 1.0), extend="both", cmap="Greys")
     # plt.plot(x, y, ".k")
     # plt.xlabel('xi', fontsize=16)
     # plt.ylabel('yi', fontsize=16)
     plt.axis('off')
     plt.savefig(os.path.join(output_path, "interpolated.png"), dpi=300, facecolor="b", edgecolor="red", pad_inches=0.0, metadata=None)
     # plt.close(fig)
+
+    logger.info("Plotted results : {}".format(datetime.now() - start_time))
 
     return True
 
