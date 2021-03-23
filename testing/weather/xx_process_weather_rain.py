@@ -142,7 +142,7 @@ def main():
     gnaf_x = gnaf_df["longitude"].to_numpy()
     gnaf_y = gnaf_df["latitude"].to_numpy()
     gnaf_counts = gnaf_df["count"].to_numpy()
-    gnaf_dem_elevation = gnaf_df["elevation"].to_numpy()
+    # gnaf_dem_elevation = gnaf_df["elevation"].to_numpy()
 
     logger.info("Loaded {:,} GNAF points : {}".format(len(gnaf_df.index), datetime.now() - start_time))
     start_time = datetime.now()
@@ -154,12 +154,14 @@ def main():
 
     # create results dataframe
     temperature_df = pandas.DataFrame({"latitude": gnaf_y, "longitude": gnaf_x,
-                                       "count": gnaf_counts, "dem_elevation": gnaf_dem_elevation,
-                                       "weather_elevation": gnaf_weather_elevation, "rain_trace": gnaf_temps})
+                                       "count": gnaf_counts, "rain_trace": gnaf_temps})
+    # temperature_df = pandas.DataFrame({"latitude": gnaf_y, "longitude": gnaf_x,
+    #                                    "count": gnaf_counts, "dem_elevation": gnaf_dem_elevation,
+    #                                    "weather_elevation": gnaf_weather_elevation, "rain_trace": gnaf_temps})
 
-    # add temperatures adjusted for altitude differences between GNAF point and nearby weather stations
-    temperature_df["adjusted_temp"] = temperature_df["rain_trace"] + \
-                                      (temperature_df["weather_elevation"] - temperature_df["dem_elevation"]) / 150.0
+    # # add temperatures adjusted for altitude differences between GNAF point and nearby weather stations
+    # temperature_df["adjusted_temp"] = temperature_df["rain_trace"] + \
+    #                                   (temperature_df["weather_elevation"] - temperature_df["dem_elevation"]) / 150.0
 
     # print(temperature_df)
 
