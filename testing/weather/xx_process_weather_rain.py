@@ -149,8 +149,8 @@ def main():
 
     # # interpolate temperatures for GNAF coordinates
     gnaf_points = numpy.array((gnaf_x.flatten(), gnaf_y.flatten())).T
-    gnaf_temps = scipy.interpolate.griddata((x, y), z, gnaf_points, method="cubic")
-    gnaf_weather_elevation = scipy.interpolate.griddata((x, y), h, gnaf_points, method="cubic")
+    gnaf_temps = scipy.interpolate.griddata((x, y), z, gnaf_points, method="linear")
+    gnaf_weather_elevation = scipy.interpolate.griddata((x, y), h, gnaf_points, method="linear")
 
     # create results dataframe
     temperature_df = pandas.DataFrame({"latitude": gnaf_y, "longitude": gnaf_x,
