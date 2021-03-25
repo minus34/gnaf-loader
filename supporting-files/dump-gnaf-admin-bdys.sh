@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # set this to taste - NOTE: you can't use "~" for your home folder
-output_folder="/Users/hugh.saalmans/tmp"
+output_folder="/Users/$(whoami)/tmp"
 
 /Applications/Postgres.app/Contents/Versions/12/bin/pg_dump -Fc -d geo -n gnaf_202102 -p 5432 -U postgres -f ${output_folder}/gnaf-202102.dmp --no-owner
 echo "GNAF schema exported to dump file"
