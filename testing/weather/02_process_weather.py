@@ -113,15 +113,15 @@ def main():
                 .format(len(air_temp_df.index), datetime.now() - start_time))
     start_time = datetime.now()
 
-    # # open SRTM 3 second DEM of Australia (ESRI Binary Grid format)
-    # dem_file_name = "/Users/hugh.saalmans/Downloads/3secSRTM_DEM/DEM_ESRI_GRID_16bit_Integer/dem3s_int/hdr.adf"
-    # dem_dataset = gdal.Open(dem_file_name, gdal.GA_ReadOnly)
-    # dem_geotransform = dem_dataset.GetGeoTransform()
-    #
-    # # get DEM origin point and pixel size to create numpy arrays from
-    # dem_num_x, dem_num_y = dem_dataset.RasterXSize, dem_dataset.RasterYSize
-    # dem_origin_x, dem_origin_y = dem_geotransform[0], dem_geotransform[3]
-    # dem_origin_delta_x, dem_origin_delta_y = dem_geotransform[1], dem_geotransform[5]
+    # open SRTM 3 second DEM of Australia (ESRI Binary Grid format)
+    dem_file_name = "/Users/hugh.saalmans/Downloads/3secSRTM_DEM/DEM_ESRI_GRID_16bit_Integer/dem3s_int/hdr.adf"
+    dem_dataset = gdal.Open(dem_file_name, gdal.GA_ReadOnly)
+    dem_geotransform = dem_dataset.GetGeoTransform()
+
+    # get DEM origin point and pixel size to create numpy arrays from
+    dem_num_x, dem_num_y = dem_dataset.RasterXSize, dem_dataset.RasterYSize
+    dem_origin_x, dem_origin_y = dem_geotransform[0], dem_geotransform[3]
+    dem_origin_delta_x, dem_origin_delta_y = dem_geotransform[1], dem_geotransform[5]
 
     # select GNAF coordinates - group by 3 decimal places to create a ~100m grid of addresses
     # sql = """SELECT latitude::numeric(5,3) as latitude, longitude::numeric(6,3) as longitude, count(*) as address_count
