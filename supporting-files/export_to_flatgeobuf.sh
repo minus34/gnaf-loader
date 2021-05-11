@@ -10,8 +10,8 @@ ogr2ogr -f FlatGeobuf ${output_folder}/address-principals-202105.fgb \
 PG:"host=localhost dbname=geo user=postgres password=password port=5432" "gnaf_202105.address_principals(geom)"
 
 # just GNAF PIDs and point geometries
-ogr2ogr -f FlatGeobuf ${output_folder}/address-principals-lite-202105.fgb \
-PG:"host=localhost dbname=geo user=postgres password=password port=5432" -sql "select gnaf_pid, geom from gnaf_202105.address_principals"
+ogr2ogr -f FlatGeobuf ${output_folder}/address-principals-lite-202102.fgb \
+PG:"host=localhost dbname=geo user=postgres password=password port=5432" -sql "select gnaf_pid, ST_Transform(geom, 4326) as geom from gnaf_202102.address_principals"
 
 # display locality boundaries
 ogr2ogr -f FlatGeobuf ${output_folder}/address-principals-202105.fgb \
