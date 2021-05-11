@@ -65,7 +65,7 @@ pg_connect_string = "dbname={DB} host={HOST} port={PORT} user={USER} password={P
 
 # aws details
 s3_bucket = "minus34.com"
-s3_folder = "opendata/psma-202105/parquet"
+s3_folder = "opendata/geoscape-202105/parquet"
 
 # output path for gzipped parquet files
 output_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "test")
@@ -305,7 +305,7 @@ if __name__ == "__main__":
     # add the handler to the root logger
     logging.getLogger().addHandler(console)
 
-    task_name = "PSMA Admin Boundary Export to S3"
+    task_name = "Geoscape Admin Boundary Export to S3"
 
     logger.info("{} started".format(task_name))
     logger.info("Running on Python {}".format(sys.version.replace("\n", " ")))

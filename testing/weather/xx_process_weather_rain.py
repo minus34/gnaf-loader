@@ -363,7 +363,7 @@ if __name__ == "__main__":
 
     logger.info("")
     logger.info("Start weather obs download")
-    # psma.check_python_version(logger)
+    # geoscape.check_python_version(logger)
 
     if main():
         logger.info("Finished successfully! : {}".format(datetime.now() - full_start_time))

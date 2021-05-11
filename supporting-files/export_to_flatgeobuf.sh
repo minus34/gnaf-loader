@@ -22,7 +22,7 @@ cd ${output_folder}
 
 for f in *-202105.fgb;
   do
-    aws --profile=default s3 cp --storage-class REDUCED_REDUNDANCY ./${f} s3://minus34.com/opendata/psma-202105/flatgeobuf/${f};
-    aws --profile=default s3api put-object-acl --acl public-read --bucket minus34.com --key opendata/psma-202105/flatgeobuf/${f}
+    aws --profile=default s3 cp --storage-class REDUCED_REDUNDANCY ./${f} s3://minus34.com/opendata/geoscape-202105/flatgeobuf/${f};
+    aws --profile=default s3api put-object-acl --acl public-read --bucket minus34.com --key opendata/geoscape-202105/flatgeobuf/${f}
     echo "${f} uploaded to AWS S3"
   done
