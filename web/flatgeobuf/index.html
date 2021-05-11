@@ -78,7 +78,7 @@
 
             let i = 0;
 
-            let iter = flatgeobuf.deserialize('http://minus34.com/opendata/geoscape-202102/flatgeobuf/address-principals-lite-202102.fgb', fgBoundingBox(), handleHeaderMeta);
+            let iter = flatgeobuf.deserialize('http://minus34.com/opendata/psma-202102/flatgeobuf/address-principals-lite-202102.fgb', fgBoundingBox(), handleHeaderMeta);
             for await (let feature of iter) {
 
                 if (i < 20) {
