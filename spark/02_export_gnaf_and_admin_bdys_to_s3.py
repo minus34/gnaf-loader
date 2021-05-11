@@ -65,13 +65,13 @@ pg_connect_string = "dbname={DB} host={HOST} port={PORT} user={USER} password={P
 
 # aws details
 s3_bucket = "minus34.com"
-s3_folder = "opendata/psma-202102/parquet"
+s3_folder = "opendata/psma-202105/parquet"
 
 # output path for gzipped parquet files
 output_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "test")
 
 # database schemas to export to S3
-schema_names = ["gnaf_202102", "admin_bdys_202102"]
+schema_names = ["gnaf_202105", "admin_bdys_202105"]
 
 
 def main():
