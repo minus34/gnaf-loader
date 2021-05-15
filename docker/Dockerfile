@@ -1,31 +1,16 @@
 
 FROM postgis/postgis:13-master
 
-ARG PGUSER
-ENV PGUSER ${PGUSER}
-
-ARG PGPASSWORD
-ENV PGPASSWORD ${PGPASSWORD}
-
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && apt-get install -y wget
 
-RUN mkdir -p /data \
-    && cd /data \
+ENV POSTGRES_DB ${POSTGRES_DB}
+ENV POSTGRES_USER ${POSTGRES_USER}
+ENV POSTGRES_PASSWORD ${POSTGRES_PASSWORD}
+COPY init.sql /docker-entrypoint-initdb.d/
 
-RUN psql -U ${PGUSER} -c "CREATE DATABASE geo;"
-
-RUN psql -U ${PGUSER} -c "CREATE EXTENSION postgis;"
-
-RUN psql -U ${PGUSER} -c "SELECT PostGIS_Full_Version();"
-
-
-
-
-
-
-#     && sudo -u postgres psql -c 'CREATE DATABASE geo;'
-
+# RUN mkdir -p /data \
+#     && cd /data \
 #     && wget http://minus34.com/opendata/geoscape-202105/gnaf-202105.dmp \
 #     && wget http://minus34.com/opendata/geoscape-202105/admin-bdys-202105.dmp \
 
