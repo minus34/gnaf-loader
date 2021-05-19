@@ -14,4 +14,6 @@ docker run --name=gnafloader -e POSTGRES_DB=geo -e POSTGRES_USER=postgres -e POS
 
 docker build --tag minus34/gnafloader --tag minus34/gnafloader:latest --tag minus34/gnafloader:202105 .
 
+docker run --name=gnafloader --publish=5433:5432 minus34/gnafloader:latest .
+
 
