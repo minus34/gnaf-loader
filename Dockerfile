@@ -25,8 +25,8 @@ RUN /etc/init.d/postgresql start \
 # download and restore GNAF & Admin Boundary Postgres dump files
 RUN mkdir -p /data \
     && cd /data \
-    && wget -q http://minus34.com/opendata/psma-202102/gnaf-202102.dmp \
-    && wget -q http://minus34.com/opendata/psma-202102/admin-bdys-202102.dmp \
+    && wget --quiet http://minus34.com/opendata/psma-202102/gnaf-202102.dmp \
+    && wget --quiet http://minus34.com/opendata/psma-202102/admin-bdys-202102.dmp \
     && /etc/init.d/postgresql start \
     && pg_restore -Fc -d postgres -h localhost -p 5432 -U postgres /data/gnaf-202102.dmp \
     && pg_restore -Fc -d postgres -h localhost -p 5432 -U postgres /data/admin-bdys-202102.dmp \
