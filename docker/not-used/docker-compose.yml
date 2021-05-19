@@ -1,5 +1,5 @@
 data:
-  image: python:3.6
+  image: python:3.9
   volumes:
     - ./:/app
     - ./data:/data
