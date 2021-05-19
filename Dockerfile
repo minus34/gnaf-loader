@@ -44,5 +44,5 @@ EXPOSE 5432
 # # This results in a single layer image
 # FROM scratch
 
-# Set the default command to run when starting the container
+# Start postgres when starting a container
 CMD ["/usr/lib/postgresql/13/bin/postgres", "-D", "/var/lib/postgresql/13/main", "-c", "config_file=/etc/postgresql/13/main/postgresql.conf"]
