@@ -1,7 +1,6 @@
-# FROM python:3.9-slim-buster
 FROM debian:buster-slim
 
-# Postgres user password - WARNING: change this to something more secure
+# Postgres user password - WARNING: change this to something a lot more secure
 ARG pg_password="password"
 ENV PGPASSWORD=${pg_password}
 
@@ -16,8 +15,7 @@ RUN apt-get update \
     && apt-get autoremove -y --purge \
     && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-# start Postgres server and set the default user password. WARNING: insecure password
-# TODO: create a unique, secure password at build time (if possible/practical?)
+# start Postgres server and set the default user password
 RUN /etc/init.d/postgresql start \
     && sudo -u postgres psql -c "ALTER USER postgres PASSWORD '${pg_password}';" \
     && sudo -u postgres psql -c "CREATE EXTENSION postgis;"
@@ -44,5 +42,5 @@ USER postgres
 # # Add VOLUMEs to allow backup of config, logs and databases
 # VOLUME  ["/etc/postgresql", "/var/log/postgresql", "/var/lib/postgresql"]
 
-# Start postgres when starting a container
+# Start postgres when starting the container
 CMD ["/usr/lib/postgresql/13/bin/postgres", "-D", "/var/lib/postgresql/13/main", "-c", "config_file=/etc/postgresql/13/main/postgresql.conf"]
