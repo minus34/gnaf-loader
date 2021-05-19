@@ -6,7 +6,7 @@ Have a look at [these intro slides](http://minus34.com/opendata/intro-to-gnaf.pp
 
 ### There are 3 options for loading the data
 1. [Run](https://github.com/minus34/gnaf-loader#option-1---run-loadgnafpy) the load-gnaf Python script and build the database in a single step
-2. [Build](https://github.com/minus34/gnaf-loader#option-2---build-the-database-in-a-docker-environment) the database in a docker environment
+2. [Use](https://github.com/minus34/gnaf-loader#option-2---use-the-database-in-a-docker-container) the database in a docker container
 3. [Download](https://github.com/minus34/gnaf-loader#option-3---load-pg_dump-files) the GNAF and/or Admin Bdys Postgres dump files & restore them in your Postgres 12+ database
 
 ## Option 1 - Run load.gnaf.py
@@ -84,16 +84,18 @@ When using the resulting data from this process - you will need to adhere to the
 - The 'create tables' sql script will add the PostGIS extension to the database in the public schema, you don't need to add it to your database
 - There is an option to VACUUM the database at the start after dropping the existing GNAF/Admin Bdy tables - this doesn't really do anything outside of repeated testing. (I was too lazy to take it out of the code as it meant renumbering all the SQL files and I'd like to go to bed now) 
 
-## Option 2 - Build the database in a docker environment
+## Option 2 - Use the database in a docker container
 
-Create a Docker container with GNAF and the Admin Bdys ready to go, so they can be deployed anywhere.
+The GNAF and the Admin Bdy data is ready to go in Postgres in a Docker container on Docker Hub.
 
 ### Process
-1. Download [Geoscape GNAF from data.gov.au](https://data.gov.au/dataset/geocoded-national-address-file-g-naf)
-2. Download [Geoscape Administrative Boundaries from data.gov.au](https://data.gov.au/dataset/geoscape-administrative-boundaries) (download the ESRI Shapefile version)
-3. Unzip GNAF and the Admin Bdys in the data/ directory of this repository
-4. Run docker-compose: `docker-compose up`. The database will be built.
-5. Use the constructed database as you wish.
+1. In your docker environment pull the image using `docker pull minus34/gnafloader:latest`
+2. Run using `docker run --publish=5433:5432 minus34/gnafloader:latest`
+3. Access Postgres in the container via port `5433`. Default login is - user: `postgres`, password: `password`
+
+**WARNING: The default postgres superuser password is insecure and should be changed using:**
+
+`ALTER USER postgres PASSWORD '<something a lot more secure>'`
 
 ## Option 3 - Load PG_DUMP Files
 Download Postgres dump files and restore them in your database.
