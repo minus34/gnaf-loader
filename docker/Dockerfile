@@ -18,7 +18,8 @@ RUN apt-get update \
 # start Postgres server and set the default user password
 RUN /etc/init.d/postgresql start \
     && sudo -u postgres psql -c "ALTER USER postgres PASSWORD '${pg_password}';" \
-    && sudo -u postgres psql -c "CREATE EXTENSION postgis;"
+    && sudo -u postgres psql -c "CREATE EXTENSION postgis;" \
+    && /etc/init.d/postgresql stop
 
 # download and restore GNAF & Admin Boundary Postgres dump files
 RUN mkdir -p /data \
@@ -28,6 +29,7 @@ RUN mkdir -p /data \
     && /etc/init.d/postgresql start \
     && pg_restore -Fc -d postgres -h localhost -p 5432 -U postgres /data/gnaf-202102.dmp \
     && pg_restore -Fc -d postgres -h localhost -p 5432 -U postgres /data/admin-bdys-202102.dmp \
+    && /etc/init.d/postgresql stop \
     && rm /data/gnaf-202102.dmp \
     && rm /data/admin-bdys-202102.dmp
 
