@@ -85,9 +85,9 @@ def main():
     start_time = datetime.now()
     logger.info("Part 1 of 6 : Create schemas : {0}".format(start_time))
 
-    if settings['raw_gnaf_schema'] != "public":
-        pg_cur.execute("CREATE SCHEMA IF NOT EXISTS {0} AUTHORIZATION {1}"
-                       .format(settings['raw_gnaf_schema'], settings['pg_user']))
+    # if settings['raw_gnaf_schema'] != "public":
+    #     pg_cur.execute("CREATE SCHEMA IF NOT EXISTS {0} AUTHORIZATION {1}"
+    #                    .format(settings['raw_gnaf_schema'], settings['pg_user']))
     if settings['raw_admin_bdys_schema'] != "public":
         pg_cur.execute("CREATE SCHEMA IF NOT EXISTS {0} AUTHORIZATION {1}"
                        .format(settings['raw_admin_bdys_schema'], settings['pg_user']))
@@ -99,22 +99,22 @@ def main():
                        .format(settings['gnaf_schema'], settings['pg_user']))
     logger.info("Part 1 of 6 : Schemas created! : {0}".format(datetime.now() - start_time))
 
-    # PART 2 - load gnaf from PSV files
-    logger.info("")
-    start_time = datetime.now()
-    logger.info("Part 2 of 6 : Start raw GNAF load : {0}".format(start_time))
-    drop_tables_and_vacuum_db(pg_cur, settings)
-    create_raw_gnaf_tables(pg_cur, settings)
-    populate_raw_gnaf(settings)
-    index_raw_gnaf(settings)
-    if settings['primary_foreign_keys']:
-        create_primary_foreign_keys(settings)
-    else:
-        logger.info("\t- Step 6 of 7 : primary & foreign keys NOT created")
-    analyse_raw_gnaf_tables(pg_cur, settings)
-    # set postgres search path back to the default
-    pg_cur.execute("SET search_path = public, pg_catalog")
-    logger.info("Part 2 of 6 : Raw GNAF loaded! : {0}".format(datetime.now() - start_time))
+    # # PART 2 - load gnaf from PSV files
+    # logger.info("")
+    # start_time = datetime.now()
+    # logger.info("Part 2 of 6 : Start raw GNAF load : {0}".format(start_time))
+    # drop_tables_and_vacuum_db(pg_cur, settings)
+    # create_raw_gnaf_tables(pg_cur, settings)
+    # populate_raw_gnaf(settings)
+    # index_raw_gnaf(settings)
+    # if settings['primary_foreign_keys']:
+    #     create_primary_foreign_keys(settings)
+    # else:
+    #     logger.info("\t- Step 6 of 7 : primary & foreign keys NOT created")
+    # analyse_raw_gnaf_tables(pg_cur, settings)
+    # # set postgres search path back to the default
+    # pg_cur.execute("SET search_path = public, pg_catalog")
+    # logger.info("Part 2 of 6 : Raw GNAF loaded! : {0}".format(datetime.now() - start_time))
 
     # PART 3 - load raw admin boundaries from Shapefiles
     logger.info("")
@@ -503,14 +503,18 @@ def load_raw_admin_boundaries(pg_cur, settings):
                                 table_list.append(file_dict['pg_table'])
                                 create_list.append(file_dict)
                             else:
-                                append_list.append(file_dict)
+                                # don't add duplicates if more than one Authority Code file per boundary type
+                                if "_aut_" not in file_name.lower():
+                                    append_list.append(file_dict)
                         else:
                             if not file_dict['file_path'].lower().endswith("_locality_shp.dbf"):
                                 if table_list_add:
                                     table_list.append(file_dict['pg_table'])
                                     create_list.append(file_dict)
                                 else:
-                                    append_list.append(file_dict)
+                                    # don't add duplicates if more than one Authority Code file per boundary type
+                                    if "_aut_" not in file_name.lower():
+                                        append_list.append(file_dict)
 
     # logger.info(create_list)
     # logger.info(append_list)

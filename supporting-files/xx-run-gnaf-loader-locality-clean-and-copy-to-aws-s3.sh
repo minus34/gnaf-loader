@@ -1,12 +1,15 @@
 #!/usr/bin/env bash
 
+# need a Python 3.7+ environment with Psycopg2
+conda activate minus34
+
 # ---------------------------------------------------------------------------------------------------------------------
 # edit these to taste - NOTE: you can't use "~" for your home folder, Postgres doesn't like it
 # ---------------------------------------------------------------------------------------------------------------------
 
 output_folder="/Users/$(whoami)/tmp"
-gnaf_path="/Users/$(whoami)/Downloads/FEB21_GNAF_PipeSeparatedValue_20210522101749/G-NAF"
-bdys_path="/Users/$(whoami)/Downloads/FEB21_AdminBounds_ESRIShapefileorDBFfile/Administrative Boundaries"
+gnaf_path="/Users/$(whoami)/Downloads/G-NAF_MAY21_AUSTRALIA_GDA94"
+bdys_path="/Users/$(whoami)/Downloads/MAY21 AdminBounds ESRIShapefileorDBFfile"
 
 # ---------------------------------------------------------------------------------------------------------------------
 
@@ -45,8 +48,17 @@ for f in *-202105.dmp;
   done
 
 # ---------------------------------------------------------------------------------------------------------------------
+# build gnafloader docker image
+# ---------------------------------------------------------------------------------------------------------------------
+
+cd /Users/$(whoami)/git/minus34/gnaf-loader/docker
+docker build --tag minus34/gnafloader:latest --tag minus34/gnafloader:202105 .
+
+# ---------------------------------------------------------------------------------------------------------------------
 # create parquet versions of GNAF and Admin Bdys and upload to AWS S3
 # ---------------------------------------------------------------------------------------------------------------------
 
-. ${SCRIPT_DIR}/../spark/01_setup_pyspark_3.sh
+# first create Conda environment with Apache Spark + Sedona
+. /Users/$(whoami)/git/iag_geo/spark_testing/apache_sedona/01_setup_sedona.sh
+
 python ${SCRIPT_DIR}/../spark/02_export_gnaf_and_admin_bdys_to_s3.py
