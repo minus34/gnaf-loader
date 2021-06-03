@@ -20,7 +20,7 @@ SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 # Run gnaf-loader and locality boundary clean
 # ---------------------------------------------------------------------------------------------------------------------
 
-python3 /Users/$(whoami)/git/minus34/gnaf-loader/load-gnaf.py --pgport=5432 --pgdb=geo --max-processes=4 --gnaf-tables-path="${gnaf_path}" --admin-bdys-path="${bdys_path}"
+python3 /Users/$(whoami)/git/minus34/gnaf-loader/load-gnaf.py --pgport=5432 --pgdb=geo --max-processes=6 --gnaf-tables-path="${gnaf_path}" --admin-bdys-path="${bdys_path}"
 python3 /Users/$(whoami)/git/iag_geo/psma-admin-bdys/locality-clean.py --pgport=5432 --pgdb=geo --max-processes=4 --output-path=${output_folder}
 
 # ---------------------------------------------------------------------------------------------------------------------
