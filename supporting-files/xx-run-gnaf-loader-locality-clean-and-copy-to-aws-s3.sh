@@ -47,12 +47,12 @@ for f in *-202105.dmp;
     echo "${f} uploaded to AWS S3"
   done
 
-# ---------------------------------------------------------------------------------------------------------------------
-# build gnafloader docker image
-# ---------------------------------------------------------------------------------------------------------------------
-
-cd /Users/$(whoami)/git/minus34/gnaf-loader/docker
-docker build --tag minus34/gnafloader:latest --tag minus34/gnafloader:202105 .
+## ---------------------------------------------------------------------------------------------------------------------
+## build gnafloader docker image
+## ---------------------------------------------------------------------------------------------------------------------
+#
+#cd /Users/$(whoami)/git/minus34/gnaf-loader/docker
+#docker build --tag minus34/gnafloader:latest --tag minus34/gnafloader:202105 .
 
 # ---------------------------------------------------------------------------------------------------------------------
 # create parquet versions of GNAF and Admin Bdys and upload to AWS S3
