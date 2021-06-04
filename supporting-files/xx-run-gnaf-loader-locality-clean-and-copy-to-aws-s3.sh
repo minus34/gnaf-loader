@@ -14,7 +14,7 @@ bdys_path="/Users/$(whoami)/Downloads/MAY21 AdminBounds ESRIShapefileorDBFfile"
 # ---------------------------------------------------------------------------------------------------------------------
 
 # get the directory this script is running from
-SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+GNAF_SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
 # ---------------------------------------------------------------------------------------------------------------------
 # Run gnaf-loader and locality boundary clean
@@ -61,4 +61,6 @@ for f in *-202105.dmp;
 # first create Conda environment with Apache Spark + Sedona
 . /Users/$(whoami)/git/iag_geo/spark_testing/apache_sedona/01_setup_sedona.sh
 
-python ${SCRIPT_DIR}/../spark/02_export_gnaf_and_admin_bdys_to_s3.py
+python ${GNAF_SCRIPT_DIR}/../spark/02_export_gnaf_and_admin_bdys_to_s3.py
+
+aws s3 sync ${GNAF_SCRIPT_DIR}/../spark/data s3://minus34.com/opendata/geoscape-202105/parquet
