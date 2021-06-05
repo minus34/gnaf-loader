@@ -65,13 +65,13 @@ pg_connect_string = "dbname={DB} host={HOST} port={PORT} user={USER} password={P
 
 # aws details
 s3_bucket = "minus34.com"
-s3_folder = "opendata/psma-202102/parquet"
+s3_folder = "opendata/geoscape-202105/parquet"
 
 # output path for gzipped parquet files
-output_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "test")
+output_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "data")
 
 # database schemas to export to S3
-schema_names = ["gnaf_202102", "admin_bdys_202102"]
+schema_names = ["gnaf_202105", "admin_bdys_202105"]
 
 
 def main():
@@ -84,17 +84,19 @@ def main():
     spark = (SparkSession
              .builder
              .master("local[*]")
-             .appName("query")
+             .appName("gnaf-loader export")
              .config("spark.sql.session.timeZone", "UTC")
              .config("spark.sql.debug.maxToStringFields", 100)
-             .config("spark.cores.max", num_processors)
              .config("spark.serializer", KryoSerializer.getName)
              .config("spark.kryo.registrator", SedonaKryoRegistrator.getName)
-             # .config("spark.jars.packages",
-             #         'org.apache.sedona:sedona-python-adapter-3.0_2.12:1.0.0-incubating,'
-             #         'org.datasyslab:geotools-wrapper:geotools-24.0')
+             .config("spark.jars.packages",
+                     'org.apache.sedona:sedona-python-adapter-3.0_2.12:1.0.1-incubating,'
+                     'org.datasyslab:geotools-wrapper:geotools-24.1')
              .config("spark.sql.adaptive.enabled", "true")
+             .config("spark.executor.cores", 1)
+             .config("spark.cores.max", num_processors)
              .config("spark.driver.memory", "8g")
+             .config("spark.driver.maxResultSize", "1g")
              .getOrCreate()
              )
 
@@ -203,14 +205,16 @@ def main():
                 bdy_df = import_table(spark, query, min_gid, max_gid, 500000)
                 # bdy_df.printSchema()
 
-                # add geometry column if required
-                if geom_sql != "":
-                    export_df = bdy_df.withColumn("geom", f.expr("ST_GeomFromWKT(wkt_geom)")) \
-                        .drop("wkt_geom")
-                else:
-                    export_df = bdy_df
+                # # add geometry column if required
+                # if geom_sql != "":
+                #     export_df = bdy_df.withColumn("geom", f.expr("ST_GeomFromWKT(wkt_geom)")) \
+                #         .drop("wkt_geom")
+                # else:
+                #     export_df = bdy_df
+                #
+                # export_to_parquet(export_df, table_name)
 
-                export_to_parquet(export_df, table_name)
+                export_to_parquet(bdy_df, table_name)
                 # copy_to_s3(schema_name, table_name)
 
                 bdy_df.unpersist()
@@ -272,7 +276,7 @@ def copy_to_s3(schema_name, name):
     config = TransferConfig(multipart_threshold=1024 ** 2)  # 1MB
 
     # upload one file at a time
-    for root,dirs,files in os.walk(os.path.join(output_path, name)):
+    for root, dirs, files in os.walk(os.path.join(output_path, name)):
         for file in files:
             response = s3_client\
                 .upload_file(os.path.join(output_path, name, file), s3_bucket,
@@ -305,7 +309,7 @@ if __name__ == "__main__":
     # add the handler to the root logger
     logging.getLogger().addHandler(console)
 
-    task_name = "PSMA Admin Boundary Export to S3"
+    task_name = "Geoscape Admin Boundary Export to S3"
 
     logger.info("{} started".format(task_name))
     logger.info("Running on Python {}".format(sys.version.replace("\n", " ")))

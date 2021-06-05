@@ -1,0 +1,153 @@
+<html lang="en">
+<head>
+    <title>FlatGeoBuf Testing</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.6.0/dist/leaflet.css" />
+    <link rel="stylesheet" href="site.css" />
+    <script src="https://unpkg.com/underscore@1.13.1/underscore-min.js"></script>
+    <script src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/flatgeobuf@3.17.0/dist/flatgeobuf-geojson.min.js"></script>
+    <script src="https://unpkg.com/json-formatter-js"></script>
+
+    <style>
+        #map { height: 480px; }
+    </style>
+</head>
+<body>
+<!--<ul class="primary-navigation">-->
+<!--    <li class="active">-->
+<!--        Leaflet Example-->
+<!--    </li>-->
+<!--    <li>-->
+<!--        <a href="/examples/openlayers/large.html">OpenLayers Example</a>-->
+<!--    </li>-->
+<!--</ul>-->
+<!--<ul class="secondary-navigation">-->
+<!--    <li><a href="/examples/leaflet/">Basic Example</a></li>-->
+<!--    <li><a href="/examples/leaflet/filtered.html">Filter By Rect</a></li>-->
+<!--    <li class="active">Filtering a Large Dataset</li>-->
+<!--</ul>-->
+
+<div id="map"></div>
+<script>
+    document.addEventListener("DOMContentLoaded", async () => {
+        // basic OSM Leaflet map
+        let map = L.map('map').setView([-33.85, 151.15], 14);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+
+        // optionally show some meta-data about the FGB file
+        function handleHeaderMeta(headerMeta) {
+            const header = document.getElementById('header')
+            const formatter = new JSONFormatter(headerMeta, 10)
+            while (header.firstChild)
+                header.removeChild(header.firstChild)
+            header.appendChild(formatter.render())
+        }
+
+        // // For the example, we fix a visible Rect in the middle of the map
+        // function getBoundForRect() {
+        //     const widthMeters = 2000;
+        //     return map.getCenter().toBounds(widthMeters);
+        // }
+
+        // convert the rect into the format flatgeobuf expects
+        function fgBoundingBox() {
+            const bounds = map.getBounds();
+            // const bounds = getBoundForRect();
+            return {
+                minX: bounds.getWest(),
+                maxX: bounds.getEast(),
+                minY: bounds.getSouth(),
+                maxY: bounds.getNorth(),
+            };
+        }
+
+        // track the previous results so we can remove them when adding new results
+        let previousResults = L.layerGroup().addTo(map);
+        async function updateResults() {
+            // remove the old results
+            previousResults.remove();
+            const nextResults = L.layerGroup().addTo(map);
+            previousResults = nextResults;
+
+            // Use flatgeobuf JavaScript API to iterate features as geojson.
+            // Because we specify a bounding box, flatgeobuf will only fetch the relevant subset of data,
+            // rather than the entire file.
+
+            let i = 0;
+
+            let iter = flatgeobuf.deserialize('http://minus34.com/opendata/psma-202102/flatgeobuf/address-principals-lite-202102.fgb', fgBoundingBox(), handleHeaderMeta);
+            for await (let feature of iter) {
+
+                if (i < 20) {
+                    console.log(feature);
+                }
+
+                i += 1;
+
+                // // // Leaflet styling
+                // // const defaultStyle = {
+                // //     color: 'blue',
+                // //     weight: 2,
+                // //     fillOpacity: 0.1,
+                // // };
+                // L.geoJSON(feature, {
+                //     // style: defaultStyle,
+                //
+                //     style: function (feature) {
+                //         return feature.properties && feature.properties.style;
+                //     },
+                //
+                //     // onEachFeature: onEachFeature,
+                //
+                //     pointToLayer: function (feature, latlng) {
+                //         return L.circleMarker(latlng, {
+                //             radius: 8,
+                //             fillColor: "#ff7800",
+                //             color: "#000",
+                //             weight: 1,
+                //             opacity: 1,
+                //             fillOpacity: 0.8
+                //         });
+                //     }
+                //
+                // }).on({
+                //     'mouseover': function(e) {
+                //         const layer = e.target;
+                //         layer.setStyle({
+                //             color: 'blue',
+                //             weight: 4,
+                //             fillOpacity: 0.7,
+                //         });
+                //         layer.bringToFront();
+                //     },
+                //     'mouseout': function(e) {
+                //         const layer = e.target;
+                //         layer.setStyle(defaultStyle);
+                //     }
+                // }).bindPopup(`${feature.properties["NAME"]} ${feature.properties["STATE"]} ${feature.properties["POSTCODE"]}`)
+                //     .addTo(nextResults);
+            }
+        }
+        // if the user is panning around alot, only update once per second max
+        updateResults = _.debounce(updateResults, 1000);
+
+        // // show a leaflet rect corresponding to our bounding box
+        // let rectangle = L.rectangle(getBoundForRect(), { color: "yellow", fillOpacity: 0.7, opacity: 1.0 }).addTo(map);
+
+        // show results based on the initial map
+        updateResults();
+        // ...and update the results whenever the map moves
+        map.on("moveend", function(s){
+            // rectangle.setBounds(getBoundForRect());
+            updateResults();
+        });
+    });
+</script>
+<div id="header">
+    <h3>Parsed header content</h3>
+</div>
+</body>
+</html>

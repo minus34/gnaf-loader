@@ -4,7 +4,7 @@
 # load-gnaf.py
 # *********************************************************************************************************************
 #
-# A script for loading raw GNAF & PSMA Admin boundaries and creating flattened, complete, easy to use versions
+# A script for loading raw GNAF & Geoscape Admin boundaries and creating flattened, complete, easy to use versions
 #
 # Author: Hugh Saalmans
 # GitHub: minus34
@@ -12,12 +12,12 @@
 #
 # Copyright:
 #  - Code is licensed under an Apache License, version 2.0
-#  - Data is copyright PSMA - licensed under a Creative Commons (By Attribution) license.
+#  - Data is copyright Geoscape - licensed under a Creative Commons (By Attribution) license.
 #    See http://data.gov.au for the correct attribution to use
 #
 # Process:
 #   1. Loads raw GNAF into Postgres from PSV files, using COPY
-#   2. Loads raw PSMA Admin Boundaries from Shapefiles into Postgres using shp2pgsql (part of PostGIS)
+#   2. Loads raw Geoscape Admin Boundaries from Shapefiles into Postgres using shp2pgsql (part of PostGIS)
 #   3. Creates flattened and simplified GNAF tables containing all relevant data
 #   4. Creates a ready to use Locality Boundaries table containing a number of fixes to overcome known data issues
 #   5. Splits the locality boundary for Melbourne into 2, one for each of its postcodes (3000 & 3004)
@@ -31,7 +31,7 @@ import os
 import psycopg2
 import argparse
 import logging.config
-import psma
+import geoscape
 
 from datetime import datetime
 
@@ -63,7 +63,7 @@ def main():
         return False
 
     # test if ST_SubDivide exists (only in PostGIS 2.2+). It's used to split boundaries for faster processing
-    psma.check_postgis_version(pg_cur, settings, logger)
+    geoscape.check_postgis_version(pg_cur, settings, logger)
 
     # log the settings
 
@@ -163,7 +163,7 @@ def main():
 def set_arguments():
 
     parser = argparse.ArgumentParser(
-        description='A quick way to load the complete GNAF and PSMA Admin Boundaries into Postgres, '
+        description='A quick way to load the complete GNAF and Geoscape Admin Boundaries into Postgres, '
                     'simplified and ready to use as reference data for geocoding, analysis and visualisation.')
 
     parser.add_argument(
@@ -195,7 +195,7 @@ def set_arguments():
     parser.add_argument(
         '--pgdb',
         help='Database name for Postgres server. Defaults to PGDATABASE environment variable if set, '
-             'otherwise psma.')
+             'otherwise geoscape.')
     parser.add_argument(
         '--pguser',
         help='Username for Postgres server. Defaults to PGUSER environment variable if set, otherwise postgres.')
@@ -205,23 +205,23 @@ def set_arguments():
              'otherwise \'password\'.')
 
     # schema names for the raw gnaf, flattened reference and admin boundary tables
-    psma_version = psma.get_psma_version(datetime.today())
+    geoscape_version = geoscape.get_geoscape_version(datetime.today())
     parser.add_argument(
-        '--psma-version', default=psma_version,
-        help='PSMA Version number as YYYYMM. Defaults to last release year and month \'<psma-version>\'.')
+        '--geoscape-version', default=geoscape_version,
+        help='Geoscape Version number as YYYYMM. Defaults to last release year and month \'<geoscape-version>\'.')
     parser.add_argument(
         '--raw-gnaf-schema',
-        help='Schema name to store raw GNAF tables in. Defaults to \'raw_gnaf_<psma-version>\'.')
+        help='Schema name to store raw GNAF tables in. Defaults to \'raw_gnaf_<geoscape-version>\'.')
     parser.add_argument(
         '--raw-admin-schema',
-        help='Schema name to store raw admin boundary tables in. Defaults to \'raw_admin_bdys_<psma-version>\'.')
+        help='Schema name to store raw admin boundary tables in. Defaults to \'raw_admin_bdys_<geoscape-version>\'.')
     parser.add_argument(
         '--gnaf-schema',
-        help='Destination schema name to store final GNAF tables in. Defaults to \'gnaf_<psma-version>\'.')
+        help='Destination schema name to store final GNAF tables in. Defaults to \'gnaf_<geoscape-version>\'.')
     parser.add_argument(
         '--admin-schema',
         help='Destination schema name to store final admin boundary tables in. Defaults to \'admin_bdys_'
-             + psma_version + '\'.')
+             + geoscape_version + '\'.')
 
     # directories
     parser.add_argument(
@@ -251,13 +251,13 @@ def get_settings(args):
     settings['primary_foreign_keys'] = args.raw_fk
     settings['unlogged_tables'] = args.raw_unlogged
     settings['max_concurrent_processes'] = args.max_processes
-    settings['psma_version'] = args.psma_version
+    settings['geoscape_version'] = args.geoscape_version
     settings['states_to_load'] = args.states
     settings['no_boundary_tag'] = args.no_boundary_tag
-    settings['raw_gnaf_schema'] = args.raw_gnaf_schema or 'raw_gnaf_' + settings['psma_version']
-    settings['raw_admin_bdys_schema'] = args.raw_admin_schema or 'raw_admin_bdys_' + settings['psma_version']
-    settings['gnaf_schema'] = args.gnaf_schema or 'gnaf_' + settings['psma_version']
-    settings['admin_bdys_schema'] = args.admin_schema or 'admin_bdys_' + settings['psma_version']
+    settings['raw_gnaf_schema'] = args.raw_gnaf_schema or 'raw_gnaf_' + settings['geoscape_version']
+    settings['raw_admin_bdys_schema'] = args.raw_admin_schema or 'raw_admin_bdys_' + settings['geoscape_version']
+    settings['gnaf_schema'] = args.gnaf_schema or 'gnaf_' + settings['geoscape_version']
+    settings['admin_bdys_schema'] = args.admin_schema or 'admin_bdys_' + settings['geoscape_version']
     settings['gnaf_network_directory'] = args.gnaf_tables_path.replace("\\", "/")
     if args.local_server_dir:
         settings['gnaf_pg_server_local_directory'] = args.local_server_dir.replace("\\", "/")
@@ -268,7 +268,7 @@ def get_settings(args):
     # create postgres connect string
     settings['pg_host'] = args.pghost or os.getenv("PGHOST", "localhost")
     settings['pg_port'] = args.pgport or os.getenv("PGPORT", 5432)
-    settings['pg_db'] = args.pgdb or os.getenv("PGDATABASE", "psma")
+    settings['pg_db'] = args.pgdb or os.getenv("PGDATABASE", "geoscape")
     settings['pg_user'] = args.pguser or os.getenv("PGUSER", "postgres")
     settings['pg_password'] = args.pgpassword or os.getenv("PGPASSWORD", "password")
 
@@ -305,7 +305,7 @@ def get_settings(args):
 def drop_tables_and_vacuum_db(pg_cur, settings):
     # Step 1 of 7 : drop tables
     start_time = datetime.now()
-    pg_cur.execute(psma.open_sql_file("01-01-drop-tables.sql", settings))
+    pg_cur.execute(geoscape.open_sql_file("01-01-drop-tables.sql", settings))
     logger.info("\t- Step 1 of 7 : tables dropped : {0}".format(datetime.now() - start_time))
 
     # Step 2 of 7 : vacuum database (if requested)
@@ -322,7 +322,7 @@ def create_raw_gnaf_tables(pg_cur, settings):
     start_time = datetime.now()
 
     # prep create table sql scripts (note: file doesn't contain any schema prefixes on table names)
-    sql = psma.open_sql_file("01-03-raw-gnaf-create-tables.sql", settings)
+    sql = geoscape.open_sql_file("01-03-raw-gnaf-create-tables.sql", settings)
 
     # set search path
     if settings['raw_gnaf_schema'] != "public":
@@ -364,7 +364,7 @@ def populate_raw_gnaf(settings):
         logger.fatal("\t- Step 4 of 7 : table populate FAILED!")
     else:
         # load all PSV files using multiprocessing
-        psma.multiprocess_list("sql", sql_list, settings, logger)
+        geoscape.multiprocess_list("sql", sql_list, settings, logger)
         logger.info("\t- Step 4 of 7 : tables populated : {0}".format(datetime.now() - start_time))
 
 
@@ -398,13 +398,13 @@ def index_raw_gnaf(settings):
     # Step 5 of 7 : create indexes
     start_time = datetime.now()
 
-    raw_sql_list = psma.open_sql_file("01-05-raw-gnaf-create-indexes.sql", settings).split("\n")
+    raw_sql_list = geoscape.open_sql_file("01-05-raw-gnaf-create-indexes.sql", settings).split("\n")
     sql_list = []
     for sql in raw_sql_list:
         if sql[0:2] != "--" and sql[0:2] != "":
             sql_list.append(sql)
 
-    psma.multiprocess_list("sql", sql_list, settings, logger)
+    geoscape.multiprocess_list("sql", sql_list, settings, logger)
     logger.info("\t- Step 5 of 7 : indexes created: {0}".format(datetime.now() - start_time))
 
 
@@ -412,7 +412,7 @@ def index_raw_gnaf(settings):
 def create_primary_foreign_keys(settings):
     start_time = datetime.now()
 
-    key_sql = psma.open_sql_file("01-06-raw-gnaf-create-primary-foreign-keys.sql", settings)
+    key_sql = geoscape.open_sql_file("01-06-raw-gnaf-create-primary-foreign-keys.sql", settings)
     key_sql_list = key_sql.split("--")
     sql_list = []
 
@@ -424,7 +424,7 @@ def create_primary_foreign_keys(settings):
             sql_list.append(sql)
 
     # run queries in separate processes
-    psma.multiprocess_list("sql", sql_list, settings, logger)
+    geoscape.multiprocess_list("sql", sql_list, settings, logger)
 
     logger.info("\t- Step 6 of 7 : primary & foreign keys created : {0}".format(datetime.now() - start_time))
 
@@ -445,7 +445,7 @@ def analyse_raw_gnaf_tables(pg_cur, settings):
         sql_list.append("ANALYZE {0}".format(pg_row[0]))
 
     # run queries in separate processes
-    psma.multiprocess_list("sql", sql_list, settings, logger)
+    geoscape.multiprocess_list("sql", sql_list, settings, logger)
 
     logger.info("\t- Step 7 of 7 : tables analysed : {0}".format(datetime.now() - start_time))
     
@@ -455,7 +455,7 @@ def load_raw_admin_boundaries(pg_cur, settings):
     start_time = datetime.now()
 
     # drop existing views
-    pg_cur.execute(psma.open_sql_file("02-01-drop-admin-bdy-views.sql", settings))
+    pg_cur.execute(geoscape.open_sql_file("02-01-drop-admin-bdy-views.sql", settings))
 
     # add locality class authority code table
     settings['states_to_load'].extend(["authority_code"])
@@ -503,14 +503,18 @@ def load_raw_admin_boundaries(pg_cur, settings):
                                 table_list.append(file_dict['pg_table'])
                                 create_list.append(file_dict)
                             else:
-                                append_list.append(file_dict)
+                                # don't add duplicates if more than one Authority Code file per boundary type
+                                if "_aut_" not in file_name.lower():
+                                    append_list.append(file_dict)
                         else:
                             if not file_dict['file_path'].lower().endswith("_locality_shp.dbf"):
                                 if table_list_add:
                                     table_list.append(file_dict['pg_table'])
                                     create_list.append(file_dict)
                                 else:
-                                    append_list.append(file_dict)
+                                    # don't add duplicates if more than one Authority Code file per boundary type
+                                    if "_aut_" not in file_name.lower():
+                                        append_list.append(file_dict)
 
     # logger.info(create_list)
     # logger.info(append_list)
@@ -520,11 +524,11 @@ def load_raw_admin_boundaries(pg_cur, settings):
         logger.fatal("No admin boundary files found\nACTION: Check your 'admin-bdys-path' argument")
     else:
         # load files in separate processes
-        psma.multiprocess_shapefile_load(create_list, settings, logger)
+        geoscape.multiprocess_shapefile_load(create_list, settings, logger)
 
         # Run the appends one at a time (Can't multiprocess as sets of parallel INSERTs cause database deadlocks)
         for shp in append_list:
-            result = psma.import_shapefile_to_postgres(settings, shp['file_path'], shp['pg_table'], shp['pg_schema'],
+            result = geoscape.import_shapefile_to_postgres(settings, shp['file_path'], shp['pg_table'], shp['pg_schema'],
                                                        shp['delete_table'], shp['spatial'])
 
             if result != "SUCCESS":
@@ -538,9 +542,9 @@ def prep_admin_bdys(pg_cur, settings):
     start_time = datetime.now()
 
     # create tables using multiprocessing - using flag in file to split file up into sets of statements
-    sql_list = psma.open_sql_file("02-02a-prep-admin-bdys-tables.sql", settings).split("-- # --")
-    sql_list = sql_list + psma.open_sql_file("02-02b-prep-census-2011-bdys-tables.sql", settings).split("-- # --")
-    sql_list = sql_list + psma.open_sql_file("02-02c-prep-census-2016-bdys-tables.sql", settings).split("-- # --")
+    sql_list = geoscape.open_sql_file("02-02a-prep-admin-bdys-tables.sql", settings).split("-- # --")
+    sql_list = sql_list + geoscape.open_sql_file("02-02b-prep-census-2011-bdys-tables.sql", settings).split("-- # --")
+    sql_list = sql_list + geoscape.open_sql_file("02-02c-prep-census-2016-bdys-tables.sql", settings).split("-- # --")
 
     # # Account for bdys that are not in states to load - not yet working
     # for sql in sql_list:
@@ -564,12 +568,12 @@ def prep_admin_bdys(pg_cur, settings):
     #             or 'WA' in settings['states_to_load']) and '.state_upper_house_electorates ' in sql:
     #         sql_list.remove(sql)
 
-    psma.multiprocess_list("sql", sql_list, settings, logger)
+    geoscape.multiprocess_list("sql", sql_list, settings, logger)
 
     # Special case - remove custom outback bdy if South Australia not requested
     if 'SA' not in settings['states_to_load']:
-        pg_cur.execute(psma.prep_sql("DELETE FROM admin_bdys.locality_bdys WHERE locality_pid = 'SA999999'", settings))
-        pg_cur.execute(psma.prep_sql("VACUUM ANALYZE admin_bdys.locality_bdys", settings))
+        pg_cur.execute(geoscape.prep_sql("DELETE FROM admin_bdys.locality_bdys WHERE locality_pid = 'SA999999'", settings))
+        pg_cur.execute(geoscape.prep_sql("VACUUM ANALYZE admin_bdys.locality_bdys", settings))
 
     logger.info("\t- Step 2 of 3 : admin boundaries prepped : {0}".format(datetime.now() - start_time))
 
@@ -579,7 +583,7 @@ def create_admin_bdys_for_analysis(settings):
     start_time = datetime.now()
 
     if settings['st_subdivide_supported']:
-        template_sql = psma.open_sql_file("02-03-create-admin-bdy-analysis-tables_template.sql", settings)
+        template_sql = geoscape.open_sql_file("02-03-create-admin-bdy-analysis-tables_template.sql", settings)
         sql_list = list()
 
         for table in settings['admin_bdy_list']:
@@ -593,7 +597,7 @@ def create_admin_bdys_for_analysis(settings):
                 sql = sql.replace("locality_name,", "locality_name, postcode,")
 
             sql_list.append(sql)
-        psma.multiprocess_list("sql", sql_list, settings, logger)
+        geoscape.multiprocess_list("sql", sql_list, settings, logger)
         logger.info("\t- Step 3 of 3 : admin boundaries for analysis created : {0}".format(datetime.now() - start_time))
     else:
         logger.warning("\t- Step 3 of 3 : admin boundaries for analysis NOT created - "
@@ -608,99 +612,99 @@ def create_reference_tables(pg_cur, settings):
 
     # Step 1 of 14 : create reference tables
     start_time = datetime.now()
-    pg_cur.execute(psma.open_sql_file("03-01-reference-create-tables.sql", settings))
+    pg_cur.execute(geoscape.open_sql_file("03-01-reference-create-tables.sql", settings))
     logger.info("\t- Step  1 of 14 : create reference tables : {0}".format(datetime.now() - start_time))
 
     # Step 2 of 14 : populate localities
     start_time = datetime.now()
-    pg_cur.execute(psma.open_sql_file("03-02-reference-populate-localities.sql", settings))
+    pg_cur.execute(geoscape.open_sql_file("03-02-reference-populate-localities.sql", settings))
     logger.info("\t- Step  2 of 14 : localities populated : {0}".format(datetime.now() - start_time))
 
     # Step 3 of 14 : populate locality aliases
     start_time = datetime.now()
-    pg_cur.execute(psma.open_sql_file("03-03-reference-populate-locality-aliases.sql", settings))
+    pg_cur.execute(geoscape.open_sql_file("03-03-reference-populate-locality-aliases.sql", settings))
     logger.info("\t- Step  3 of 14 : locality aliases populated : {0}".format(datetime.now() - start_time))
 
     # Step 4 of 14 : populate locality neighbours
     start_time = datetime.now()
-    pg_cur.execute(psma.open_sql_file("03-04-reference-populate-locality-neighbours.sql", settings))
+    pg_cur.execute(geoscape.open_sql_file("03-04-reference-populate-locality-neighbours.sql", settings))
     logger.info("\t- Step  4 of 14 : locality neighbours populated : {0}".format(datetime.now() - start_time))
 
     # Step 5 of 14 : populate streets
     start_time = datetime.now()
-    pg_cur.execute(psma.open_sql_file("03-05-reference-populate-streets.sql", settings))
+    pg_cur.execute(geoscape.open_sql_file("03-05-reference-populate-streets.sql", settings))
     logger.info("\t- Step  5 of 14 : streets populated : {0}".format(datetime.now() - start_time))
 
     # Step 6 of 14 : populate street aliases
     start_time = datetime.now()
-    pg_cur.execute(psma.open_sql_file("03-06-reference-populate-street-aliases.sql", settings))
+    pg_cur.execute(geoscape.open_sql_file("03-06-reference-populate-street-aliases.sql", settings))
     logger.info("\t- Step  6 of 14 : street aliases populated : {0}".format(datetime.now() - start_time))
 
     # Step 7 of 14 : populate addresses, using multiprocessing
     start_time = datetime.now()
-    sql = psma.open_sql_file("03-07-reference-populate-addresses-1.sql", settings)
-    sql_list = psma.split_sql_into_list(pg_cur, sql, settings['gnaf_schema'], "streets", "str", "gid", settings, logger)
+    sql = geoscape.open_sql_file("03-07-reference-populate-addresses-1.sql", settings)
+    sql_list = geoscape.split_sql_into_list(pg_cur, sql, settings['gnaf_schema'], "streets", "str", "gid", settings, logger)
     if sql_list is not None:
-        psma.multiprocess_list('sql', sql_list, settings, logger)
-    pg_cur.execute(psma.prep_sql("ANALYZE gnaf.temp_addresses;", settings))
+        geoscape.multiprocess_list('sql', sql_list, settings, logger)
+    pg_cur.execute(geoscape.prep_sql("ANALYZE gnaf.temp_addresses;", settings))
     logger.info("\t- Step  7 of 14 : addresses populated : {0}".format(datetime.now() - start_time))
 
     # Step 8 of 14 : populate principal alias lookup
     start_time = datetime.now()
-    pg_cur.execute(psma.open_sql_file("03-08-reference-populate-address-alias-lookup.sql", settings))
+    pg_cur.execute(geoscape.open_sql_file("03-08-reference-populate-address-alias-lookup.sql", settings))
     logger.info("\t- Step  8 of 14 : principal alias lookup populated : {0}".format(datetime.now() - start_time))
 
     # Step 9 of 14 : populate primary secondary lookup
     start_time = datetime.now()
-    pg_cur.execute(psma.open_sql_file("03-09-reference-populate-address-secondary-lookup.sql", settings))
-    pg_cur.execute(psma.prep_sql("VACUUM ANALYSE gnaf.address_secondary_lookup", settings))
+    pg_cur.execute(geoscape.open_sql_file("03-09-reference-populate-address-secondary-lookup.sql", settings))
+    pg_cur.execute(geoscape.prep_sql("VACUUM ANALYSE gnaf.address_secondary_lookup", settings))
     logger.info("\t- Step  9 of 14 : primary secondary lookup populated : {0}".format(datetime.now() - start_time))
 
     # Step 10 of 14 : split the Melbourne locality into its 2 postcodes (3000, 3004)
     start_time = datetime.now()
-    pg_cur.execute(psma.open_sql_file("03-10-reference-split-melbourne.sql", settings))
+    pg_cur.execute(geoscape.open_sql_file("03-10-reference-split-melbourne.sql", settings))
     logger.info("\t- Step 10 of 14 : Melbourne split : {0}".format(datetime.now() - start_time))
 
     # Step 11 of 14 : finalise localities assigned to streets and addresses
     start_time = datetime.now()
-    pg_cur.execute(psma.open_sql_file("03-11-reference-finalise-localities.sql", settings))
+    pg_cur.execute(geoscape.open_sql_file("03-11-reference-finalise-localities.sql", settings))
     logger.info("\t- Step 11 of 14 : localities finalised : {0}".format(datetime.now() - start_time))
 
     # Step 12 of 14 : finalise addresses, using multiprocessing
     start_time = datetime.now()
-    sql = psma.open_sql_file("03-12-reference-populate-addresses-2.sql", settings)
-    sql_list = psma.split_sql_into_list(pg_cur, sql, settings['gnaf_schema'], "localities", "loc", "gid",
+    sql = geoscape.open_sql_file("03-12-reference-populate-addresses-2.sql", settings)
+    sql_list = geoscape.split_sql_into_list(pg_cur, sql, settings['gnaf_schema'], "localities", "loc", "gid",
                                         settings, logger)
     if sql_list is not None:
-        psma.multiprocess_list('sql', sql_list, settings, logger)
+        geoscape.multiprocess_list('sql', sql_list, settings, logger)
 
     # turf the temp address table
-    pg_cur.execute(psma.prep_sql("DROP TABLE IF EXISTS gnaf.temp_addresses", settings))
+    pg_cur.execute(geoscape.prep_sql("DROP TABLE IF EXISTS gnaf.temp_addresses", settings))
     logger.info("\t- Step 12 of 14 : addresses finalised : {0}".format(datetime.now() - start_time))
 
     # Step 13 of 14 : create almost correct postcode boundaries by aggregating localities, using multiprocessing
     start_time = datetime.now()
-    sql = psma.open_sql_file("03-13-reference-derived-postcode-bdys.sql", settings)
+    sql = geoscape.open_sql_file("03-13-reference-derived-postcode-bdys.sql", settings)
     sql_list = []
     for state in settings['states_to_load']:
         state_sql = sql.replace("GROUP BY ", "WHERE state = '{0}' GROUP BY ".format(state))
         sql_list.append(state_sql)
-    psma.multiprocess_list("sql", sql_list, settings, logger)
+    geoscape.multiprocess_list("sql", sql_list, settings, logger)
 
     # create analysis table?
     if settings['st_subdivide_supported']:
-        pg_cur.execute(psma.open_sql_file("03-13a-create-postcode-analysis-table.sql", settings))
+        pg_cur.execute(geoscape.open_sql_file("03-13a-create-postcode-analysis-table.sql", settings))
 
     logger.info("\t- Step 13 of 14 : postcode boundaries created : {0}".format(datetime.now() - start_time))
 
     # Step 14 of 14 : create indexes, primary and foreign keys, using multiprocessing
     start_time = datetime.now()
-    raw_sql_list = psma.open_sql_file("03-14-reference-create-indexes.sql", settings).split("\n")
+    raw_sql_list = geoscape.open_sql_file("03-14-reference-create-indexes.sql", settings).split("\n")
     sql_list = []
     for sql in raw_sql_list:
         if sql[0:2] != "--" and sql[0:2] != "":
             sql_list.append(sql)
-    psma.multiprocess_list("sql", sql_list, settings, logger)
+    geoscape.multiprocess_list("sql", sql_list, settings, logger)
     logger.info("\t- Step 14 of 14 : create primary & foreign keys and indexes : {0}"
                 .format(datetime.now() - start_time))
 
@@ -747,17 +751,17 @@ def boundary_tag_gnaf(pg_cur, settings):
     start_time = datetime.now()
 
     # create temp tables
-    template_sql = psma.open_sql_file("04-01a-bdy-tag-create-table-template.sql", settings)
+    template_sql = geoscape.open_sql_file("04-01a-bdy-tag-create-table-template.sql", settings)
     for table in table_list:
         pg_cur.execute(template_sql.format(table[0],))
 
     # create temp tables of bdy tagged gnaf_pids
-    template_sql = psma.open_sql_file("04-01b-bdy-tag-template.sql", settings)
+    template_sql = geoscape.open_sql_file("04-01b-bdy-tag-template.sql", settings)
     sql_list = list()
     for table in table_list:
         sql = template_sql.format(table[0], table[1])
 
-        short_sql_list = psma.split_sql_into_list(pg_cur, sql, settings['admin_bdys_schema'], table[0],
+        short_sql_list = geoscape.split_sql_into_list(pg_cur, sql, settings['admin_bdys_schema'], table[0],
                                                   "bdys", "gid", settings, logger)
 
         if short_sql_list is not None:
@@ -766,7 +770,7 @@ def boundary_tag_gnaf(pg_cur, settings):
     # logger.info('\n'.join(sql_list))
 
     if sql_list is not None:
-        psma.multiprocess_list("sql", sql_list, settings, logger)
+        geoscape.multiprocess_list("sql", sql_list, settings, logger)
 
     logger.info("\t- Step 1 of 6 : principal addresses tagged with admin boundary IDs: {}"
                 .format(datetime.now() - start_time, ))
@@ -779,7 +783,7 @@ def boundary_tag_gnaf(pg_cur, settings):
               "CREATE INDEX temp_{1}_tags_gnaf_pid_idx ON {0}.temp_{1}_tags USING btree(gnaf_pid);" \
               "ANALYZE {0}.temp_{1}_tags".format(settings['gnaf_schema'], table[0])
         sql_list.append(sql)
-    psma.multiprocess_list("sql", sql_list, settings, logger)
+    geoscape.multiprocess_list("sql", sql_list, settings, logger)
 
     logger.info("\t- Step 2 of 6 : principal addresses - invalid matches deleted & bdy tag indexes created : {}"
                 .format(datetime.now() - start_time, ))
@@ -819,12 +823,12 @@ def boundary_tag_gnaf(pg_cur, settings):
     insert_statement_list.append("".join(insert_join_list))
 
     sql = "".join(insert_statement_list) + ";"
-    sql_list = psma.split_sql_into_list(pg_cur, sql, settings['gnaf_schema'], "address_principals", "pnts", "gid",
+    sql_list = geoscape.split_sql_into_list(pg_cur, sql, settings['gnaf_schema'], "address_principals", "pnts", "gid",
                                         settings, logger)
     # logger.info("\n".join(sql_list)
 
     if sql_list is not None:
-        psma.multiprocess_list("sql", sql_list, settings, logger)
+        geoscape.multiprocess_list("sql", sql_list, settings, logger)
 
     # drop temp tables
     pg_cur.execute("".join(drop_table_list))
@@ -873,11 +877,11 @@ def boundary_tag_gnaf(pg_cur, settings):
         logger.info("\t- Step 5 of 6 : no boundary tag duplicates : {}".format(datetime.now() - start_time, ))
 
     # Step 6 of 6 : Copy principal boundary tags to alias addresses
-    pg_cur.execute(psma.open_sql_file("04-06-bdy-tags-for-alias-addresses.sql", settings))
+    pg_cur.execute(geoscape.open_sql_file("04-06-bdy-tags-for-alias-addresses.sql", settings))
     logger.info("\t- Step 6 of 6 : alias addresses boundary tagged : {}".format(datetime.now() - start_time, ))
 
     # Step 7 of 7 : Create view of all bdy tags
-    pg_cur.execute(psma.open_sql_file("04-07-create-bdy-tag-view.sql", settings))
+    pg_cur.execute(geoscape.open_sql_file("04-07-create-bdy-tag-view.sql", settings))
     logger.info("\t- Step 6 of 6 : boundary tagged address view created : {}".format(datetime.now() - start_time, ))
 
 
@@ -967,7 +971,7 @@ if __name__ == '__main__':
 
     logger.info("")
     logger.info("Start gnaf-loader")
-    psma.check_python_version(logger)
+    geoscape.check_python_version(logger)
 
     if main():
         logger.info("Finished successfully!")

@@ -128,7 +128,7 @@ def main():
 
     # select GNAF coordinates - group by 3 decimal places to create a ~100m grid of addresses
     # sql = """SELECT latitude::numeric(5,3) as latitude, longitude::numeric(6,3) as longitude, count(*) as address_count
-    #          FROM gnaf_202102.address_principals
+    #          FROM gnaf_202105.address_principals
     #          GROUP BY latitude::numeric(5,3), longitude::numeric(6,3)"""
     # sql = """SELECT * FROM testing.gnaf_points_with_pop_and_height"""
     # gnaf_df = pandas.read_sql_query(sql, pg_conn)
@@ -363,7 +363,7 @@ if __name__ == "__main__":
 
     logger.info("")
     logger.info("Start weather obs download")
-    # psma.check_python_version(logger)
+    # geoscape.check_python_version(logger)
 
     if main():
         logger.info("Finished successfully! : {}".format(datetime.now() - full_start_time))

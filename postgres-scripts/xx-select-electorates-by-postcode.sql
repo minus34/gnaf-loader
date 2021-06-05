@@ -36,7 +36,7 @@ ALTER TABLE admin_bdys.commonwealth_electorate_postcode_lookup ADD PRIMARY KEY (
 DROP TABLE temp_pc_ce;
 
 -- Output the result
-COPY admin_bdys.commonwealth_electorate_postcode_lookup TO 'C:\temp\psma_201605\ce-pc.csv' CSV HEADER;
+COPY admin_bdys.commonwealth_electorate_postcode_lookup TO 'C:\temp\geoscape_201605\ce-pc.csv' CSV HEADER;
 
 SELECT * FROM admin_bdys.commonwealth_electorate_postcode_lookup;
 
