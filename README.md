@@ -5,8 +5,8 @@ A quick way to load the complete Geocoded National Address File of Australia (GN
 Have a look at [these intro slides](http://minus34.com/opendata/intro-to-gnaf.pptx) ([PDF](http://minus34.com/opendata/intro-to-gnaf.pdf)), as well as the [data.gov.au page](https://data.gov.au/dataset/geocoded-national-address-file-g-naf).
 
 ### There are 3 options for loading the data
-1. [Run](https://github.com/minus34/gnaf-loader#option-1---run-loadgnafpy) the load-gnaf Python script and build the database in a single step
-2. [Use](https://github.com/minus34/gnaf-loader#option-2---use-the-database-in-a-docker-container) the database in a docker container
+1. [Run](https://github.com/minus34/gnaf-loader#option-1---run-loadgnafpy) the load-gnaf Python script and build the database yourself in a single step
+2. [Pull](https://github.com/minus34/gnaf-loader#option-2---use-the-database-in-a-docker-container) the database from Docker Hub and run it in a container
 3. [Download](https://github.com/minus34/gnaf-loader#option-3---load-pg_dump-files) the GNAF and/or Admin Bdys Postgres dump files & restore them in your Postgres 12+ database
 
 ## Option 1 - Run load.gnaf.py
@@ -86,12 +86,14 @@ When using the resulting data from this process - you will need to adhere to the
 
 ## Option 2 - Use the database in a docker container
 
-The GNAF and the Admin Bdy data is ready to go in Postgres in a Docker container on Docker Hub.
+GNAF and the Admin Boundaries are ready to use in Postgres in a container on Docker Hub.
 
 ### Process
 1. In your docker environment pull the image using `docker pull minus34/gnafloader:latest`
 2. Run using `docker run --publish=5433:5432 minus34/gnafloader:latest`
 3. Access Postgres in the container via port `5433`. Default login is - user: `postgres`, password: `password`
+
+*Note: the Docker image is 14.5Gb*
 
 **WARNING: The default postgres superuser password is insecure and should be changed using:**
 
