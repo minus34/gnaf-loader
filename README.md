@@ -93,7 +93,7 @@ GNAF and the Admin Boundaries are ready to use in Postgres in a container on Doc
 2. Run using `docker run --publish=5433:5432 minus34/gnafloader:latest`
 3. Access Postgres in the container via port `5433`. Default login is - user: `postgres`, password: `password`
 
-*Note: the Docker image is 14.5Gb*
+*Note: the Docker image is 6Gb*
 
 **WARNING: The default postgres superuser password is insecure and should be changed using:**
 
