@@ -13,7 +13,7 @@ import geopandas
 import io
 import json
 import logging
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 import multiprocessing
 import numpy
 import os
@@ -26,7 +26,7 @@ import struct
 import urllib.request
 import zipfile
 
-from bs4 import BeautifulSoup
+# from bs4 import BeautifulSoup
 from datetime import datetime
 from osgeo import gdal
 
@@ -34,17 +34,19 @@ from osgeo import gdal
 output_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "data")
 
 # states to include (note: no "ACT" or "OT" state, Antarctica is part of TAS in BoM observations)
-states = [{"name": "NSW", "product": "IDN60801"},
-          {"name": "NT", "product": "IDD60801"},
-          {"name": "QLD", "product": "IDQ60801"},
-          {"name": "SA", "product": "IDS60801"},
-          {"name": "TAS", "product": "IDT60801"},
-          {"name": "VIC", "product": "IDV60801"},
-          {"name": "WA", "product": "IDW60801"},
-          {"name": "ANT", "product": "IDT60801"}]
+state_list = [{"state": "NSW", "product": "IDN60801"},
+             {"state": "NT", "product": "IDD60801"},
+             {"state": "QLD", "product": "IDQ60801"},
+             {"state": "SA", "product": "IDS60801"},
+             {"state": "TAS", "product": "IDT60801"},
+             {"state": "VIC", "product": "IDV60801"},
+             {"state": "WA", "product": "IDW60801"},
+             {"state": "ANT", "product": "IDT60801"}]
 
 # urls for each state's weather observations
-base_url = "http://www.bom.gov.au/{0}/observations/{0}all.shtml"
+# http://www.bom.gov.au/fwo/IDW60801/IDW60801.95214.json
+# base_url = "http://www.bom.gov.au/{0}/observations/{0}all.shtml"
+base_url = "http://www.bom.gov.au/fwo/{0}/{0}.{1}.json"
 
 # postgres connect strings
 pg_connect_string = "dbname='geo' host='localhost' port='5432' user='postgres' password='password'"
@@ -63,16 +65,23 @@ def main():
         logger.fatal("Unable to connect to database\nACTION: Check your Postgres parameters and/or database security")
         return False
 
+    # create df of state info
+    state_df = pandas.DataFrame(state_list)
+
     # download weather stations
     station_list = get_weather_stations()
     logger.info("Downloaded {:,} weather stations : {}".format(len(station_list), datetime.now() - start_time))
 
-    obs_list = get_weather_observations(station_list)
+    # create dataframe of weather stations
+    temp_station_df = pandas.DataFrame(station_list)
+
+    # merge with state info to get state product name
+    station_df = temp_station_df.merge(state_df, on="state")
+
+    # download weather obs JSON files into a list
+    obs_list = get_weather_observations(station_df.to_dict("records"))
     logger.info("Downloaded {:,} latest observations : {}".format(len(obs_list), datetime.now() - start_time))
     start_time = datetime.now()
-
-    # create dataframe of weather stations
-    station_df = pandas.DataFrame(station_list)
 
     # create dataframe of weather obs
     obs_df = pandas.DataFrame(obs_list).drop_duplicates()
@@ -204,38 +213,17 @@ def export_dataframe(pg_cur, df, schema_name, table_name, export_mode):
     pg_cur.execute("ALTER TABLE {}.{} RENAME COLUMN geometry TO geom".format(schema_name, table_name))
 
 
+# download weather observations for all 'wmo' stations
 def get_weather_observations(station_list):
-    start_time = datetime.now()
-
     obs_urls = list()
     obs_list = list()
-    for state in states:
-        # get URL for web page to scrape
-        input_url = base_url.format(state["name"].lower())
 
-        # load and parse web page
-        r = requests.get(input_url)
-        soup = BeautifulSoup(r.content, features="html.parser")
-
-        # get all links
-        links = soup.find_all("a", href=True)
-
-        for link in links:
-            url = link["href"]
-
-            if "/products/" in url:
-                # only include weather station observations in their home state (border weather obs are duplicated)
-                for station in station_list:
-                    if station["state"] == state["name"] and station["wmo"] == int(url.split(".")[1]):
-                        # change URL to get JSON file of weather obs and add to list
-                        obs_url = url.replace("/products/", "http://www.bom.gov.au/fwo/").replace(".shtml", ".json")
-                        obs_urls.append(obs_url)
+    for station in station_list:
+        obs_url = base_url.format(station["product"], station["wmo"])
+        obs_urls.append(obs_url)
 
         # with open(os.path.join(output_path, "weather_observations_urls.txt"), "w", newline="") as output_file:
         #     output_file.write("\n".join(obs_urls))
-
-        logger.info("\t - {} : got obs file list : {}".format(state["name"], datetime.now() - start_time))
-        start_time = datetime.now()
 
     # download each obs file using multiprocessing
     pool = multiprocessing.Pool(processes=16)
@@ -306,10 +294,14 @@ def run_multiprocessing(url):
     # file_path = os.path.join(output_path, "obs", url.split("/")[-1])
 
     # try:
+    # headers = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36'}
+    # obs_text = requests.get(url, headers=headers).text
     obs_text = requests.get(url).text
 
     # with open(file_path, "w", newline="") as output_file:
     #     output_file.write(obs_text)
+
+    print(obs_text)
 
     obs_json = json.loads(obs_text)
     obs_list = obs_json["observations"]["data"]

@@ -1,47 +1,47 @@
 
--- Import MB counts CSV file
-DROP TABLE IF EXISTS testing.mb_2016_counts;
-CREATE TABLE testing.mb_2016_counts (
-    mb_2016_code bigint,
-    mb_category_name_2016 text NOT NULL,
-    area_albers_sqkm double precision,
-    dwelling integer default 0,
-    person integer default 0,
-	address_count integer default 0,
-    state smallint NOT NULL,
-    geom geometry(MultiPolygon, 4283),
-    CONSTRAINT abs_2011_mb_pk PRIMARY KEY (mb_2016_code)
-);
-
-COPY testing.mb_2016_counts (mb_2016_code, mb_category_name_2016, area_albers_sqkm, dwelling, person, state)
-FROM '/Users/hugh.saalmans/git/minus34/gnaf-loader/supporting-files/2016 census mesh block counts.csv' WITH (FORMAT CSV, HEADER);
-
-ANALYSE testing.mb_2016_counts;
-
--- Get address counts per meshblock -- 1 min
-WITH counts AS (
-	SELECT mb_2016_code,
-		   count(*) AS address_count
-	FROM gnaf_202105.address_principals
-	GROUP BY mb_2016_code
-)
-UPDATE testing.mb_2016_counts AS mb
-  SET address_count = counts.address_count
-  FROM counts
-  WHERE mb.mb_2016_code = counts.mb_2016_code
-;
-ANALYSE testing.mb_2016_counts;
-
--- add geoms
-UPDATE testing.mb_2016_counts AS mb
-  SET geom = bdys.geom
-  FROM admin_bdys_202105.abs_2016_mb as bdys
-  WHERE mb.mb_2016_code = bdys.mb_16code::bigint;
-
-ANALYSE testing.mb_2016_counts;
-
-CREATE INDEX mb_2016_counts_geom_idx ON testing.mb_2016_counts USING gist(geom);
-ALTER TABLE testing.mb_2016_counts CLUSTER ON mb_2016_counts_geom_idx;
+---- Import MB counts CSV file
+--DROP TABLE IF EXISTS testing.mb_2016_counts;
+--CREATE TABLE testing.mb_2016_counts (
+--    mb_2016_code bigint,
+--    mb_category_name_2016 text NOT NULL,
+--    area_albers_sqkm double precision,
+--    dwelling integer default 0,
+--    person integer default 0,
+--	address_count integer default 0,
+--    state smallint NOT NULL,
+--    geom geometry(MultiPolygon, 4283),
+--    CONSTRAINT abs_2011_mb_pk PRIMARY KEY (mb_2016_code)
+--);
+--
+--COPY testing.mb_2016_counts (mb_2016_code, mb_category_name_2016, area_albers_sqkm, dwelling, person, state)
+--FROM '/Users/hugh.saalmans/git/minus34/gnaf-loader/supporting-files/2016 census mesh block counts.csv' WITH (FORMAT CSV, HEADER);
+--
+--ANALYSE testing.mb_2016_counts;
+--
+---- Get address counts per meshblock -- 1 min
+--WITH counts AS (
+--	SELECT mb_2016_code,
+--		   count(*) AS address_count
+--	FROM gnaf_202105.address_principals
+--	GROUP BY mb_2016_code
+--)
+--UPDATE testing.mb_2016_counts AS mb
+--  SET address_count = counts.address_count
+--  FROM counts
+--  WHERE mb.mb_2016_code = counts.mb_2016_code
+--;
+--ANALYSE testing.mb_2016_counts;
+--
+---- add geoms
+--UPDATE testing.mb_2016_counts AS mb
+--  SET geom = bdys.geom
+--  FROM admin_bdys_202105.abs_2016_mb as bdys
+--  WHERE mb.mb_2016_code = bdys.mb_16code::bigint;
+--
+--ANALYSE testing.mb_2016_counts;
+--
+--CREATE INDEX mb_2016_counts_geom_idx ON testing.mb_2016_counts USING gist(geom);
+--ALTER TABLE testing.mb_2016_counts CLUSTER ON mb_2016_counts_geom_idx;
 
 
 -- create an address accurate dwelling map of Australia
