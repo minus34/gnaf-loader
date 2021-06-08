@@ -226,7 +226,7 @@ def get_weather_observations(station_list):
         #     output_file.write("\n".join(obs_urls))
 
     # download each obs file using multiprocessing
-    pool = multiprocessing.Pool(processes=16)
+    pool = multiprocessing.Pool(processes=1)
     results = pool.imap_unordered(run_multiprocessing, obs_urls)
 
     pool.close()
@@ -294,14 +294,14 @@ def run_multiprocessing(url):
     # file_path = os.path.join(output_path, "obs", url.split("/")[-1])
 
     # try:
-    # headers = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36'}
-    # obs_text = requests.get(url, headers=headers).text
-    obs_text = requests.get(url).text
+    headers = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36'}
+    obs_text = requests.get(url, headers=headers).text
+    # obs_text = requests.get(url).text
 
     # with open(file_path, "w", newline="") as output_file:
     #     output_file.write(obs_text)
 
-    print(obs_text)
+    # print(obs_text)
 
     obs_json = json.loads(obs_text)
     obs_list = obs_json["observations"]["data"]
