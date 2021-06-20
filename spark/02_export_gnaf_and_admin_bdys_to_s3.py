@@ -202,7 +202,7 @@ def main():
 
             # check table has records
             if max_gid is not None and max_gid > min_gid:
-                bdy_df = import_table(spark, query, min_gid, max_gid, 500000)
+                bdy_df = import_table(spark, query, min_gid, max_gid, 100000)
                 # bdy_df.printSchema()
 
                 # # add geometry column if required
