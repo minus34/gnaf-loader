@@ -543,7 +543,7 @@ def clean_authority_files(pg_cur, schema_name):
     # ensure authority tables have unique values - admin bdys now have duplicates
     start_time = datetime.now()
 
-    error_count = 0
+    # error_count = 0
 
     # get table list for schema
     sql = """SELECT table_name
@@ -624,26 +624,26 @@ def clean_authority_files(pg_cur, schema_name):
             pg_cur.execute("ALTER TABLE ONLY {0}.{1} DROP CONSTRAINT {1}_pkey"
                            .format(schema_name, table_name))
         except psycopg2.Error as e:
-            print(e)
             pass
 
         # attempt to create a primary key on the authority code - failure will imply a raw data error from Geoscape
+        # ignore known issue in aus_mb_category_class_aut - code field is deduped at runtime
         try:
             pg_cur.execute("ALTER TABLE ONLY {0}.{1} ADD CONSTRAINT {1}_pkey PRIMARY KEY (code)"
                            .format(schema_name, table_name))
         except psycopg2.Error:
-            error_count += 1
+            # error_count += 1
 
-            logger.fatal("CAN'T CREATE PRIMARY KEY ON {}:{} DUE TO DUPLICATE AUTHORITY CODE(S)"
-                         .format(schema_name, table_name))
+            logger.warning("CAN'T CREATE PRIMARY KEY ON {}:{} DUE TO DUPLICATE AUTHORITY CODE(S)"
+                           .format(schema_name, table_name))
 
         # clean up
         pg_cur.execute("DROP TABLE IF EXISTS temp_aut")
         pg_cur.execute("VACUUM ANALYZE {}.{}".format(schema_name, table_name))
 
-    # kill gnaf-loader if duplicates couldn't be fixed - significant data integrity issue
-    if error_count > 0:
-        exit()
+    # # kill gnaf-loader if duplicates couldn't be fixed - significant data integrity issue
+    # if error_count > 0:
+    #     exit()
 
     logger.info("\t\t - authority tables depuplicated"
                 .format(schema_name, len(tables), datetime.now() - start_time))
