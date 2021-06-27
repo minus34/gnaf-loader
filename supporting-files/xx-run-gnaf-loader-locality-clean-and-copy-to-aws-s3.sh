@@ -40,11 +40,12 @@ echo "--------------------------------------------------------------------------
 aws --profile=${AWS_PROFILE} s3 sync ${OUTPUT_FOLDER} s3://minus34.com/opendata/geoscape-202105 --exclude "*" --include "*.dmp" --acl public-read
 
 #echo "---------------------------------------------------------------------------------------------------------------------"
-#echo "build gnafloader docker image"
+#echo "build gnafloader docker image and push to Docker Hub"
 #echo "---------------------------------------------------------------------------------------------------------------------"
 #
 #cd /Users/$(whoami)/git/minus34/gnaf-loader/docker
 #docker build --tag minus34/gnafloader:latest --tag minus34/gnafloader:202105 .
+#docker push --all-tags minus34/gnafloader
 
 echo "---------------------------------------------------------------------------------------------------------------------"
 echo "create parquet versions of GNAF and Admin Bdys and upload to AWS S3"
