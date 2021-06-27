@@ -120,7 +120,8 @@ def main():
     logger.info("")
     start_time = datetime.now()
     logger.info("Part 3 of 6 : Start raw admin boundary load : {0}".format(start_time))
-    load_raw_admin_boundaries(pg_cur, settings)
+    # load_raw_admin_boundaries(pg_cur, settings)
+    clean_authority_files(pg_cur, settings, settings["raw_admin_bdys_schema"])
     # prep_admin_bdys(pg_cur, settings)
     # create_admin_bdys_for_analysis(settings)
     # logger.info("Part 3 of 6 : Raw admin boundaries loaded! : {0}".format(datetime.now() - start_time))
@@ -457,7 +458,7 @@ def load_raw_admin_boundaries(pg_cur, settings):
     # drop existing views
     pg_cur.execute(geoscape.open_sql_file("02-01-drop-admin-bdy-views.sql", settings))
 
-    # add locality class authority code table
+    # add authority code tables
     settings['states_to_load'].extend(["authority_code"])
 
     # get file list
@@ -537,8 +538,80 @@ def load_raw_admin_boundaries(pg_cur, settings):
         logger.info("\t- Step 1 of 3 : raw admin boundaries loaded : {0}".format(datetime.now() - start_time))
 
 
+def clean_authority_files(pg_cur, settings, schema_name):
+    # ensure authority tables have unique values - admin bdys now have duplicates
+    start_time = datetime.now()
+
+    # get table list for schema
+    sql = """SELECT table_name
+             FROM information_schema.tables
+             WHERE table_schema='{}'
+               AND table_type='BASE TABLE'
+               AND table_name LIKE '%_aut'
+          """.format(schema_name)
+    pg_cur.execute(sql)
+
+    tables = pg_cur.fetchall()
+
+    for table in tables:
+        table_name = table[0]
+        # print(table_name)
+
+        # get original row count
+        pg_cur.execute("SELECT count(*) FROM {}.{}".format(schema_name, table_name))
+        old_row_count = int(pg_cur.fetchone()[0])
+
+        # get distinct records
+        sql = """DROP TABLE IF EXISTS temp_aut;
+                 CREATE TABLE temp_aut AS
+                 SELECT DISTINCT code, name, description FROM {}.{}
+              """.format(schema_name, table_name)
+        pg_cur.execute(sql)
+
+        # get new row count
+        pg_cur.execute("SELECT count(*) FROM temp_aut")
+        new_row_count = int(pg_cur.fetchone()[0])
+
+        # only delete and replace if duplicates found
+        duplicate_row_count = old_row_count - new_row_count
+
+        if duplicate_row_count > 0:
+            # delete all rows
+            pg_cur.execute("TRUNCATE TABLE {}.{}".format(schema_name, table_name))
+            # insert distinct rows
+            pg_cur.execute("INSERT INTO {}.{} SELECT * FROM temp_aut".format(schema_name, table_name))
+
+        # attempt to create a primary key on the authority code - failure will imply a raw data error from Geoscape
+        try:
+            pg_cur.execute("ALTER TABLE ONLY {0}.{1} ADD CONSTRAINT {1}_pk PRIMARY KEY (code)"
+                           .format(schema_name, table_name))
+        except :
+
+
+
+        pg_cur.execute("DROP TABLE IF EXISTS temp_aut")
+
+
+        pg_cur.execute("VACUUM ANALYZE {}.{}".format(schema_name, table_name))
+
+
+
+
+
+        pg_cur.execute("VACUUM ANALYZE {}.{}".format(schema_name, table_name))
+
+        pg_cur.execute("DROP TABLE IF EXISTS temp_aut")
+
+    logger.info("\t - {} schema : {} tables to export : {}"
+                .format(schema_name, len(tables), datetime.now() - start_time))
+
+
+
+
+
+
 def prep_admin_bdys(pg_cur, settings):
-    # Step 2 of 3 : create admin bdy tables read to be used
+    # Step 3 of 4 : create admin bdy tables read to be used
     start_time = datetime.now()
 
     # create tables using multiprocessing - using flag in file to split file up into sets of statements
