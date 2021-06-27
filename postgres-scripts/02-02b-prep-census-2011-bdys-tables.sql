@@ -26,7 +26,7 @@ SELECT bdy.gid,
        bdy.geom
   FROM raw_admin_bdys.aus_mb_2011 AS tab
   INNER JOIN raw_admin_bdys.aus_mb_2011_polygon AS bdy ON tab.mb_11pid = bdy.mb_11pid
-  INNER JOIN (SELECT DISTINCT code, name FROM raw_admin_bdys.aus_mb_category_class_aut) AS aut ON tab.mb_cat_cd = aut.code
+  INNER JOIN raw_admin_bdys.aus_mb_category_class_aut AS aut ON tab.mb_cat_cd = aut.code
   INNER JOIN raw_admin_bdys.aus_state AS ste ON tab.state_pid = ste.state_pid;
 
 ALTER TABLE admin_bdys.abs_2011_mb ADD CONSTRAINT abs_2011_mb_pk PRIMARY KEY (gid);
