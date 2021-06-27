@@ -22,18 +22,18 @@ SELECT dat.loc_pid,
        dat.name,
        dat.postcode,
        ste.st_abbrev,
-       aut.name_aut,
+       aut.name,
        st_multi(st_union(st_buffer(bdy.geom, 0.0)))
   FROM raw_admin_bdys.aus_locality AS dat
   INNER JOIN raw_admin_bdys.aus_locality_polygon AS bdy ON dat.loc_pid = bdy.loc_pid
   INNER JOIN raw_admin_bdys.aus_state AS ste ON dat.state_pid = ste.state_pid
-  INNER JOIN raw_admin_bdys.aus_locality_class_aut AS aut ON dat.loccl_code = aut.code_aut
+  INNER JOIN raw_admin_bdys.aus_locality_class_aut AS aut ON dat.loccl_code = aut.code
   WHERE dat.loccl_code = 'G'
   GROUP BY dat.loc_pid,
        dat.name,
        dat.postcode,
        ste.st_abbrev,
-       aut.name_aut;
+       aut.name;
 
 ANALYZE admin_bdys.locality_bdys;
 
@@ -60,19 +60,19 @@ SELECT dat.loc_pid,
        dat.name,
        dat.postcode,
        ste.st_abbrev,
-       aut.name_aut,
+       aut.name,
        ST_Multi(ST_Union(ST_Buffer(bdy.geom, 0.0)))
   FROM raw_admin_bdys.aus_locality AS dat
   INNER JOIN raw_admin_bdys.aus_locality_polygon AS bdy ON dat.loc_pid = bdy.loc_pid
   INNER JOIN raw_admin_bdys.aus_state AS ste ON dat.state_pid = ste.state_pid
-  INNER JOIN raw_admin_bdys.aus_locality_class_aut AS aut ON dat.loccl_code = aut.code_aut
+  INNER JOIN raw_admin_bdys.aus_locality_class_aut AS aut ON dat.loccl_code = aut.code
   WHERE dat.loccl_code = 'D'
   AND ste.st_abbrev = 'ACT'
   GROUP BY dat.loc_pid,
        dat.name,
        dat.postcode,
        ste.st_abbrev,
-       aut.name_aut;
+       aut.name;
 
 ANALYZE temp_districts;
 
@@ -325,13 +325,13 @@ SELECT bdy.gid,
        tab.dt_gazetd,
        tab.eff_start, 
        tab.eff_end,
-       aut.name_aut AS electorate_class,
+       aut.name AS electorate_class,
        ste.st_abbrev AS state,
        bdy.geom
   FROM raw_admin_bdys.aus_state_electoral AS tab
   INNER JOIN raw_admin_bdys.aus_state_electoral_polygon AS bdy ON tab.se_pid = bdy.se_pid
   INNER JOIN raw_admin_bdys.aus_state AS ste ON tab.state_pid = ste.state_pid
-  INNER JOIN raw_admin_bdys.aus_state_electoral_class_aut AS aut ON tab.secl_code = aut.code_aut
+  INNER JOIN raw_admin_bdys.aus_state_electoral_class_aut AS aut ON tab.secl_code = aut.code
   WHERE (tab.eff_end > now() + interval '3 months'
     OR (tab.eff_start <= now() + interval '3 months' AND tab.eff_end IS NULL))
   AND tab.secl_code <> '3';
@@ -350,13 +350,13 @@ SELECT bdy.gid,
        tab.dt_gazetd,
        tab.eff_start, 
        tab.eff_end,
-       aut.name_aut AS electorate_class,
+       aut.name AS electorate_class,
        ste.st_abbrev AS state,
        bdy.geom
   FROM raw_admin_bdys.aus_state_electoral AS tab
   INNER JOIN raw_admin_bdys.aus_state_electoral_polygon AS bdy ON tab.se_pid = bdy.se_pid
   INNER JOIN raw_admin_bdys.aus_state AS ste ON tab.state_pid = ste.state_pid
-  INNER JOIN raw_admin_bdys.aus_state_electoral_class_aut AS aut ON tab.secl_code = aut.code_aut
+  INNER JOIN raw_admin_bdys.aus_state_electoral_class_aut AS aut ON tab.secl_code = aut.code
   WHERE (tab.eff_end > now() + interval '3 months'
     OR (tab.eff_start <= now() AND tab.eff_end IS NULL))
   AND tab.secl_code = '3'
