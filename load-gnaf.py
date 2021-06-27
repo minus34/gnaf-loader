@@ -112,6 +112,7 @@ def main():
     else:
         logger.info("\t- Step 6 of 7 : primary & foreign keys NOT created")
     analyse_raw_gnaf_tables(pg_cur, settings)
+    clean_authority_files(pg_cur, settings["raw_gnaf_schema"])
     # set postgres search path back to the default
     pg_cur.execute("SET search_path = public, pg_catalog")
     logger.info("Part 2 of 6 : Raw GNAF loaded! : {0}".format(datetime.now() - start_time))
@@ -121,6 +122,7 @@ def main():
     start_time = datetime.now()
     logger.info("Part 3 of 6 : Start raw admin boundary load : {0}".format(start_time))
     load_raw_admin_boundaries(pg_cur, settings)
+    clean_authority_files(pg_cur, settings["raw_admin_bdys_schema"])
     prep_admin_bdys(pg_cur, settings)
     create_admin_bdys_for_analysis(settings)
     logger.info("Part 3 of 6 : Raw admin boundaries loaded! : {0}".format(datetime.now() - start_time))
@@ -457,7 +459,7 @@ def load_raw_admin_boundaries(pg_cur, settings):
     # drop existing views
     pg_cur.execute(geoscape.open_sql_file("02-01-drop-admin-bdy-views.sql", settings))
 
-    # add locality class authority code table
+    # add authority code tables
     settings['states_to_load'].extend(["authority_code"])
 
     # get file list
@@ -503,18 +505,18 @@ def load_raw_admin_boundaries(pg_cur, settings):
                                 table_list.append(file_dict['pg_table'])
                                 create_list.append(file_dict)
                             else:
-                                # don't add duplicates if more than one Authority Code file per boundary type
-                                if "_aut_" not in file_name.lower():
-                                    append_list.append(file_dict)
+                                # # don't add duplicates if more than one Authority Code file per boundary type
+                                # if "_aut_" not in file_name.lower():
+                                append_list.append(file_dict)
                         else:
                             if not file_dict['file_path'].lower().endswith("_locality_shp.dbf"):
                                 if table_list_add:
                                     table_list.append(file_dict['pg_table'])
                                     create_list.append(file_dict)
                                 else:
-                                    # don't add duplicates if more than one Authority Code file per boundary type
-                                    if "_aut_" not in file_name.lower():
-                                        append_list.append(file_dict)
+                                    # # don't add duplicates if more than one Authority Code file per boundary type
+                                    # if "_aut_" not in file_name.lower():
+                                    append_list.append(file_dict)
 
     # logger.info(create_list)
     # logger.info(append_list)
@@ -537,8 +539,121 @@ def load_raw_admin_boundaries(pg_cur, settings):
         logger.info("\t- Step 1 of 3 : raw admin boundaries loaded : {0}".format(datetime.now() - start_time))
 
 
+def clean_authority_files(pg_cur, schema_name):
+    # ensure authority tables have unique values - admin bdys now have duplicates
+    start_time = datetime.now()
+
+    error_count = 0
+
+    # get table list for schema
+    sql = """SELECT table_name
+             FROM information_schema.tables
+             WHERE table_schema='{}'
+               AND table_type='BASE TABLE'
+               AND table_name LIKE '%_aut'
+          """.format(schema_name)
+    pg_cur.execute(sql)
+
+    tables = pg_cur.fetchall()
+
+    for table in tables:
+        table_name = table[0]
+        # print(table_name)
+
+        # fix inconsistent field names with brute force method (issue loading Shapefile/DBF data)
+        try:
+            pg_cur.execute("ALTER TABLE {}.{} RENAME COLUMN code_aut TO code"
+                           .format(schema_name, table_name))
+        except psycopg2.Error:
+            pass
+
+        try:
+            pg_cur.execute("ALTER TABLE {}.{} RENAME COLUMN name_aut TO name"
+                           .format(schema_name, table_name))
+        except psycopg2.Error:
+            pass
+
+        try:
+            pg_cur.execute("ALTER TABLE {}.{} RENAME COLUMN dscpn_aut TO description"
+                           .format(schema_name, table_name))
+        except psycopg2.Error:
+            pass
+
+        try:
+            pg_cur.execute("ALTER TABLE {}.{} RENAME COLUMN desc_aut TO description"
+                           .format(schema_name, table_name))
+        except psycopg2.Error:
+            pass
+
+        try:
+            pg_cur.execute("ALTER TABLE {}.{} RENAME COLUMN descriptio TO description"
+                           .format(schema_name, table_name))
+        except psycopg2.Error:
+            pass
+
+        # fix inconsistent descriptions in meshblock authority table by setting them to null
+        if table_name == "aus_mb_category_class_aut":
+            pg_cur.execute("UPDATE {}.{} SET description = NULL".format(schema_name, table_name))
+
+        # get original row count
+        pg_cur.execute("SELECT count(*) FROM {}.{}".format(schema_name, table_name))
+        old_row_count = int(pg_cur.fetchone()[0])
+
+        # get distinct records
+        sql = """DROP TABLE IF EXISTS temp_aut;
+                 CREATE TABLE temp_aut AS
+                 SELECT DISTINCT code, name, description FROM {}.{};
+              """.format(schema_name, table_name)
+        pg_cur.execute(sql)
+
+        # get new row count
+        pg_cur.execute("SELECT count(*) FROM temp_aut")
+        new_row_count = int(pg_cur.fetchone()[0])
+
+        # only delete and replace if duplicates found
+        duplicate_row_count = old_row_count - new_row_count
+
+        if duplicate_row_count > 0:
+            # delete all rows
+            pg_cur.execute("TRUNCATE TABLE {}.{}".format(schema_name, table_name))
+            # insert distinct rows
+            pg_cur.execute("INSERT INTO {}.{} (code, name, description) SELECT * FROM temp_aut"
+                           .format(schema_name, table_name))
+
+            logger.info("\t\t - {} duplicates removed from {}.{}"
+                        .format(duplicate_row_count, schema_name, table_name))
+
+        # drop primary key on gid field
+        try:
+            pg_cur.execute("ALTER TABLE ONLY {0}.{1} DROP CONSTRAINT {1}_pkey"
+                           .format(schema_name, table_name))
+        except psycopg2.Error as e:
+            pass
+
+        # attempt to create a primary key on the authority code - failure will imply a raw data error from Geoscape
+        try:
+            pg_cur.execute("ALTER TABLE ONLY {0}.{1} ADD CONSTRAINT {1}_pkey PRIMARY KEY (code)"
+                           .format(schema_name, table_name))
+        except psycopg2.Error:
+            error_count += 1
+
+            logger.warning("CAN'T CREATE PRIMARY KEY ON {}:{} DUE TO DUPLICATE AUTHORITY CODE(S)"
+                           .format(schema_name, table_name))
+
+        # clean up
+        pg_cur.execute("DROP TABLE IF EXISTS temp_aut")
+        pg_cur.execute("VACUUM ANALYZE {}.{}".format(schema_name, table_name))
+
+    # kill gnaf-loader if duplicates couldn't be fixed - significant data integrity issue
+    if error_count > 0:
+        exit()
+
+    logger.info("\t\t - authority tables depuplicated"
+                .format(schema_name, len(tables), datetime.now() - start_time))
+
+
 def prep_admin_bdys(pg_cur, settings):
-    # Step 2 of 3 : create admin bdy tables read to be used
+    # Step 3 of 4 : create admin bdy tables read to be used
     start_time = datetime.now()
 
     # create tables using multiprocessing - using flag in file to split file up into sets of statements
