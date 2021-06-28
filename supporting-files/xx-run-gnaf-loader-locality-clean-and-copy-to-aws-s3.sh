@@ -44,7 +44,7 @@ aws --profile=${AWS_PROFILE} s3 sync ${OUTPUT_FOLDER} s3://minus34.com/opendata/
 #echo "---------------------------------------------------------------------------------------------------------------------"
 #
 #cd /Users/$(whoami)/git/minus34/gnaf-loader/docker
-#docker build --tag minus34/gnafloader:latest --tag minus34/gnafloader:202105 .
+#docker build --squash --tag minus34/gnafloader:latest --tag minus34/gnafloader:202105 .
 #docker push --all-tags minus34/gnafloader
 
 echo "---------------------------------------------------------------------------------------------------------------------"
