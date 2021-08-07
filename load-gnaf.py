@@ -34,6 +34,7 @@ import logging.config
 import geoscape
 
 from datetime import datetime
+from psycopg2 import pool
 
 
 def main():
@@ -45,13 +46,15 @@ def main():
     # get settings from arguments
     settings = get_settings(args)
 
-    # connect to Postgres
+    # create Postgres connection pool
     try:
-        pg_conn = psycopg2.connect(settings['pg_connect_string'])
+        settings['pg_pool'] = psycopg2.pool.SimpleConnectionPool(1, settings['max_processes'], settings['pg_connect_string'])
     except psycopg2.Error:
         logger.fatal("Unable to connect to database\nACTION: Check your Postgres parameters and/or database security")
         return False
 
+    # get Postgres connection & cursor
+    pg_conn = settings['pg_pool'].getconn()
     pg_conn.autocommit = True
     pg_cur = pg_conn.cursor()
 
@@ -151,9 +154,10 @@ def main():
     create_qa_tables(pg_cur, settings)
     logger.info("Part 6 of 6 : Got row counts : {0}".format(datetime.now() - start_time))
 
-    # close Postgres connection
+    # close Postgres connection and pool
     pg_cur.close()
-    pg_conn.close()
+    settings['pg_pool'].putconn(pg_conn)
+    # pg_pool.close()
 
     logger.info("")
     logger.info("Total time : : {0}".format(datetime.now() - full_start_time))
