@@ -48,13 +48,13 @@ def main():
 
     # create Postgres connection pool
     try:
-        settings['pg_pool'] = psycopg2.pool.SimpleConnectionPool(1, settings['max_processes'], settings['pg_connect_string'])
+        settings["pg_pool"] = psycopg2.pool.SimpleConnectionPool(1, settings["max_processes"], settings["pg_connect_string"])
     except psycopg2.Error:
         logger.fatal("Unable to connect to database\nACTION: Check your Postgres parameters and/or database security")
         return False
 
     # get Postgres connection & cursor
-    pg_conn = settings['pg_pool'].getconn()
+    pg_conn = settings["pg_pool"].getconn()
     pg_conn.autocommit = True
     pg_cur = pg_conn.cursor()
 
@@ -88,18 +88,18 @@ def main():
     start_time = datetime.now()
     logger.info("Part 1 of 6 : Create schemas : {0}".format(start_time))
 
-    if settings['raw_gnaf_schema'] != "public":
+    if settings["raw_gnaf_schema"] != "public":
         pg_cur.execute("CREATE SCHEMA IF NOT EXISTS {0} AUTHORIZATION {1}"
-                       .format(settings['raw_gnaf_schema'], settings['pg_user']))
-    if settings['raw_admin_bdys_schema'] != "public":
+                       .format(settings["raw_gnaf_schema"], settings["pg_user"]))
+    if settings["raw_admin_bdys_schema"] != "public":
         pg_cur.execute("CREATE SCHEMA IF NOT EXISTS {0} AUTHORIZATION {1}"
-                       .format(settings['raw_admin_bdys_schema'], settings['pg_user']))
-    if settings['admin_bdys_schema'] != "public":
+                       .format(settings["raw_admin_bdys_schema"], settings["pg_user"]))
+    if settings["admin_bdys_schema"] != "public":
         pg_cur.execute("CREATE SCHEMA IF NOT EXISTS {0} AUTHORIZATION {1}"
-                       .format(settings['admin_bdys_schema'], settings['pg_user']))
-    if settings['gnaf_schema'] != "public":
+                       .format(settings["admin_bdys_schema"], settings["pg_user"]))
+    if settings["gnaf_schema"] != "public":
         pg_cur.execute("CREATE SCHEMA IF NOT EXISTS {0} AUTHORIZATION {1}"
-                       .format(settings['gnaf_schema'], settings['pg_user']))
+                       .format(settings["gnaf_schema"], settings["pg_user"]))
     logger.info("Part 1 of 6 : Schemas created! : {0}".format(datetime.now() - start_time))
 
     # PART 2 - load gnaf from PSV files
@@ -110,7 +110,7 @@ def main():
     create_raw_gnaf_tables(pg_cur, settings)
     populate_raw_gnaf(settings)
     index_raw_gnaf(settings)
-    if settings['primary_foreign_keys']:
+    if settings["primary_foreign_keys"]:
         create_primary_foreign_keys(settings)
     else:
         logger.info("\t- Step 6 of 7 : primary & foreign keys NOT created")
@@ -156,7 +156,7 @@ def main():
 
     # close Postgres connection and pool
     pg_cur.close()
-    settings['pg_pool'].putconn(pg_conn)
+    settings["pg_pool"].putconn(pg_conn)
     # pg_pool.close()
 
     logger.info("")
@@ -169,82 +169,82 @@ def main():
 def set_arguments():
 
     parser = argparse.ArgumentParser(
-        description='A quick way to load the complete GNAF and Geoscape Admin Boundaries into Postgres, '
-                    'simplified and ready to use as reference data for geocoding, analysis and visualisation.')
+        description="A quick way to load the complete GNAF and Geoscape Admin Boundaries into Postgres, "
+                    "simplified and ready to use as reference data for geocoding, analysis and visualisation.")
 
     parser.add_argument(
-        '--prevacuum', action='store_true', help='Forces database to be vacuumed after dropping tables.')
+        "--prevacuum", action="store_true", help="Forces database to be vacuumed after dropping tables.")
     parser.add_argument(
-        '--raw-fk', action='store_true',
-        help='Creates primary & foreign keys for the raw GNAF tables (adds time to data load)')
+        "--raw-fk", action="store_true",
+        help="Creates primary & foreign keys for the raw GNAF tables (adds time to data load)")
     parser.add_argument(
-        '--raw-unlogged', action='store_true',
-        help='Creates unlogged raw GNAF tables, speeding up the import. Only specify this option if you don\'t care '
-             'about the raw data afterwards - they will be lost if the server crashes!')
+        "--raw-unlogged", action="store_true",
+        help="Creates unlogged raw GNAF tables, speeding up the import. Only specify this option if you don\"t care "
+             "about the raw data afterwards - they will be lost if the server crashes!")
     parser.add_argument(
-        '--max-processes', type=int, default=4,
-        help='Maximum number of parallel processes to use for the data load. (Set it to the number of cores on the '
-             'Postgres server minus 2, limit to 12 if 16+ cores - there is minimal benefit beyond 12). Defaults to 4.')
+        "--max-processes", type=int, default=4,
+        help="Maximum number of parallel processes to use for the data load. (Set it to the number of cores on the "
+             "Postgres server minus 2, limit to 12 if 16+ cores - there is minimal benefit beyond 12). Defaults to 4.")
     parser.add_argument(
-        '--no-boundary-tag', action='store_true', dest='no_boundary_tag',
-        help='DO NOT tag all addresses with admin boundary IDs for creating aggregates and choropleth maps. '
-             'IMPORTANT: this will contribute 15-60 minutes to the process if you have PostGIS 2.2+. '
-             'WARNING: if you have PostGIS 2.1 or lower - this process can take hours')
+        "--no-boundary-tag", action="store_true", dest="no_boundary_tag",
+        help="DO NOT tag all addresses with admin boundary IDs for creating aggregates and choropleth maps. "
+             "IMPORTANT: this will contribute 15-60 minutes to the process if you have PostGIS 2.2+. "
+             "WARNING: if you have PostGIS 2.1 or lower - this process can take hours")
 
     # PG Options
     parser.add_argument(
-        '--pghost',
-        help='Host name for Postgres server. Defaults to PGHOST environment variable if set, otherwise localhost.')
+        "--pghost",
+        help="Host name for Postgres server. Defaults to PGHOST environment variable if set, otherwise localhost.")
     parser.add_argument(
-        '--pgport', type=int,
-        help='Port number for Postgres server. Defaults to PGPORT environment variable if set, otherwise 5432.')
+        "--pgport", type=int,
+        help="Port number for Postgres server. Defaults to PGPORT environment variable if set, otherwise 5432.")
     parser.add_argument(
-        '--pgdb',
-        help='Database name for Postgres server. Defaults to PGDATABASE environment variable if set, '
-             'otherwise geoscape.')
+        "--pgdb",
+        help="Database name for Postgres server. Defaults to PGDATABASE environment variable if set, "
+             "otherwise geoscape.")
     parser.add_argument(
-        '--pguser',
-        help='Username for Postgres server. Defaults to PGUSER environment variable if set, otherwise postgres.')
+        "--pguser",
+        help="Username for Postgres server. Defaults to PGUSER environment variable if set, otherwise postgres.")
     parser.add_argument(
-        '--pgpassword',
-        help='Password for Postgres server. Defaults to PGPASSWORD environment variable if set, '
-             'otherwise \'password\'.')
+        "--pgpassword",
+        help="Password for Postgres server. Defaults to PGPASSWORD environment variable if set, "
+             "otherwise \"password\".")
 
     # schema names for the raw gnaf, flattened reference and admin boundary tables
     geoscape_version = geoscape.get_geoscape_version(datetime.today())
     parser.add_argument(
-        '--geoscape-version', default=geoscape_version,
-        help='Geoscape Version number as YYYYMM. Defaults to last release year and month \'<geoscape-version>\'.')
+        "--geoscape-version", default=geoscape_version,
+        help="Geoscape Version number as YYYYMM. Defaults to last release year and month \"<geoscape-version>\".")
     parser.add_argument(
-        '--raw-gnaf-schema',
-        help='Schema name to store raw GNAF tables in. Defaults to \'raw_gnaf_<geoscape-version>\'.')
+        "--raw-gnaf-schema",
+        help="Schema name to store raw GNAF tables in. Defaults to \"raw_gnaf_<geoscape-version>\".")
     parser.add_argument(
-        '--raw-admin-schema',
-        help='Schema name to store raw admin boundary tables in. Defaults to \'raw_admin_bdys_<geoscape-version>\'.')
+        "--raw-admin-schema",
+        help="Schema name to store raw admin boundary tables in. Defaults to \"raw_admin_bdys_<geoscape-version>\".")
     parser.add_argument(
-        '--gnaf-schema',
-        help='Destination schema name to store final GNAF tables in. Defaults to \'gnaf_<geoscape-version>\'.')
+        "--gnaf-schema",
+        help="Destination schema name to store final GNAF tables in. Defaults to \"gnaf_<geoscape-version>\".")
     parser.add_argument(
-        '--admin-schema',
-        help='Destination schema name to store final admin boundary tables in. Defaults to \'admin_bdys_'
-             + geoscape_version + '\'.')
+        "--admin-schema",
+        help="Destination schema name to store final admin boundary tables in. Defaults to \"admin_bdys_"
+             + geoscape_version + "\".")
 
     # directories
     parser.add_argument(
-        '--gnaf-tables-path', required=True,
-        help='Path to source GNAF tables (*.psv files). This directory must be accessible by the Postgres server, '
-             'and the local path to the directory for the server must be set via the local-server-dir argument '
-             'if it differs from this path.')
+        "--gnaf-tables-path", required=True,
+        help="Path to source GNAF tables (*.psv files). This directory must be accessible by the Postgres server, "
+             "and the local path to the directory for the server must be set via the local-server-dir argument "
+             "if it differs from this path.")
     parser.add_argument(
-        '--local-server-dir',
-        help='Local path on server corresponding to gnaf-tables-path, if different to gnaf-tables-path.')
+        "--local-server-dir",
+        help="Local path on server corresponding to gnaf-tables-path, if different to gnaf-tables-path.")
     parser.add_argument(
-        '--admin-bdys-path', required=True, help='Local path to source admin boundary files.')
+        "--admin-bdys-path", required=True, help="Local path to source admin boundary files.")
 
     # states to load
-    parser.add_argument('--states', nargs='+', choices=["ACT", "NSW", "NT", "OT", "QLD", "SA", "TAS", "VIC", "WA"],
+    parser.add_argument("--states", nargs="+", choices=["ACT", "NSW", "NT", "OT", "QLD", "SA", "TAS", "VIC", "WA"],
                         default=["ACT", "NSW", "NT", "OT", "QLD", "SA", "TAS", "VIC", "WA"],
-                        help='List of states to load data for. Defaults to all states.')
+                        help="List of states to load data for. Defaults to all states.")
 
     return parser.parse_args()
 
@@ -253,38 +253,38 @@ def set_arguments():
 def get_settings(args):
     settings = dict()
 
-    settings['vacuum_db'] = args.prevacuum
-    settings['primary_foreign_keys'] = args.raw_fk
-    settings['unlogged_tables'] = args.raw_unlogged
-    settings['max_concurrent_processes'] = args.max_processes
-    settings['geoscape_version'] = args.geoscape_version
-    settings['states_to_load'] = args.states
-    settings['no_boundary_tag'] = args.no_boundary_tag
-    settings['raw_gnaf_schema'] = args.raw_gnaf_schema or 'raw_gnaf_' + settings['geoscape_version']
-    settings['raw_admin_bdys_schema'] = args.raw_admin_schema or 'raw_admin_bdys_' + settings['geoscape_version']
-    settings['gnaf_schema'] = args.gnaf_schema or 'gnaf_' + settings['geoscape_version']
-    settings['admin_bdys_schema'] = args.admin_schema or 'admin_bdys_' + settings['geoscape_version']
-    settings['gnaf_network_directory'] = args.gnaf_tables_path.replace("\\", "/")
+    settings["vacuum_db"] = args.prevacuum
+    settings["primary_foreign_keys"] = args.raw_fk
+    settings["unlogged_tables"] = args.raw_unlogged
+    settings["max_processes"] = args.max_processes
+    settings["geoscape_version"] = args.geoscape_version
+    settings["states_to_load"] = args.states
+    settings["no_boundary_tag"] = args.no_boundary_tag
+    settings["raw_gnaf_schema"] = args.raw_gnaf_schema or "raw_gnaf_" + settings["geoscape_version"]
+    settings["raw_admin_bdys_schema"] = args.raw_admin_schema or "raw_admin_bdys_" + settings["geoscape_version"]
+    settings["gnaf_schema"] = args.gnaf_schema or "gnaf_" + settings["geoscape_version"]
+    settings["admin_bdys_schema"] = args.admin_schema or "admin_bdys_" + settings["geoscape_version"]
+    settings["gnaf_network_directory"] = args.gnaf_tables_path.replace("\\", "/")
     if args.local_server_dir:
-        settings['gnaf_pg_server_local_directory'] = args.local_server_dir.replace("\\", "/")
+        settings["gnaf_pg_server_local_directory"] = args.local_server_dir.replace("\\", "/")
     else:
-        settings['gnaf_pg_server_local_directory'] = settings['gnaf_network_directory']
-    settings['admin_bdys_local_directory'] = args.admin_bdys_path.replace("\\", "/")
+        settings["gnaf_pg_server_local_directory"] = settings["gnaf_network_directory"]
+    settings["admin_bdys_local_directory"] = args.admin_bdys_path.replace("\\", "/")
 
     # create postgres connect string
-    settings['pg_host'] = args.pghost or os.getenv("PGHOST", "localhost")
-    settings['pg_port'] = args.pgport or os.getenv("PGPORT", 5432)
-    settings['pg_db'] = args.pgdb or os.getenv("PGDATABASE", "geoscape")
-    settings['pg_user'] = args.pguser or os.getenv("PGUSER", "postgres")
-    settings['pg_password'] = args.pgpassword or os.getenv("PGPASSWORD", "password")
+    settings["pg_host"] = args.pghost or os.getenv("PGHOST", "localhost")
+    settings["pg_port"] = args.pgport or os.getenv("PGPORT", 5432)
+    settings["pg_db"] = args.pgdb or os.getenv("PGDATABASE", "geoscape")
+    settings["pg_user"] = args.pguser or os.getenv("PGUSER", "postgres")
+    settings["pg_password"] = args.pgpassword or os.getenv("PGPASSWORD", "password")
 
-    settings['pg_connect_string'] = "dbname='{0}' host='{1}' port='{2}' user='{3}' password='{4}'".format(
-        settings['pg_db'], settings['pg_host'], settings['pg_port'], settings['pg_user'], settings['pg_password'])
+    settings["pg_connect_string"] = "dbname='{0}' host='{1}' port='{2}' user='{3}' password='{4}'".format(
+        settings["pg_db"], settings["pg_host"], settings["pg_port"], settings["pg_user"], settings["pg_password"])
 
     # set postgres script directory
-    settings['sql_dir'] = os.path.join(os.path.dirname(os.path.realpath(__file__)), "postgres-scripts")
+    settings["sql_dir"] = os.path.join(os.path.dirname(os.path.realpath(__file__)), "postgres-scripts")
 
-    settings['sql_dir'] = os.path.join(os.path.dirname(os.path.realpath(__file__)), "postgres-scripts")
+    settings["sql_dir"] = os.path.join(os.path.dirname(os.path.realpath(__file__)), "postgres-scripts")
 
     # set the list of admin bdys to create analysis tables for and to boundary tag with
     admin_bdy_list = list()
@@ -292,18 +292,18 @@ def get_settings(args):
     admin_bdy_list.append(["locality_bdys", "locality_pid"])
 
     # only process bdys if states to load have them
-    if settings['states_to_load'] != ['OT']:
+    if settings["states_to_load"] != ["OT"]:
         admin_bdy_list.append(["commonwealth_electorates", "ce_pid"])
-    if settings['states_to_load'] != ['ACT']:
+    if settings["states_to_load"] != ["ACT"]:
         admin_bdy_list.append(["local_government_areas", "lga_pid"])
-    if 'NT' in settings['states_to_load'] or 'SA' in settings['states_to_load'] \
-            or 'VIC' in settings['states_to_load'] or 'WA' in settings['states_to_load']:
+    if "NT" in settings["states_to_load"] or "SA" in settings["states_to_load"] \
+            or "VIC" in settings["states_to_load"] or "WA" in settings["states_to_load"]:
         admin_bdy_list.append(["local_government_wards", "ward_pid"])
-    if settings['states_to_load'] != ['OT']:
+    if settings["states_to_load"] != ["OT"]:
         admin_bdy_list.append(["state_lower_house_electorates", "se_lower_pid"])
-    if 'TAS' in settings['states_to_load'] or 'VIC' in settings['states_to_load'] or 'WA' in settings['states_to_load']:
+    if "TAS" in settings["states_to_load"] or "VIC" in settings["states_to_load"] or "WA" in settings["states_to_load"]:
         admin_bdy_list.append(["state_upper_house_electorates", "se_upper_pid"])
-    settings['admin_bdy_list'] = admin_bdy_list
+    settings["admin_bdy_list"] = admin_bdy_list
 
     return settings
 
@@ -316,7 +316,7 @@ def drop_tables_and_vacuum_db(pg_cur, settings):
 
     # Step 2 of 7 : vacuum database (if requested)
     start_time = datetime.now()
-    if settings['vacuum_db']:
+    if settings["vacuum_db"]:
         pg_cur.execute("VACUUM")
         logger.info("\t- Step 2 of 7 : database vacuumed : {0}".format(datetime.now() - start_time))
     else:
@@ -331,15 +331,15 @@ def create_raw_gnaf_tables(pg_cur, settings):
     sql = geoscape.open_sql_file("01-03-raw-gnaf-create-tables.sql", settings)
 
     # set search path
-    if settings['raw_gnaf_schema'] != "public":
-        pg_cur.execute("SET search_path = {0}".format(settings['raw_gnaf_schema'],))
+    if settings["raw_gnaf_schema"] != "public":
+        pg_cur.execute("SET search_path = {0}".format(settings["raw_gnaf_schema"],))
 
         # alter create table script to run on chosen schema
-        sql = sql.replace("SET search_path = public", "SET search_path = {0}".format(settings['raw_gnaf_schema'],))
+        sql = sql.replace("SET search_path = public", "SET search_path = {0}".format(settings["raw_gnaf_schema"],))
 
     # set tables to unlogged to speed up the load? (if requested)
     # -- they'll have to be rebuilt using this script again after a system crash --
-    if settings['unlogged_tables']:
+    if settings["unlogged_tables"]:
         sql = sql.replace("CREATE TABLE ", "CREATE UNLOGGED TABLE ")
         unlogged_string = "UNLOGGED "
     else:
@@ -360,7 +360,7 @@ def populate_raw_gnaf(settings):
     sql_list = get_raw_gnaf_files("authority_code", settings)
 
     # add state file lists
-    for state in settings['states_to_load']:
+    for state in settings["states_to_load"]:
         logger.info("\t\t- Loading state {}".format(state))
         sql_list.extend(get_raw_gnaf_files(state, settings))
 
@@ -378,21 +378,21 @@ def get_raw_gnaf_files(prefix, settings):
     sql_list = []
     prefix = prefix.lower()
     # get a dictionary of all files matching the filename prefix
-    for root, dirs, files in os.walk(settings['gnaf_network_directory']):
+    for root, dirs, files in os.walk(settings["gnaf_network_directory"]):
         for file_name in files:
             if file_name.lower().startswith(prefix + "_"):
                 if file_name.lower().endswith(".psv"):
                     file_path = os.path.join(root, file_name)\
-                        .replace(settings['gnaf_network_directory'], settings['gnaf_pg_server_local_directory'])
+                        .replace(settings["gnaf_network_directory"], settings["gnaf_pg_server_local_directory"])
                     table = file_name.lower().replace(prefix + "_", "", 1).replace("_psv.psv", "")
 
                     # if a non-Windows Postgres server OS - fix file path
-                    if settings['gnaf_pg_server_local_directory'][0:1] == "/":
+                    if settings["gnaf_pg_server_local_directory"][0:1] == "/":
                         file_path = file_path.replace("\\", "/")
                         # logger.info(file_path
 
                     sql = "COPY {0}.{1} FROM '{2}' DELIMITER '|' CSV HEADER;"\
-                        .format(settings['raw_gnaf_schema'], table, file_path)
+                        .format(settings["raw_gnaf_schema"], table, file_path)
 
                     sql_list.append(sql)
 
@@ -426,7 +426,7 @@ def create_primary_foreign_keys(settings):
         sql = sql.strip()
         if sql[0:6] == "ALTER ":
             # add schema to tables names, in case raw gnaf schema not the default
-            sql = sql.replace("ALTER TABLE ONLY ", "ALTER TABLE ONLY " + settings['raw_gnaf_schema'] + ".")
+            sql = sql.replace("ALTER TABLE ONLY ", "ALTER TABLE ONLY " + settings["raw_gnaf_schema"] + ".")
             sql_list.append(sql)
 
     # run queries in separate processes
@@ -442,7 +442,7 @@ def analyse_raw_gnaf_tables(pg_cur, settings):
     # get list of tables that haven't been analysed (i.e. that have no real row count)
     sql = "SELECT nspname|| '.' || relname AS table_name " \
           "FROM pg_class C LEFT JOIN pg_namespace N ON (N.oid = C.relnamespace)" \
-          "WHERE nspname = '{0}' AND relkind='r' AND reltuples = 0".format(settings['raw_gnaf_schema'])
+          "WHERE nspname = '{0}' AND relkind='r' AND reltuples = 0".format(settings["raw_gnaf_schema"])
     pg_cur.execute(sql)
 
     sql_list = []
@@ -464,17 +464,17 @@ def load_raw_admin_boundaries(pg_cur, settings):
     pg_cur.execute(geoscape.open_sql_file("02-01-drop-admin-bdy-views.sql", settings))
 
     # add authority code tables
-    settings['states_to_load'].extend(["authority_code"])
+    settings["states_to_load"].extend(["authority_code"])
 
     # get file list
     table_list = list()
     create_list = list()
     append_list = list()
 
-    for state in settings['states_to_load']:
+    for state in settings["states_to_load"]:
         state = state.lower()
         # get a dictionary of Shapefiles and DBFs matching the state
-        for root, dirs, files in os.walk(settings['admin_bdys_local_directory']):
+        for root, dirs, files in os.walk(settings["admin_bdys_local_directory"]):
             for file_name in files:
                 if file_name.lower().startswith(state + "_"):
                     if file_name.lower().endswith("_shp.dbf"):
@@ -482,40 +482,40 @@ def load_raw_admin_boundaries(pg_cur, settings):
 
                         # change file type for spatial files
                         if file_name.lower().endswith("_polygon_shp.dbf"):
-                            file_dict['spatial'] = True
-                            file_dict['file_path'] = os.path.join(root, file_name.replace(".dbf", ".shp"))
+                            file_dict["spatial"] = True
+                            file_dict["file_path"] = os.path.join(root, file_name.replace(".dbf", ".shp"))
                         else:
-                            file_dict['spatial'] = False
-                            file_dict['file_path'] = os.path.join(root, file_name)
+                            file_dict["spatial"] = False
+                            file_dict["file_path"] = os.path.join(root, file_name)
 
-                        file_dict['pg_table'] = \
+                        file_dict["pg_table"] = \
                             file_name.lower().replace(state + "_", "aus_", 1).replace("_shp.dbf", "")
 
-                        file_dict['pg_schema'] = settings['raw_admin_bdys_schema']
+                        file_dict["pg_schema"] = settings["raw_admin_bdys_schema"]
 
                         # set command line parameters depending on whether this is the 1st state (for creating tables)
                         table_list_add = False
 
-                        if file_dict['pg_table'] not in table_list:
+                        if file_dict["pg_table"] not in table_list:
                             table_list_add = True
 
-                            file_dict['delete_table'] = True
+                            file_dict["delete_table"] = True
                         else:
-                            file_dict['delete_table'] = False
+                            file_dict["delete_table"] = False
 
                         # if locality file from Towns folder: don't add - it's a duplicate
-                        if "town points" not in file_dict['file_path'].lower():
+                        if "town points" not in file_dict["file_path"].lower():
                             if table_list_add:
-                                table_list.append(file_dict['pg_table'])
+                                table_list.append(file_dict["pg_table"])
                                 create_list.append(file_dict)
                             else:
                                 # # don't add duplicates if more than one Authority Code file per boundary type
                                 # if "_aut_" not in file_name.lower():
                                 append_list.append(file_dict)
                         else:
-                            if not file_dict['file_path'].lower().endswith("_locality_shp.dbf"):
+                            if not file_dict["file_path"].lower().endswith("_locality_shp.dbf"):
                                 if table_list_add:
-                                    table_list.append(file_dict['pg_table'])
+                                    table_list.append(file_dict["pg_table"])
                                     create_list.append(file_dict)
                                 else:
                                     # # don't add duplicates if more than one Authority Code file per boundary type
@@ -534,8 +534,8 @@ def load_raw_admin_boundaries(pg_cur, settings):
 
         # Run the appends one at a time (Can't multiprocess as sets of parallel INSERTs cause database deadlocks)
         for shp in append_list:
-            result = geoscape.import_shapefile_to_postgres(settings, shp['file_path'], shp['pg_table'], shp['pg_schema'],
-                                                       shp['delete_table'], shp['spatial'])
+            result = geoscape.import_shapefile_to_postgres(settings, shp["file_path"], shp["pg_table"], shp["pg_schema"],
+                                                       shp["delete_table"], shp["spatial"])
 
             if result != "SUCCESS":
                 logger.warning(result)
@@ -667,30 +667,30 @@ def prep_admin_bdys(pg_cur, settings):
 
     # # Account for bdys that are not in states to load - not yet working
     # for sql in sql_list:
-    #     if settings['states_to_load'] == ['OT'] and '.commonwealth_electorates ' in sql:
+    #     if settings["states_to_load"] == ["OT"] and ".commonwealth_electorates " in sql:
     #         sql_list.remove(sql)
     #
-    #     if settings['states_to_load'] == ['ACT'] and '.local_government_areas ' in sql:
+    #     if settings["states_to_load"] == ["ACT"] and ".local_government_areas " in sql:
     #         sql_list.remove(sql)
     #
-    #     logger.info(settings['states_to_load']
+    #     logger.info(settings["states_to_load"]
     #
-    #     if not ('NT' in settings['states_to_load'] or 'SA' in settings['states_to_load']
-    #             or 'VIC' in settings['states_to_load'] or 'WA' in settings['states_to_load']) \
-    #             and '.local_government_wards ' in sql:
+    #     if not ("NT" in settings["states_to_load"] or "SA" in settings["states_to_load"]
+    #             or "VIC" in settings["states_to_load"] or "WA" in settings["states_to_load"]) \
+    #             and ".local_government_wards " in sql:
     #         sql_list.remove(sql)
     #
-    #     if settings['states_to_load'] == ['OT'] and '.state_lower_house_electorates ' in sql:
+    #     if settings["states_to_load"] == ["OT"] and ".state_lower_house_electorates " in sql:
     #         sql_list.remove(sql)
     #
-    #     if not ('TAS' in settings['states_to_load'] or 'VIC' in settings['states_to_load']
-    #             or 'WA' in settings['states_to_load']) and '.state_upper_house_electorates ' in sql:
+    #     if not ("TAS" in settings["states_to_load"] or "VIC" in settings["states_to_load"]
+    #             or "WA" in settings["states_to_load"]) and ".state_upper_house_electorates " in sql:
     #         sql_list.remove(sql)
 
     geoscape.multiprocess_list("sql", sql_list, settings, logger)
 
     # Special case - remove custom outback bdy if South Australia not requested
-    if 'SA' not in settings['states_to_load']:
+    if "SA" not in settings["states_to_load"]:
         pg_cur.execute(geoscape.prep_sql("DELETE FROM admin_bdys.locality_bdys WHERE locality_pid = 'SA999999'", settings))
         pg_cur.execute(geoscape.prep_sql("VACUUM ANALYZE admin_bdys.locality_bdys", settings))
 
@@ -701,14 +701,14 @@ def create_admin_bdys_for_analysis(settings):
     # Step 3 of 3 : create admin bdy tables optimised for spatial analysis
     start_time = datetime.now()
 
-    if settings['st_subdivide_supported']:
+    if settings["st_subdivide_supported"]:
         template_sql = geoscape.open_sql_file("02-03-create-admin-bdy-analysis-tables_template.sql", settings)
         sql_list = list()
 
-        for table in settings['admin_bdy_list']:
+        for table in settings["admin_bdy_list"]:
             sql = template_sql.format(table[0], table[1])
-            if table[0] == 'locality_bdys':  # special case, need to change schema name
-                # sql = sql.replace(settings['raw_admin_bdys_schema'], settings['admin_bdys_schema'])
+            if table[0] == "locality_bdys":  # special case, need to change schema name
+                # sql = sql.replace(settings["raw_admin_bdys_schema"], settings["admin_bdys_schema"])
                 sql = sql.replace("name", "locality_name")
                 # add postcodes
                 sql = sql.replace("locality_name text NOT NULL,",
@@ -762,9 +762,9 @@ def create_reference_tables(pg_cur, settings):
     # Step 7 of 14 : populate addresses, using multiprocessing
     start_time = datetime.now()
     sql = geoscape.open_sql_file("03-07-reference-populate-addresses-1.sql", settings)
-    sql_list = geoscape.split_sql_into_list(pg_cur, sql, settings['gnaf_schema'], "streets", "str", "gid", settings, logger)
+    sql_list = geoscape.split_sql_into_list(pg_cur, sql, settings["gnaf_schema"], "streets", "str", "gid", settings, logger)
     if sql_list is not None:
-        geoscape.multiprocess_list('sql', sql_list, settings, logger)
+        geoscape.multiprocess_list("sql", sql_list, settings, logger)
     pg_cur.execute(geoscape.prep_sql("ANALYZE gnaf.temp_addresses;", settings))
     logger.info("\t- Step  7 of 14 : addresses populated : {0}".format(datetime.now() - start_time))
 
@@ -792,10 +792,10 @@ def create_reference_tables(pg_cur, settings):
     # Step 12 of 14 : finalise addresses, using multiprocessing
     start_time = datetime.now()
     sql = geoscape.open_sql_file("03-12-reference-populate-addresses-2.sql", settings)
-    sql_list = geoscape.split_sql_into_list(pg_cur, sql, settings['gnaf_schema'], "localities", "loc", "gid",
+    sql_list = geoscape.split_sql_into_list(pg_cur, sql, settings["gnaf_schema"], "localities", "loc", "gid",
                                         settings, logger)
     if sql_list is not None:
-        geoscape.multiprocess_list('sql', sql_list, settings, logger)
+        geoscape.multiprocess_list("sql", sql_list, settings, logger)
 
     # turf the temp address table
     pg_cur.execute(geoscape.prep_sql("DROP TABLE IF EXISTS gnaf.temp_addresses", settings))
@@ -805,13 +805,13 @@ def create_reference_tables(pg_cur, settings):
     start_time = datetime.now()
     sql = geoscape.open_sql_file("03-13-reference-derived-postcode-bdys.sql", settings)
     sql_list = []
-    for state in settings['states_to_load']:
+    for state in settings["states_to_load"]:
         state_sql = sql.replace("GROUP BY ", "WHERE state = '{0}' GROUP BY ".format(state))
         sql_list.append(state_sql)
     geoscape.multiprocess_list("sql", sql_list, settings, logger)
 
     # create analysis table?
-    if settings['st_subdivide_supported']:
+    if settings["st_subdivide_supported"]:
         pg_cur.execute(geoscape.open_sql_file("03-13a-create-postcode-analysis-table.sql", settings))
 
     logger.info("\t- Step 13 of 14 : postcode boundaries created : {0}".format(datetime.now() - start_time))
@@ -833,11 +833,11 @@ def boundary_tag_gnaf(pg_cur, settings):
     # create bdy table list
     # remove localities, postcodes and states as these IDs are already assigned to GNAF addresses
     table_list = list()
-    for table in settings['admin_bdy_list']:
+    for table in settings["admin_bdy_list"]:
         if table[0] not in ["locality_bdys", "postcode_bdys", "state_bdys"]:
             # if no analysis tables created - use the full tables instead of the subdivided ones
             # WARNING: this can add hours to the processing
-            if settings['st_subdivide_supported']:
+            if settings["st_subdivide_supported"]:
                 table_name = "{}_analysis".format(table[0], )
             else:
                 table_name = table[0]
@@ -847,7 +847,7 @@ def boundary_tag_gnaf(pg_cur, settings):
     # create bdy tagged address tables
     for address_table in ["address_principal", "address_alias"]:
         pg_cur.execute("DROP TABLE IF EXISTS {}.{}_admin_boundaries CASCADE"
-                       .format(settings['gnaf_schema'], address_table))
+                       .format(settings["gnaf_schema"], address_table))
         create_table_list = list()
         create_table_list.append("CREATE TABLE {}.{}_admin_boundaries (gid serial NOT NULL,"
                                  "gnaf_pid text NOT NULL,"
@@ -856,14 +856,14 @@ def boundary_tag_gnaf(pg_cur, settings):
                                  "locality_name text NOT NULL,"
                                  "postcode text,"
                                  "state text NOT NULL"
-                                 .format(settings['gnaf_schema'], address_table))
+                                 .format(settings["gnaf_schema"], address_table))
 
         for table in table_list:
             pid_field = table[1]
             name_field = pid_field.replace("_pid", "_name")
             create_table_list.append(", {} text, {} text".format(pid_field, name_field))
         create_table_list.append(") WITH (OIDS=FALSE);ALTER TABLE {}.{}_admin_boundaries OWNER TO {}"
-                                 .format(settings['gnaf_schema'], address_table, settings['pg_user']))
+                                 .format(settings["gnaf_schema"], address_table, settings["pg_user"]))
         pg_cur.execute("".join(create_table_list))
 
     # Step 1 of 6 : tag gnaf addresses with admin boundary IDs, using multiprocessing
@@ -880,13 +880,13 @@ def boundary_tag_gnaf(pg_cur, settings):
     for table in table_list:
         sql = template_sql.format(table[0], table[1])
 
-        short_sql_list = geoscape.split_sql_into_list(pg_cur, sql, settings['admin_bdys_schema'], table[0],
+        short_sql_list = geoscape.split_sql_into_list(pg_cur, sql, settings["admin_bdys_schema"], table[0],
                                                   "bdys", "gid", settings, logger)
 
         if short_sql_list is not None:
             sql_list.extend(short_sql_list)
 
-    # logger.info('\n'.join(sql_list))
+    # logger.info("\n".join(sql_list))
 
     if sql_list is not None:
         geoscape.multiprocess_list("sql", sql_list, settings, logger)
@@ -900,7 +900,7 @@ def boundary_tag_gnaf(pg_cur, settings):
     for table in table_list:
         sql = "DELETE FROM {0}.temp_{1}_tags WHERE gnaf_state <> bdy_state AND gnaf_state <> 'OT';" \
               "CREATE INDEX temp_{1}_tags_gnaf_pid_idx ON {0}.temp_{1}_tags USING btree(gnaf_pid);" \
-              "ANALYZE {0}.temp_{1}_tags".format(settings['gnaf_schema'], table[0])
+              "ANALYZE {0}.temp_{1}_tags".format(settings["gnaf_schema"], table[0])
         sql_list.append(sql)
     geoscape.multiprocess_list("sql", sql_list, settings, logger)
 
@@ -915,7 +915,7 @@ def boundary_tag_gnaf(pg_cur, settings):
     insert_field_list.append("(gnaf_pid, locality_pid, locality_name, postcode, state")
 
     insert_join_list = list()
-    insert_join_list.append("FROM {}.address_principals AS pnts ".format(settings['gnaf_schema'], ))
+    insert_join_list.append("FROM {}.address_principals AS pnts ".format(settings["gnaf_schema"], ))
 
     select_field_list = list()
     select_field_list.append("SELECT pnts.gnaf_pid, pnts.locality_pid, "
@@ -929,20 +929,20 @@ def boundary_tag_gnaf(pg_cur, settings):
         insert_field_list.append(", {0}, {1}".format(pid_field, name_field))
         select_field_list.append(", temp_{0}_tags.bdy_pid, temp_{0}_tags.bdy_name ".format(table[0]))
         insert_join_list.append("LEFT OUTER JOIN {0}.temp_{1}_tags ON pnts.gnaf_pid = temp_{1}_tags.gnaf_pid "
-                                .format(settings['gnaf_schema'], table[0]))
-        drop_table_list.append("DROP TABLE IF EXISTS {0}.temp_{1}_tags;".format(settings['gnaf_schema'], table[0]))
+                                .format(settings["gnaf_schema"], table[0]))
+        drop_table_list.append("DROP TABLE IF EXISTS {0}.temp_{1}_tags;".format(settings["gnaf_schema"], table[0]))
 
     insert_field_list.append(") ")
 
     insert_statement_list = list()
     insert_statement_list.append("INSERT INTO {0}.address_principal_admin_boundaries "
-                                 .format(settings['gnaf_schema'], ))
+                                 .format(settings["gnaf_schema"], ))
     insert_statement_list.append("".join(insert_field_list))
     insert_statement_list.append("".join(select_field_list))
     insert_statement_list.append("".join(insert_join_list))
 
     sql = "".join(insert_statement_list) + ";"
-    sql_list = geoscape.split_sql_into_list(pg_cur, sql, settings['gnaf_schema'], "address_principals", "pnts", "gid",
+    sql_list = geoscape.split_sql_into_list(pg_cur, sql, settings["gnaf_schema"], "address_principals", "pnts", "gid",
                                         settings, logger)
     # logger.info("\n".join(sql_list)
 
@@ -953,7 +953,7 @@ def boundary_tag_gnaf(pg_cur, settings):
     pg_cur.execute("".join(drop_table_list))
 
     # get stats
-    pg_cur.execute("ANALYZE {0}.address_principal_admin_boundaries ".format(settings['gnaf_schema']))
+    pg_cur.execute("ANALYZE {0}.address_principal_admin_boundaries ".format(settings["gnaf_schema"]))
 
     logger.info("\t- Step 3 of 6 : principal addresses - bdy tags added to output table : {}"
                 .format(datetime.now() - start_time, ))
@@ -963,7 +963,7 @@ def boundary_tag_gnaf(pg_cur, settings):
     # Step 4 of 6 : add index to output table
     sql = "CREATE INDEX address_principal_admin_boundaries_gnaf_pid_idx " \
           "ON {0}.address_principal_admin_boundaries USING btree (gnaf_pid)"\
-        .format(settings['gnaf_schema'])
+        .format(settings["gnaf_schema"])
     pg_cur.execute(sql)
 
     logger.info("\t- Step 4 of 6 : created index on bdy tagged address table : {}"
@@ -973,7 +973,7 @@ def boundary_tag_gnaf(pg_cur, settings):
     # Step 5 of 6 : log duplicates - happens when 2 boundaries overlap by a very small amount
     # (can be ignored if there's a small number of records affected)
     sql = "SELECT gnaf_pid FROM (SELECT Count(*) AS cnt, gnaf_pid FROM {0}.address_principal_admin_boundaries " \
-          "GROUP BY gnaf_pid) AS sqt WHERE cnt > 1".format(settings['gnaf_schema'])
+          "GROUP BY gnaf_pid) AS sqt WHERE cnt > 1".format(settings["gnaf_schema"])
     pg_cur.execute(sql)
 
     # get cursor description to test if any rows returned safely
@@ -1010,7 +1010,7 @@ def create_qa_tables(pg_cur, settings):
 
     i = 0
 
-    for schema in [settings['gnaf_schema'], settings['admin_bdys_schema']]:
+    for schema in [settings["gnaf_schema"], settings["admin_bdys_schema"]]:
 
         i += 1
 
@@ -1019,7 +1019,7 @@ def create_qa_tables(pg_cur, settings):
               "CREATE TABLE {0}.qa (table_name text, aus integer, act integer, nsw integer, " \
               "nt integer, ot integer, qld integer, sa integer, tas integer, vic integer, wa integer) " \
               "WITH (OIDS=FALSE);" \
-              "ALTER TABLE {0}.qa OWNER TO {1}".format(schema, settings['pg_user'])
+              "ALTER TABLE {0}.qa OWNER TO {1}".format(schema, settings["pg_user"])
         pg_cur.execute(sql)
 
         # get table names in schema
@@ -1069,7 +1069,7 @@ def create_qa_tables(pg_cur, settings):
                     .format(i, schema, datetime.now() - start_time))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     logger = logging.getLogger()
 
     # set logger
@@ -1082,11 +1082,11 @@ if __name__ == '__main__':
     console = logging.StreamHandler()
     console.setLevel(logging.INFO)
     # set a format which is simpler for console use
-    formatter = logging.Formatter('%(name)-12s: %(levelname)-8s %(message)s')
+    formatter = logging.Formatter("%(name)-12s: %(levelname)-8s %(message)s")
     # tell the handler to use this format
     console.setFormatter(formatter)
     # add the handler to the root logger
-    logging.getLogger('').addHandler(console)
+    logging.getLogger("").addHandler(console)
 
     logger.info("")
     logger.info("Start gnaf-loader")
