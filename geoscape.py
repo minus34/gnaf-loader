@@ -38,7 +38,7 @@ def run_sql_multiprocessing(args):
     the_sql = args[0]
     settings = args[1]
 
-    pg_conn = settings["pg_pool"].getconn()
+    pg_conn = pg_pool.getconn()
     pg_conn.autocommit = True
     pg_cur = pg_conn.cursor()
 
@@ -53,7 +53,7 @@ def run_sql_multiprocessing(args):
         result = "SQL FAILED! : {0} : {1}".format(the_sql, ex)
 
     pg_cur.close()
-    settings["pg_pool"].putconn(pg_conn)
+    pg_pool.putconn(pg_conn)
 
     return result
 
@@ -256,7 +256,7 @@ def intermediate_shapefile_load_step(args):
 # overcomes issues trying to use psql with PGPASSWORD set at runtime
 def import_shapefile_to_postgres(settings, file_path, pg_table, pg_schema, delete_table, spatial):
 
-    pg_conn = settings["pg_pool"].getconn()
+    pg_conn = pg_pool.getconn()
     pg_conn.autocommit = True
     pg_cur = pg_conn.cursor()
 
@@ -321,6 +321,6 @@ def import_shapefile_to_postgres(settings, file_path, pg_table, pg_schema, delet
             return "\tImporting {} - Couldn't cluster on spatial index : {}".format(pg_table, ex)
 
     pg_cur.close()
-    settings["pg_pool"].putconn(pg_conn)
+    pg_pool.putconn(pg_conn)
 
     return "SUCCESS"
