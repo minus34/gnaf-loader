@@ -145,7 +145,7 @@ def main():
     create_qa_tables(pg_cur)
     logger.info("Part 6 of 6 : Got row counts : {0}".format(datetime.now() - start_time))
 
-    # close Postgres connection and pool
+    # close Postgres connection
     pg_cur.close()
     settings.pg_pool.putconn(pg_conn)
     # pg_pool.close()
