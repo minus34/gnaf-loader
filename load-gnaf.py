@@ -61,7 +61,6 @@ def main():
                 .format(settings.pg_version, settings.postgis_version, settings.geos_version))
 
     # log the user's input parameters
-
     logger.info("")
     logger.info("Arguments")
     for arg in vars(settings.args):

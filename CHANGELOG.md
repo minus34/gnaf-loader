@@ -1,3 +1,11 @@
+### August 2021 Release
+#### Data
+- 
+#### Code
+- Refactored input parameters & settings into a new .py file
+- Postgres connections now come from a connection pool for better multiprocessing
+
+
 ### May 2021 Release
 - Renamed all references to PSMA to Geoscape, reflecting the new data provider's name
 - The docker image build process has been completely redone
