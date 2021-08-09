@@ -31,33 +31,30 @@ ALTER TABLE ONLY admin_bdys.postcode_bdys ADD CONSTRAINT postcode_bdys_pk PRIMAR
 CREATE INDEX address_principals_gid_idx ON gnaf.address_principals USING btree(gid);
 CREATE INDEX address_aliases_gid_idx ON gnaf.address_aliases USING btree(gid);
 
+-- required for bdy boundary alias addresses
+CREATE INDEX address_alias_lookup_principal_pid_idx ON gnaf.address_alias_lookup USING btree(principal_pid);
+CREATE INDEX address_alias_lookup_alias_pid_idx ON gnaf.address_alias_lookup USING btree(alias_pid);
+
 -- foreign keys
 
--- address_principals
 ALTER TABLE ONLY gnaf.address_principals ADD CONSTRAINT address_principals_fk1 FOREIGN KEY (locality_pid) REFERENCES gnaf.localities(locality_pid);
 ALTER TABLE ONLY gnaf.address_principals ADD CONSTRAINT address_principals_fk2 FOREIGN KEY (street_locality_pid) REFERENCES gnaf.streets(street_locality_pid);
 
--- address_aliases
 ALTER TABLE ONLY gnaf.address_aliases ADD CONSTRAINT address_aliases_fk1 FOREIGN KEY (locality_pid) REFERENCES gnaf.localities(locality_pid);
 ALTER TABLE ONLY gnaf.address_aliases ADD CONSTRAINT address_aliases_fk2 FOREIGN KEY (street_locality_pid) REFERENCES gnaf.streets(street_locality_pid);
 
--- address_alias_lookup
 ALTER TABLE ONLY gnaf.address_alias_lookup ADD CONSTRAINT address_alias_lookup_fk1 FOREIGN KEY (alias_pid) REFERENCES gnaf.address_aliases(gnaf_pid);
 ALTER TABLE ONLY gnaf.address_alias_lookup ADD CONSTRAINT address_alias_lookup_fk2 FOREIGN KEY (principal_pid) REFERENCES gnaf.address_principals(gnaf_pid);
 
--- -- address_secondary_lookup - can't add foreign keys as addreses are split into principals and aliases
+-- -- address_secondary_lookup - can't add foreign keys as addresses are split into principals and aliases
 -- ALTER TABLE ONLY gnaf.address_secondary_lookup ADD CONSTRAINT address_secondary_lookup_fk1 FOREIGN KEY (primary_pid) REFERENCES gnaf.address_principals(gnaf_pid);
 -- ALTER TABLE ONLY gnaf.address_secondary_lookup ADD CONSTRAINT address_secondary_lookup_fk2 FOREIGN KEY (secondary_pid) REFERENCES gnaf.address_principals(gnaf_pid);
 
--- streets
 ALTER TABLE ONLY gnaf.streets ADD CONSTRAINT streets_fk1 FOREIGN KEY (locality_pid) REFERENCES gnaf.localities(locality_pid);
 
--- street_aliases
 ALTER TABLE ONLY gnaf.street_aliases ADD CONSTRAINT street_aliases_fk1 FOREIGN KEY (street_locality_pid) REFERENCES gnaf.streets(street_locality_pid);
 
--- locality_aliases
 ALTER TABLE ONLY gnaf.locality_aliases ADD CONSTRAINT locality_aliases_fk1 FOREIGN KEY (locality_pid) REFERENCES gnaf.localities(locality_pid);
 
--- locality_neighbour_lookup
 ALTER TABLE ONLY gnaf.locality_neighbour_lookup ADD CONSTRAINT locality_neighbour_lookup_fk1 FOREIGN KEY (locality_pid) REFERENCES gnaf.localities(locality_pid);
 ALTER TABLE ONLY gnaf.locality_neighbour_lookup ADD CONSTRAINT locality_neighbour_lookup_fk2 FOREIGN KEY (neighbour_locality_pid) REFERENCES gnaf.localities(locality_pid);
