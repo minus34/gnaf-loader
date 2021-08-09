@@ -2,13 +2,37 @@
 
 import os
 import argparse
-import geoscape
+import platform
 import psycopg2
+import sys
 
 from datetime import datetime
 from psycopg2 import pool
 
-# fet the command line arguments for the script
+
+# get latest Geoscape release version as YYYYMM, as of the date provided
+def get_geoscape_version(date):
+    month = date.month
+    year = date.year
+
+    if month == 1:
+        return str(year - 1) + "11"
+    elif 2 <= month < 5:
+        return str(year) + "02"
+    elif 5 <= month < 8:
+        return str(year) + "05"
+    elif 8 <= month < 11:
+        return str(year) + "08"
+    else:
+        return str(year) + "11"
+
+
+# get python, psycopg2 and OS versions
+python_version = sys.version.split("(")[0].strip()
+psycopg2_version = psycopg2.__version__.split("(")[0].strip()
+os_version = platform.system() + " " + platform.version().strip()
+
+# get the command line arguments for the script
 parser = argparse.ArgumentParser(
     description="A quick way to load the complete GNAF and Geoscape Admin Boundaries into Postgres, "
                 "simplified and ready to use as reference data for geocoding, analysis and visualisation.")
@@ -52,7 +76,7 @@ parser.add_argument(
          "otherwise \"password\".")
 
 # schema names for the raw gnaf, flattened reference and admin boundary tables
-geoscape_version = geoscape.get_geoscape_version(datetime.today())
+geoscape_version = get_geoscape_version(datetime.today())
 parser.add_argument(
     "--geoscape-version", default=geoscape_version,
     help="Geoscape Version number as YYYYMM. Defaults to last release year and month \"<geoscape-version>\".")

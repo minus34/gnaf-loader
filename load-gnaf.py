@@ -39,6 +39,11 @@ from datetime import datetime
 def main():
     full_start_time = datetime.now()
 
+    # log Python and OS versions
+    logger.info("\t- running Python {} with Psycopg2 {}"
+                .format(settings.python_version, settings.psycopg2_version))
+    logger.info("\t- on {}".format(settings.os_version))
+
     # get Postgres connection & cursor
     pg_conn = settings.pg_pool.getconn()
     pg_conn.autocommit = True
@@ -270,7 +275,7 @@ def create_primary_foreign_keys():
         sql = sql.strip()
         if sql[0:6] == "ALTER ":
             # add schema to tables names, in case raw gnaf schema not the default
-            sql = sql.replace("ALTER TABLE ONLY ", "ALTER TABLE ONLY " + settings.raw_gnaf_schema + ".")
+            sql = sql.replace("ALTER TABLE ONLY ", "ALTER TABLE ONLY {}.".format(settings.raw_gnaf_schema))
             sql_list.append(sql)
 
     # run queries in separate processes
@@ -318,7 +323,7 @@ def load_raw_admin_boundaries(pg_cur):
     for state in settings.states_to_load:
         state = state.lower()
         # get a dictionary of Shapefiles and DBFs matching the state
-        for root, dirs, files in os.walk(settings.admin_bdys_local_directory.):
+        for root, dirs, files in os.walk(settings.admin_bdys_local_directory):
             for file_name in files:
                 if file_name.lower().startswith(state + "_"):
                     if file_name.lower().endswith("_shp.dbf"):
@@ -933,7 +938,6 @@ if __name__ == "__main__":
 
     logger.info("")
     logger.info("Start gnaf-loader")
-    geoscape.check_python_version(logger)
 
     if main():
         logger.info("Finished successfully!")
