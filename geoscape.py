@@ -5,18 +5,19 @@ import math
 import os
 import platform
 import psycopg2
+import settings
 import subprocess
 import sys
 
 
 # takes a list of sql queries or command lines and runs them using multiprocessing
-def multiprocess_list(mp_type, work_list, settings, logger):
-    pool = multiprocessing.Pool(processes=settings["max_processes"])
+def multiprocess_list(mp_type, work_list, logger):
+    pool = multiprocessing.Pool(processes=settings.max_processes)
 
     num_jobs = len(work_list)
 
     if mp_type == "sql":
-        results = pool.imap_unordered(run_sql_multiprocessing, [[w, settings] for w in work_list])
+        results = pool.imap_unordered(run_sql_multiprocessing, work_list)
     else:
         results = pool.imap_unordered(run_command_line, work_list)
 
@@ -34,17 +35,14 @@ def multiprocess_list(mp_type, work_list, settings, logger):
             logger.info(result)
 
 
-def run_sql_multiprocessing(args):
-    the_sql = args[0]
-    settings = args[1]
-
-    pg_conn = pg_pool.getconn()
+def run_sql_multiprocessing(the_sql):
+    pg_conn = settings.pg_pool.getconn()
     pg_conn.autocommit = True
     pg_cur = pg_conn.cursor()
 
     # set raw gnaf database schema (it's needed for the primary and foreign key creation)
-    if settings["raw_gnaf_schema"] != "public":
-        pg_cur.execute("SET search_path = {0}, public, pg_catalog".format(settings["raw_gnaf_schema"],))
+    if settings.raw_gnaf_schema != "public":
+        pg_cur.execute("SET search_path = {0}, public, pg_catalog".format(settings.raw_gnaf_schema,))
 
     try:
         pg_cur.execute(the_sql)
@@ -53,7 +51,7 @@ def run_sql_multiprocessing(args):
         result = "SQL FAILED! : {0} : {1}".format(the_sql, ex)
 
     pg_cur.close()
-    pg_pool.putconn(pg_conn)
+    settings.pg_pool.putconn(pg_conn)
 
     return result
 
@@ -70,39 +68,39 @@ def run_command_line(cmd):
     return result
 
 
-def open_sql_file(file_name, settings):
-    sql = open(os.path.join(settings["sql_dir"], file_name), "r").read()
-    return prep_sql(sql, settings)
+def open_sql_file(file_name):
+    sql = open(os.path.join(settings.sql_dir, file_name), "r").read()
+    return prep_sql(sql)
 
 
 # change schema names in an array of SQL script if schemas not the default
-def prep_sql_list(sql_list, settings):
+def prep_sql_list(sql_list):
     output_list = []
     for sql in sql_list:
-        output_list.append(prep_sql(sql, settings))
+        output_list.append(prep_sql(sql))
     return output_list
 
 
 # set schema names in the SQL script
-def prep_sql(sql, settings):
+def prep_sql(sql):
 
-    if settings["raw_gnaf_schema"] is not None:
-        sql = sql.replace(" raw_gnaf.", " {0}.".format(settings["raw_gnaf_schema"], ))
-    if settings["raw_admin_bdys_schema"] is not None:
-        sql = sql.replace(" raw_admin_bdys.", " {0}.".format(settings["raw_admin_bdys_schema"], ))
-    if settings["gnaf_schema"] is not None:
-        sql = sql.replace(" gnaf.", " {0}.".format(settings["gnaf_schema"], ))
-    if settings["admin_bdys_schema"] is not None:
-        sql = sql.replace(" admin_bdys.", " {0}.".format(settings["admin_bdys_schema"], ))
+    if settings.raw_gnaf_schema is not None:
+        sql = sql.replace(" raw_gnaf.", " {0}.".format(settings.raw_gnaf_schema, ))
+    if settings.raw_admin_bdys_schema is not None:
+        sql = sql.replace(" raw_admin_bdys.", " {0}.".format(settings.raw_admin_bdys_schema, ))
+    if settings.gnaf_schema is not None:
+        sql = sql.replace(" gnaf.", " {0}.".format(settings.gnaf_schema, ))
+    if settings.admin_bdys_schema is not None:
+        sql = sql.replace(" admin_bdys.", " {0}.".format(settings.admin_bdys_schema, ))
 
-    if settings["pg_user"] != "postgres":
+    if settings.pg_user != "postgres":
         # alter create table script to run with correct Postgres user name
-        sql = sql.replace(" postgres;", " {0};".format(settings["pg_user"], ))
+        sql = sql.replace(" postgres;", " {0};".format(settings.pg_user, ))
 
     return sql
 
 
-def split_sql_into_list(pg_cur, the_sql, table_schema, table_name, table_alias, table_gid, settings, logger):
+def split_sql_into_list(pg_cur, the_sql, table_schema, table_name, table_alias, table_gid, logger):
     # get min max gid values from the table to split
     min_max_sql = "SELECT MIN({2}) AS min, MAX({2}) AS max FROM {0}.{1}".format(table_schema, table_name, table_gid)
 
@@ -116,17 +114,17 @@ def split_sql_into_list(pg_cur, the_sql, table_schema, table_name, table_alias, 
         diff = max_pkey - min_pkey
 
         # Number of records in each query
-        rows_per_request = int(math.floor(float(diff) / float(settings["max_processes"]))) + 1
+        rows_per_request = int(math.floor(float(diff) / float(settings.max_processes))) + 1
 
         # If less records than processes or rows per request,
         # reduce both to allow for a minimum of 15 records each process
-        if float(diff) / float(settings["max_processes"]) < 10.0:
+        if float(diff) / float(settings.max_processes) < 10.0:
             rows_per_request = 10
             processes = int(math.floor(float(diff) / 10.0)) + 1
             logger.info("\t\t- running {0} processes (adjusted due to low row count in table to split)"
                         .format(processes))
         else:
-            processes = settings["max_processes"]
+            processes = settings.max_processes
 
         # create list of sql statements to run with multiprocessing
         sql_list = []
@@ -201,7 +199,7 @@ def check_postgis_version(pg_cur, settings, logger):
     postgis_version_num = 0.0
     geos_version = "UNKNOWN"
     geos_version_num = 0.0
-    settings["st_subdivide_supported"] = False
+    settings.st_subdivide_supported = False
     for lib_string in lib_strings:
         if lib_string[:8] == "POSTGIS=":
             postgis_version = lib_string.replace("POSTGIS=", "")
@@ -210,13 +208,13 @@ def check_postgis_version(pg_cur, settings, logger):
             geos_version = lib_string.replace("GEOS=", "")
             geos_version_num = float(geos_version[:3])
     if postgis_version_num >= 2.2 and geos_version_num >= 3.5:
-        settings["st_subdivide_supported"] = True
+        settings.st_subdivide_supported = True
     logger.info("\t- using Postgres {0} and PostGIS {1} (with GEOS {2})"
                 .format(pg_version, postgis_version, geos_version))
 
 
-def multiprocess_shapefile_load(work_list, settings, logger):
-    pool = multiprocessing.Pool(processes=settings["max_processes"])
+def multiprocess_shapefile_load(work_list, logger):
+    pool = multiprocessing.Pool(processes=settings.max_processes)
 
     num_jobs = len(work_list)
 
@@ -236,27 +234,22 @@ def multiprocess_shapefile_load(work_list, settings, logger):
             logger.info(result)
 
 
-def intermediate_shapefile_load_step(args):
-    work_dict = args[0]
-    settings = args[1]
-    # logger = args[2]
-
+def intermediate_shapefile_load_step(work_dict):
     file_path = work_dict["file_path"]
     pg_table = work_dict["pg_table"]
     pg_schema = work_dict["pg_schema"]
     delete_table = work_dict["delete_table"]
     spatial = work_dict["spatial"]
 
-    result = import_shapefile_to_postgres(settings, file_path, pg_table, pg_schema, delete_table, spatial)
+    result = import_shapefile_to_postgres(file_path, pg_table, pg_schema, delete_table, spatial)
 
     return result
 
 
 # imports a Shapefile into Postgres in 2 steps: SHP > SQL; SQL > Postgres
 # overcomes issues trying to use psql with PGPASSWORD set at runtime
-def import_shapefile_to_postgres(settings, file_path, pg_table, pg_schema, delete_table, spatial):
-
-    pg_conn = pg_pool.getconn()
+def import_shapefile_to_postgres(file_path, pg_table, pg_schema, delete_table, spatial):
+    pg_conn = settings.pg_pool.getconn()
     pg_conn.autocommit = True
     pg_cur = pg_conn.cursor()
 
@@ -321,6 +314,6 @@ def import_shapefile_to_postgres(settings, file_path, pg_table, pg_schema, delet
             return "\tImporting {} - Couldn't cluster on spatial index : {}".format(pg_table, ex)
 
     pg_cur.close()
-    pg_pool.putconn(pg_conn)
+    settings.pg_pool.putconn(pg_conn)
 
     return "SUCCESS"
