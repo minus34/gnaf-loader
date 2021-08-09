@@ -159,3 +159,41 @@ if states_to_load != ["OT"]:
     admin_bdy_list.append(["state_lower_house_electorates", "se_lower_pid"])
 if "TAS" in states_to_load or "VIC" in states_to_load or "WA" in states_to_load:
     admin_bdy_list.append(["state_upper_house_electorates", "se_upper_pid"])
+
+
+# get Postgres, PostGIS & GEOS versions and flag if ST_Subdivide is supported
+
+# get Postgres connection & cursor
+temp_pg_conn = pg_pool.getconn()
+temp_pg_cur = temp_pg_conn.cursor()
+
+# get Postgres version
+temp_pg_cur.execute("SELECT version()")
+pg_version = temp_pg_cur.fetchone()[0].replace("PostgreSQL ", "").split(",")[0]
+
+# get PostGIS version
+temp_pg_cur.execute("SELECT PostGIS_full_version()")
+lib_strings = temp_pg_cur.fetchone()[0].replace("\"", "").split(" ")
+
+temp_pg_cur.close()
+temp_pg_cur = None
+pg_pool.putconn(temp_pg_conn)
+temp_pg_conn = None
+
+postgis_version = "UNKNOWN"
+postgis_version_num = 0.0
+geos_version = "UNKNOWN"
+geos_version_num = 0.0
+
+st_subdivide_supported = False
+
+for lib_string in lib_strings:
+    if lib_string[:8] == "POSTGIS=":
+        postgis_version = lib_string.replace("POSTGIS=", "")
+        postgis_version_num = float(postgis_version[:3])
+    if lib_string[:5] == "GEOS=":
+        geos_version = lib_string.replace("GEOS=", "")
+        geos_version_num = float(geos_version[:3])
+
+if postgis_version_num >= 2.2 and geos_version_num >= 3.5:
+    st_subdivide_supported = True

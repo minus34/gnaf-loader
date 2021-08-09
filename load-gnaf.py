@@ -52,7 +52,8 @@ def main():
         return False
 
     # test if ST_SubDivide exists (only in PostGIS 2.2+). It's used to split boundaries for faster processing
-    geoscape.check_postgis_version(pg_cur, logger)
+    logger.info("\t- using Postgres {} and PostGIS {} (with GEOS {})"
+                .format(settings.pg_version, settings.postgis_version, settings.geos_version))
 
     # log the user's input parameters
 
@@ -142,7 +143,7 @@ def main():
 
     # close Postgres connection and pool
     pg_cur.close()
-    settings["pg_pool"].putconn(pg_conn)
+    settings.pg_pool.putconn(pg_conn)
     # pg_pool.close()
 
     logger.info("")
@@ -182,7 +183,7 @@ def create_raw_gnaf_tables(pg_cur):
 
     # set tables to unlogged to speed up the load? (if requested)
     # -- they'll have to be rebuilt using this script again after a system crash --
-    if settings["unlogged_tables"]:
+    if settings.unlogged_tables:
         sql = sql.replace("CREATE TABLE ", "CREATE UNLOGGED TABLE ")
         unlogged_string = "UNLOGGED "
     else:
@@ -377,8 +378,8 @@ def load_raw_admin_boundaries(pg_cur):
 
         # Run the appends one at a time (Can't multiprocess as sets of parallel INSERTs cause database deadlocks)
         for shp in append_list:
-            result = geoscape.import_shapefile_to_postgres(settings, shp["file_path"], shp["pg_table"], shp["pg_schema"],
-                                                       shp["delete_table"], shp["spatial"])
+            result = geoscape.import_shapefile_to_postgres(shp["file_path"], shp["pg_table"], shp["pg_schema"],
+                                                           shp["delete_table"], shp["spatial"])
 
             if result != "SUCCESS":
                 logger.warning(result)
@@ -544,11 +545,11 @@ def create_admin_bdys_for_analysis():
     # Step 3 of 3 : create admin bdy tables optimised for spatial analysis
     start_time = datetime.now()
 
-    if settings["st_subdivide_supported"]:
+    if settings.st_subdivide_supported:
         template_sql = geoscape.open_sql_file("02-03-create-admin-bdy-analysis-tables_template.sql")
         sql_list = list()
 
-        for table in settings["admin_bdy_list"]:
+        for table in settings.admin_bdy_list:
             sql = template_sql.format(table[0], table[1])
             if table[0] == "locality_bdys":  # special case, need to change schema name
                 # sql = sql.replace(settings.raw_admin_bdys_schema, settings.admin_bdys_schema)
@@ -635,8 +636,7 @@ def create_reference_tables(pg_cur):
     # Step 12 of 14 : finalise addresses, using multiprocessing
     start_time = datetime.now()
     sql = geoscape.open_sql_file("03-12-reference-populate-addresses-2.sql")
-    sql_list = geoscape.split_sql_into_list(pg_cur, sql, settings.gnaf_schema, "localities", "loc", "gid",
-                                        settings, logger)
+    sql_list = geoscape.split_sql_into_list(pg_cur, sql, settings.gnaf_schema, "localities", "loc", "gid", logger)
     if sql_list is not None:
         geoscape.multiprocess_list("sql", sql_list, logger)
 
@@ -654,7 +654,7 @@ def create_reference_tables(pg_cur):
     geoscape.multiprocess_list("sql", sql_list, logger)
 
     # create analysis table?
-    if settings["st_subdivide_supported"]:
+    if settings.st_subdivide_supported:
         pg_cur.execute(geoscape.open_sql_file("03-13a-create-postcode-analysis-table.sql"))
 
     logger.info("\t- Step 13 of 14 : postcode boundaries created : {0}".format(datetime.now() - start_time))
@@ -676,11 +676,11 @@ def boundary_tag_gnaf(pg_cur):
     # create bdy table list
     # remove localities, postcodes and states as these IDs are already assigned to GNAF addresses
     table_list = list()
-    for table in settings["admin_bdy_list"]:
+    for table in settings.admin_bdy_list:
         if table[0] not in ["locality_bdys", "postcode_bdys", "state_bdys"]:
             # if no analysis tables created - use the full tables instead of the subdivided ones
             # WARNING: this can add hours to the processing
-            if settings["st_subdivide_supported"]:
+            if settings.st_subdivide_supported:
                 table_name = "{}_analysis".format(table[0], )
             else:
                 table_name = table[0]
