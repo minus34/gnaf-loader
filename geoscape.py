@@ -165,7 +165,7 @@ def multiprocess_shapefile_load(work_list, logger):
 
     num_jobs = len(work_list)
 
-    results = pool.imap_unordered(intermediate_shapefile_load_step, [[w, settings] for w in work_list])
+    results = pool.imap_unordered(intermediate_shapefile_load_step, work_list)
 
     pool.close()
     pool.join()
