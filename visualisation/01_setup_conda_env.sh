@@ -27,9 +27,10 @@ conda config --env --set channel_priority strict
 # reactivate for env vars to take effect
 conda activate datashader
 
-# install packages for sedona only
+# install packages
 echo "y" | conda install -c conda-forge dask datashader pyarrow psycopg2 geoalchemy2 jupyter
-
+#echo "y" | conda install -c conda-forge geopandas dask pygeos datashader pyarrow psycopg2 geoalchemy2 jupyter
+#pip install git+git://github.com/geopandas/dask-geopandas.git
 
 # --------------------------
 # extra bits
