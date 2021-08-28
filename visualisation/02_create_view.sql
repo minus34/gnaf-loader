@@ -1,7 +1,19 @@
-DROP VIEW IF EXISTS gnaf_202108.vw_temp_address_principals;
-CREATE VIEW gnaf_202108.vw_temp_address_principals AS
-SELECT gid,
-       longitude AS x,
-       latitude AS y
-FROM gnaf_202108.address_principals;
+--DROP TABLE IF EXISTS gnaf_202108.temp_address_principals;
+--CREATE TABLE gnaf_202108.temp_address_principals AS
 
+COPY (
+	SELECT longitude AS x,
+           latitude AS y
+    FROM gnaf_202108.address_principals
+) TO '/Users/hugh.saalmans/tmp/address_principals_point.csv' HEADER CSV;
+
+
+--
+--
+--SELECT gid,
+--       longitude AS x,
+--       latitude AS y
+--FROM gnaf_202108.address_principals;
+--
+--ALTER TABLE ONLY gnaf_202108.temp_address_principals
+--    ADD CONSTRAINT temp_address_principals_pk PRIMARY KEY (gid);
