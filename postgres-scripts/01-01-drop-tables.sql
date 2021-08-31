@@ -43,6 +43,10 @@ DROP TABLE IF EXISTS raw_gnaf.geocode_reliability_aut CASCADE;
 -- new for August 2018
 DROP TABLE IF EXISTS raw_gnaf.address_feature CASCADE;
 DROP TABLE IF EXISTS raw_gnaf.address_change_type_aut CASCADE;
+-- new for August 2021
+DROP TABLE IF EXISTS raw_gnaf.address_mesh_block_2021 CASCADE;
+DROP TABLE IF EXISTS raw_gnaf.mb_2021 CASCADE;
+DROP TABLE IF EXISTS raw_gnaf.locality_pid_linkage CASCADE;
 
 -- drop raw admin boundaries
 DROP TABLE IF EXISTS raw_admin_bdys.aus_comm_electoral CASCADE;
@@ -92,6 +96,9 @@ DROP TABLE IF EXISTS raw_admin_bdys.aus_ucl_2011 CASCADE;
 DROP TABLE IF EXISTS raw_admin_bdys.aus_ucl_2011_polygon CASCADE;
 DROP TABLE IF EXISTS raw_admin_bdys.aus_ward CASCADE;
 DROP TABLE IF EXISTS raw_admin_bdys.aus_ward_polygon CASCADE;
+-- new for August 2021
+DROP TABLE IF EXISTS raw_admin_bdys.aus_mb_2021 CASCADE;
+DROP TABLE IF EXISTS raw_admin_bdys.aus_mb_2021_polygon CASCADE;
 
 -- drop reference gnaf
 DROP TABLE IF EXISTS gnaf.address_alias_lookup CASCADE;
@@ -105,26 +112,33 @@ DROP TABLE IF EXISTS gnaf.locality_neighbour_lookup CASCADE;
 DROP TABLE IF EXISTS gnaf.streets CASCADE;
 
 -- drop reference admin boundaries
+DROP TABLE IF EXISTS admin_bdys.commonwealth_electorates_analysis CASCADE;
 DROP TABLE IF EXISTS admin_bdys.locality_bdys CASCADE;
 DROP TABLE IF EXISTS admin_bdys.locality_bdys_analysis CASCADE;
 DROP TABLE IF EXISTS admin_bdys.postcode_bdys CASCADE;
 DROP TABLE IF EXISTS admin_bdys.postcode_bdys_analysis CASCADE;
 DROP TABLE IF EXISTS admin_bdys.state_bdys_analysis CASCADE;
-DROP TABLE IF EXISTS admin_bdys.commonwealth_electorates_analysis CASCADE;
-DROP TABLE IF EXISTS admin_bdys.gccsa_2011_analysis CASCADE;
-DROP TABLE IF EXISTS admin_bdys.iare_2011_analysis CASCADE;
-DROP TABLE IF EXISTS admin_bdys.iloc_2011_analysis CASCADE;
-DROP TABLE IF EXISTS admin_bdys.ireg_2011_analysis CASCADE;
 DROP TABLE IF EXISTS admin_bdys.lga_analysis CASCADE;
-DROP TABLE IF EXISTS admin_bdys.mb_2011_analysis CASCADE;
-DROP TABLE IF EXISTS admin_bdys.remoteness_2011_analysis CASCADE;
-DROP TABLE IF EXISTS admin_bdys.sa1_2011_analysis CASCADE;
-DROP TABLE IF EXISTS admin_bdys.sa2_2011_analysis CASCADE;
-DROP TABLE IF EXISTS admin_bdys.sa3_2011_analysis CASCADE;
-DROP TABLE IF EXISTS admin_bdys.sa4_2011_analysis CASCADE;
-DROP TABLE IF EXISTS admin_bdys.sos_2011_analysis CASCADE;
-DROP TABLE IF EXISTS admin_bdys.sosr_2011_analysis CASCADE;
 DROP TABLE IF EXISTS admin_bdys.state_electoral_analysis CASCADE;
-DROP TABLE IF EXISTS admin_bdys.sua_2011_analysis CASCADE;
-DROP TABLE IF EXISTS admin_bdys.ucl_2011_analysis CASCADE;
 DROP TABLE IF EXISTS admin_bdys.ward_analysis CASCADE;
+
+DROP TABLE IF EXISTS admin_bdys.abs_2011_gccsa CASCADE;
+DROP TABLE IF EXISTS admin_bdys.abs_2011_mb CASCADE;
+DROP TABLE IF EXISTS admin_bdys.abs_2011_sa1 CASCADE;
+DROP TABLE IF EXISTS admin_bdys.abs_2011_sa2 CASCADE;
+DROP TABLE IF EXISTS admin_bdys.abs_2011_sa3 CASCADE;
+DROP TABLE IF EXISTS admin_bdys.abs_2011_sa4 CASCADE;
+
+DROP TABLE IF EXISTS admin_bdys.abs_2016_gccsa CASCADE;
+DROP TABLE IF EXISTS admin_bdys.abs_2016_mb CASCADE;
+DROP TABLE IF EXISTS admin_bdys.abs_2016_sa1 CASCADE;
+DROP TABLE IF EXISTS admin_bdys.abs_2016_sa2 CASCADE;
+DROP TABLE IF EXISTS admin_bdys.abs_2016_sa3 CASCADE;
+DROP TABLE IF EXISTS admin_bdys.abs_2016_sa4 CASCADE;
+
+DROP TABLE IF EXISTS admin_bdys.abs_2021_gccsa CASCADE;
+DROP TABLE IF EXISTS admin_bdys.abs_2021_mb CASCADE;
+DROP TABLE IF EXISTS admin_bdys.abs_2021_sa1 CASCADE;
+DROP TABLE IF EXISTS admin_bdys.abs_2021_sa2 CASCADE;
+DROP TABLE IF EXISTS admin_bdys.abs_2021_sa3 CASCADE;
+DROP TABLE IF EXISTS admin_bdys.abs_2021_sa4 CASCADE;
