@@ -11,7 +11,7 @@ echo "--------------------------------------------------------------------------
 SECONDS=0*
 
 # create an array of state names
-declare -a STATES=("ACT" "NSW" "NT" "OT" "QLD" "SA" "TAS" "WA")
+declare -a STATES=("ACT" "NSW" "NT" "OT" "QLD" "SA" "TAS" "VIC" "WA")
 
 for STATE in "${STATES[@]}"
 do
@@ -33,10 +33,3 @@ echo "-------------------------------------------------------------------------"
 echo " End time : $(date)"
 echo " Test took ${duration} seconds"
 echo "----------------------------------------------------------------------------------------------------------------"
-
-
-
-
-#ogr2ogr -f PostgreSQL PG:dbname=destination_db   input_polygons.shp \
-#        -nln destination_table  -update  -append  -t_srs "EPSG:4326" \
-#        -sql "SELECT *, row_to_json(input_polygons) as attributes from input_polygons"
