@@ -3,6 +3,9 @@
 # set environment to enable OGR (part of GDAL)
 conda activate geo
 
+# Path of postgres executables
+POSTGRES_PATH="/Applications/Postgres.app/Contents/Versions/13/bin"
+
 # create an array of state names
 declare -a STATES=("ACT" "NSW" "NT" "OT" "QLD" "SA" "TAS" "VIC" "WA")
 
@@ -23,7 +26,7 @@ do
 
   for STATE in "${STATES[@]}"
   do
-    SHP_PATH="/Users/s57405/Downloads/AUG21_Admin_Boundaries_ESRIShapefileorDBFfile/Localities_AUG21_GDA94_SHP/Localities/Localities AUGUST 2021/Standard/${STATE}_localities.shp"
+    SHP_PATH="/Users/$(whoami)/Downloads/AUG21_Admin_Boundaries_ESRIShapefileorDBFfile/Localities_AUG21_GDA94_SHP/Localities/Localities AUGUST 2021/Standard/${STATE}_localities.shp"
 
     if [[ ${STATE} == "ACT" ]]
     then
@@ -59,15 +62,15 @@ do
 
   for STATE in "${STATES[@]}"
   do
-    SHP_PATH="/Users/s57405/Downloads/AUG21_Admin_Boundaries_ESRIShapefileorDBFfile/Localities_AUG21_GDA94_SHP/Localities/Localities AUGUST 2021/Standard/${STATE}_localities.shp"
+    SHP_PATH="/Users/$(whoami)/Downloads/AUG21_Admin_Boundaries_ESRIShapefileorDBFfile/Localities_AUG21_GDA94_SHP/Localities/Localities AUGUST 2021/Standard/${STATE}_localities.shp"
 
     if [[ ${STATE} == "ACT" ]]
     then
       echo "  - importing ${STATE}"
-      /Applications/Postgres.app/Contents/Versions/13/bin/shp2pgsql -d -I -s 4283 -i "${SHP_PATH}" "testing.locality_shp2pgsql_${i}" | psql --quiet --host=localhost --port=5432 --dbname=geo --username=postgres > /dev/null
+      ${POSTGRES_PATH}/shp2pgsql -d -I -s 4283 -i "${SHP_PATH}" "testing.locality_shp2pgsql_${i}" | psql --quiet --host=localhost --port=5432 --dbname=geo --username=postgres > /dev/null
     else
       echo "  - importing ${STATE}"
-      /Applications/Postgres.app/Contents/Versions/13/bin/shp2pgsql -a -s 4283 -i "${SHP_PATH}" "testing.locality_shp2pgsql_${i}" | psql --quiet --host=localhost --port=5432 --dbname=geo --username=postgres > /dev/null
+      ${POSTGRES_PATH}/shp2pgsql -a -s 4283 -i "${SHP_PATH}" "testing.locality_shp2pgsql_${i}" | psql --quiet --host=localhost --port=5432 --dbname=geo --username=postgres > /dev/null
     fi
   done
 
