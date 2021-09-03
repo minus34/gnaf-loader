@@ -3,6 +3,12 @@
 # set environment to enable OGR (part of GDAL)
 conda activate geo
 
+# create an array of state names
+declare -a STATES=("ACT" "NSW" "NT" "OT" "QLD" "SA" "TAS" "VIC" "WA")
+
+# how many iterations of each test
+TEST_COUNT=5
+
 echo "----------------------------------------------------------------------------------------------------------------"
 echo " Start Shapefile to Postgres - OGR test"
 echo " Start time : $(date)"
@@ -10,12 +16,9 @@ echo "--------------------------------------------------------------------------
 
 SECONDS=0*
 
-# create an array of state names
-declare -a STATES=("ACT" "NSW" "NT" "OT" "QLD" "SA" "TAS" "VIC" "WA")
-
-for i in $(seq 1 5);
+for i in $(seq 1 ${TEST_COUNT});
 do
-  echo " ROUND ${i} OF 5"
+  echo " ROUND ${i} OF ${TEST_COUNT} - total time : ${SECONDS}s"
 
   for STATE in "${STATES[@]}"
   do
@@ -34,9 +37,9 @@ do
   echo ""
 done
 
-duration=$SECONDS
+DURATION=${SECONDS}
 
 echo "-------------------------------------------------------------------------"
 echo " End time : $(date)"
-echo " Test took ${duration} seconds"
+echo " OGR Test took ${DURATION}s"
 echo "----------------------------------------------------------------------------------------------------------------"
