@@ -78,7 +78,7 @@ done
 DURATION=${SECONDS}
 
 echo " End time : $(date)"
-echo " OGR Test took ${DURATION}s"
+echo " SHP2PGSQL Test took ${DURATION}s"
 echo "----------------------------------------------------------------------------------------------------------------"
 
 #    # delete target table or append to it?
