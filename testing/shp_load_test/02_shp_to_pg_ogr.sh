@@ -10,11 +10,22 @@ echo "--------------------------------------------------------------------------
 
 SECONDS=0*
 
-STATE="ACT"
-SHP_PATH="/Users/s57405/Downloads/AUG21_Admin_Boundaries_ESRIShapefileorDBFfile/Localities_AUG21_GDA94_SHP/Localities/Localities AUGUST 2021/Standard/${STATE}_localities.shp"
+# create an array of state names
+declare -a STATES=("ACT" "NSW" "NT" "OT" "QLD" "SA" "TAS" "WA")
 
-ogr2ogr -overwrite -f "PostgreSQL" -nln locality -lco SCHEMA=testing PG:"host=localhost port=5432 dbname=geo user=postgres password=password" "${SHP_PATH}"
+for STATE in "${STATES[@]}"
+do
+  echo " Importing ${STATE}"
+  SHP_PATH="/Users/s57405/Downloads/AUG21_Admin_Boundaries_ESRIShapefileorDBFfile/Localities_AUG21_GDA94_SHP/Localities/Localities AUGUST 2021/Standard/${STATE}_localities.shp"
 
+  if [[ ${STATE} == "ACT" ]]
+  then
+    ogr2ogr -f "PostgreSQL" -overwrite -nln testing.locality PG:"host=localhost port=5432 dbname=geo user=postgres password=password" "${SHP_PATH}"
+  else
+    ogr2ogr -f "PostgreSQL" -append -update -nln testing.locality PG:"host=localhost port=5432 dbname=geo user=postgres password=password" "${SHP_PATH}"
+  fi
+
+done
 
 duration=$SECONDS
 
