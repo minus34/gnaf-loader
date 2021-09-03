@@ -202,13 +202,14 @@ def import_shapefile_to_postgres(file_path, pg_table, pg_schema, delete_table, s
 
     # delete target table or append to it?
     if delete_table:
-        delete_append_flag = "-d"
+        # add delete and spatial index flag
+        delete_append_flag = "-d -I"
     else:
         delete_append_flag = "-a"
 
     # assign coordinate system if spatial, otherwise flag as non-spatial
     if spatial:
-        spatial_or_dbf_flags = "-s 4283 -I"
+        spatial_or_dbf_flags = "-s 4283"
     else:
         spatial_or_dbf_flags = "-G -n"
 
