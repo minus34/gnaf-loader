@@ -28,10 +28,10 @@ do
     if [[ ${STATE} == "ACT" ]]
     then
       echo -n "  - importing ${STATE}"
-      ogr2ogr -f "PostgreSQL" -overwrite -nln "testing.locality_ogr_${i}" PG:"host=localhost port=5432 dbname=geo user=postgres password=password" "${SHP_PATH}" -nlt MULTIPOLYGON -lco SPATIAL_INDEX=NO
+      ogr2ogr -f "PostgreSQL" -overwrite -nlt MULTIPOLYGON -nln "testing.locality_ogr_${i}" PG:"host=localhost port=5432 dbname=geo user=postgres password=password" "${SHP_PATH}"
     else
       echo -n ", ${STATE}"
-      ogr2ogr -f "PostgreSQL" -append -update -nln "testing.locality_ogr_${i}" PG:"host=localhost port=5432 dbname=geo user=postgres password=password" "${SHP_PATH}" -nlt MULTIPOLYGON -lco SPATIAL_INDEX=NO
+      ogr2ogr -f "PostgreSQL" -append -update -nlt MULTIPOLYGON -nln "testing.locality_ogr_${i}" PG:"host=localhost port=5432 dbname=geo user=postgres password=password" "${SHP_PATH}"
     fi
   done
 
