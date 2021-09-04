@@ -486,11 +486,11 @@ def clean_authority_files(pg_cur, schema_name):
         try:
             pg_cur.execute("ALTER TABLE ONLY {0}.{1} ADD CONSTRAINT {1}_pkey PRIMARY KEY (code)"
                            .format(schema_name, table_name))
-        except psycopg2.Error:
+        except psycopg2.Error as ex:
             error_count += 1
 
-            logger.warning("CAN'T CREATE PRIMARY KEY ON {}:{} DUE TO DUPLICATE AUTHORITY CODE(S)"
-                           .format(schema_name, table_name))
+            logger.warning("CAN'T CREATE PRIMARY KEY ON {}:{} DUE TO DUPLICATE AUTHORITY CODE(S) : {}"
+                           .format(schema_name, table_name, ex))
 
         # clean up
         pg_cur.execute("DROP TABLE IF EXISTS temp_aut")
