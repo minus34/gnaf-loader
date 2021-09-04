@@ -615,18 +615,14 @@ ALTER TABLE address_change_type_aut OWNER TO postgres;
 
 CREATE TABLE locality_pid_linkage (
     ab_locality_pid character varying(15) NOT NULL,
-    ab_locality_polygon_pid character varying(100) NOT NULL,
+    ab_locality_polygon_pid character varying(15) NOT NULL,
     locality_pid character varying(15) NOT NULL,
-    locality_polygon_pid character varying(100) NOT NULL,
+    locality_polygon_pid character varying(15) NOT NULL,
     state character varying(3)
 );
 
 
 ALTER TABLE locality_pid_linkage OWNER TO postgres;
-
-
-
-ab_locality_pid|ab_locality_polygon_pid|locality_pid|locality_polygon_pid|state
 
 
 REVOKE ALL ON SCHEMA public FROM PUBLIC;

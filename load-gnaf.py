@@ -232,7 +232,7 @@ def get_raw_gnaf_files(prefix):
                 if file_name.lower().endswith(".psv"):
                     file_path = os.path.join(root, file_name)\
                         .replace(settings.gnaf_network_directory, settings.gnaf_pg_server_local_directory)
-                    table = file_name.lower().replace(prefix + "_", "", 1).replace("_psv.psv", "")
+                    table = file_name.lower().replace(prefix + "_", "", 1).replace("_psv", "").replace(".psv", "")
 
                     # if a non-Windows Postgres server OS - fix file path
                     if settings.gnaf_pg_server_local_directory[0:1] == "/":
