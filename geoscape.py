@@ -3,11 +3,11 @@
 import multiprocessing
 import math
 import os
-import platform
-import psycopg2
+# import platform
+# import psycopg2
 import settings
 import subprocess
-import sys
+# import sys
 
 
 # takes a list of sql queries or command lines and runs them using multiprocessing
