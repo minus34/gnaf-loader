@@ -7,6 +7,7 @@ DROP TABLE IF EXISTS admin_bdys.locality_bdys CASCADE;
 CREATE TABLE admin_bdys.locality_bdys(
   gid SERIAL NOT NULL,
   locality_pid text NOT NULL,
+  old_locality_pid text NOT NULL,
   locality_name text NOT NULL,
   postcode text NULL,
   state text NOT NULL,
@@ -17,24 +18,18 @@ CREATE TABLE admin_bdys.locality_bdys(
 ) WITH (OIDS=FALSE);
 ALTER TABLE admin_bdys.locality_bdys OWNER TO postgres;
 
-INSERT INTO admin_bdys.locality_bdys (locality_pid, locality_name, postcode, state, locality_class, geom)
-SELECT dat.loc_pid,
-       dat.name,
-       dat.postcode,
-       ste.st_abbrev,
-       aut.name,
-       st_multi(st_union(st_buffer(bdy.geom, 0.0)))
-  FROM raw_admin_bdys.aus_locality AS dat
-  INNER JOIN raw_admin_bdys.aus_locality_polygon AS bdy ON dat.loc_pid = bdy.loc_pid
-  INNER JOIN raw_admin_bdys.aus_state AS ste ON dat.state_pid = ste.state_pid
-  INNER JOIN raw_admin_bdys.aus_locality_class_aut AS aut ON dat.loccl_code = aut.code
-  WHERE dat.loccl_code = 'G'
-  GROUP BY dat.loc_pid,
-       dat.name,
-       dat.postcode,
-       ste.st_abbrev,
-       aut.name;
-
+INSERT INTO admin_bdys.locality_bdys (locality_pid, locality_name, state, locality_class, geom)
+SELECT loc_pid,
+       loc_name,
+       state,
+       loc_class,
+       st_multi(st_union(st_buffer(bdy.geom, 0.0))) AS geom
+  FROM raw_admin_bdys.aus_localities AS dat
+  WHERE loc_class = 'Gazetted Locality'
+  GROUP BY loc_pid,
+       loc_name,
+       state,
+       loc_class;
 ANALYZE admin_bdys.locality_bdys;
 
 
@@ -45,7 +40,6 @@ DROP TABLE IF EXISTS temp_districts;
 CREATE TEMPORARY TABLE temp_districts (
   locality_pid text NOT NULL PRIMARY KEY,
   locality_name text NOT NULL,
-  postcode text NULL,
   state text NOT NULL,
   locality_class text NOT NULL,
   geom geometry(Multipolygon, 4283, 2) NULL
@@ -56,25 +50,20 @@ CREATE INDEX temp_districts_geom_idx ON temp_districts USING gist(geom);
 ALTER TABLE temp_districts CLUSTER ON temp_districts_geom_idx;
 
 INSERT INTO temp_districts
-SELECT dat.loc_pid,
-       dat.name,
-       dat.postcode,
-       ste.st_abbrev,
-       aut.name,
-       ST_Multi(ST_Union(ST_Buffer(bdy.geom, 0.0)))
-  FROM raw_admin_bdys.aus_locality AS dat
-  INNER JOIN raw_admin_bdys.aus_locality_polygon AS bdy ON dat.loc_pid = bdy.loc_pid
-  INNER JOIN raw_admin_bdys.aus_state AS ste ON dat.state_pid = ste.state_pid
-  INNER JOIN raw_admin_bdys.aus_locality_class_aut AS aut ON dat.loccl_code = aut.code
-  WHERE dat.loccl_code = 'D'
-  AND ste.st_abbrev = 'ACT'
-  GROUP BY dat.loc_pid,
-       dat.name,
-       dat.postcode,
-       ste.st_abbrev,
-       aut.name;
-
+SELECT loc_pid,
+       loc_name,
+       state,
+       loc_class,
+       st_multi(st_union(st_buffer(bdy.geom, 0.0))) AS geom
+  FROM raw_admin_bdys.aus_localities AS dat
+  WHERE loc_class = 'District'
+    AND state = 'ACT'
+  GROUP BY loc_pid,
+       loc_name,
+       state,
+       loc_class;
 ANALYZE temp_districts;
+
 
 -- Insert the ACT localities merged into a single multipolygon as the cookie cutter
 INSERT INTO temp_districts

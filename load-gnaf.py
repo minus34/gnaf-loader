@@ -116,10 +116,10 @@ def main():
     start_time = datetime.now()
     logger.info("Part 3 of 6 : Start raw admin boundary load : {0}".format(start_time))
     load_raw_admin_boundaries(pg_cur)
-    clean_authority_files(pg_cur, settings.raw_admin_bdys_schema, True)
-    prep_admin_bdys(pg_cur)
-    create_admin_bdys_for_analysis()
-    logger.info("Part 3 of 6 : Raw admin boundaries loaded! : {0}".format(datetime.now() - start_time))
+    # clean_authority_files(pg_cur, settings.raw_admin_bdys_schema, True)
+    # prep_admin_bdys(pg_cur)
+    # create_admin_bdys_for_analysis()
+    # logger.info("Part 3 of 6 : Raw admin boundaries loaded! : {0}".format(datetime.now() - start_time))
     #
     # # PART 4 - create flattened and standardised GNAF and Administrative Boundary reference tables
     # logger.info("")
@@ -325,43 +325,35 @@ def load_raw_admin_boundaries(pg_cur):
         for root, dirs, files in os.walk(settings.admin_bdys_local_directory):
             for file_name in files:
                 if file_name.lower().startswith(state + "_"):
-                    if file_name.lower().endswith("_shp.dbf"):
+                    if file_name.lower().endswith(".shp") or file_name.lower().endswith("_shp.dbf"):
                         file_dict = dict()
 
-                        # change file type for spatial files
-                        if file_name.lower().endswith("_polygon_shp.dbf"):
+                        # list .shp files and standalone .dbf files - ignore the rest
+                        if file_name.lower().endswith(".shp"):
                             file_dict["spatial"] = True
-                            file_dict["file_path"] = os.path.join(root, file_name.replace(".dbf", ".shp"))
-                        else:
+                            file_dict["file_path"] = os.path.join(root, file_name)
+                        elif file_name.lower().endswith(".dbf") and not file_name.lower().endswith("_polygon_shp.dbf"):
                             file_dict["spatial"] = False
                             file_dict["file_path"] = os.path.join(root, file_name)
 
-                        file_dict["pg_table"] = \
-                            file_name.lower().replace(state + "_", "aus_", 1).replace("_shp.dbf", "")
+                        if file_dict.get("file_path") is not None:
+                            file_dict["pg_table"] = \
+                                file_name.lower().replace(state + "_", "aus_", 1).replace("_shp.dbf", "")
 
-                        file_dict["pg_schema"] = settings.raw_admin_bdys_schema
+                            file_dict["pg_schema"] = settings.raw_admin_bdys_schema
 
-                        # set command line parameters depending on whether this is the 1st state (for creating tables)
-                        table_list_add = False
+                            # set command line parameters depending on whether this is the 1st state
+                            table_list_add = False
 
-                        if file_dict["pg_table"] not in table_list:
-                            table_list_add = True
+                            if file_dict["pg_table"] not in table_list:
+                                table_list_add = True
 
-                            file_dict["delete_table"] = True
-                        else:
-                            file_dict["delete_table"] = False
-
-                        # if locality file from Towns folder: don't add - it's a duplicate
-                        if "town points" not in file_dict["file_path"].lower():
-                            if table_list_add:
-                                table_list.append(file_dict["pg_table"])
-                                create_list.append(file_dict)
+                                file_dict["delete_table"] = True
                             else:
-                                # # don't add duplicates if more than one Authority Code file per boundary type
-                                # if "_aut_" not in file_name.lower():
-                                append_list.append(file_dict)
-                        else:
-                            if not file_dict["file_path"].lower().endswith("_locality_shp.dbf"):
+                                file_dict["delete_table"] = False
+
+                            # if locality file from Towns folder: don't add - it's a duplicate
+                            if "town points" not in file_dict["file_path"].lower():
                                 if table_list_add:
                                     table_list.append(file_dict["pg_table"])
                                     create_list.append(file_dict)
@@ -369,9 +361,19 @@ def load_raw_admin_boundaries(pg_cur):
                                     # # don't add duplicates if more than one Authority Code file per boundary type
                                     # if "_aut_" not in file_name.lower():
                                     append_list.append(file_dict)
+                            else:
+                                if not file_dict["file_path"].lower().endswith("_locality_shp.dbf"):
+                                    if table_list_add:
+                                        table_list.append(file_dict["pg_table"])
+                                        create_list.append(file_dict)
+                                    else:
+                                        # # don't add duplicates if more than one Authority Code file per boundary type
+                                        # if "_aut_" not in file_name.lower():
+                                        append_list.append(file_dict)
 
-    # logger.info(create_list)
-    # logger.info(append_list)
+    # [print(table) for table in create_list]
+    # print("---------------------------------------------------------------------------------------")
+    # [print(table) for table in append_list]
 
     # are there any files to load?
     if len(create_list) == 0:
@@ -515,6 +517,7 @@ def prep_admin_bdys(pg_cur):
     sql_list = geoscape.open_sql_file("02-02a-prep-admin-bdys-tables.sql").split("-- # --")
     sql_list = sql_list + geoscape.open_sql_file("02-02b-prep-census-2011-bdys-tables.sql").split("-- # --")
     sql_list = sql_list + geoscape.open_sql_file("02-02c-prep-census-2016-bdys-tables.sql").split("-- # --")
+    sql_list = sql_list + geoscape.open_sql_file("02-02d-prep-census-2021-bdys-tables.sql").split("-- # --")
 
     # # Account for bdys that are not in states to load - not yet working
     # for sql in sql_list:
