@@ -338,7 +338,8 @@ def load_raw_admin_boundaries(pg_cur):
 
                         if file_dict.get("file_path") is not None:
                             file_dict["pg_table"] = \
-                                file_name.lower().replace(state + "_", "aus_", 1).replace("_shp.dbf", "")
+                                file_name.lower().replace(state + "_", "aus_", 1)\
+                                    .replace("_shp.dbf", "").replace(".shp", "")
 
                             file_dict["pg_schema"] = settings.raw_admin_bdys_schema
 
@@ -382,7 +383,7 @@ def load_raw_admin_boundaries(pg_cur):
         # load files in separate processes
         geoscape.multiprocess_shapefile_load(create_list, logger)
 
-        # Run the appends one at a time (Can't multiprocess as sets of parallel INSERTs cause database deadlocks)
+        # Run the appends one at a time (Can't multiprocess as sets of parallel INSERTs can cause database deadlocks)
         for shp in append_list:
             result = geoscape.import_shapefile_to_postgres(shp["file_path"], shp["pg_table"], shp["pg_schema"],
                                                            shp["delete_table"], shp["spatial"])
