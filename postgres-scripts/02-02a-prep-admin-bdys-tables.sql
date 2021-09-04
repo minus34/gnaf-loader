@@ -180,7 +180,7 @@ SELECT locality_pid,
 DROP TABLE temp_bdys;
 
 -- delete the replaced Melbourne locality
-DELETE FROM admin_bdys_202108.locality_bdys WHERE locality_pid = 'VIC1634';
+DELETE FROM admin_bdys_202108.locality_bdys WHERE locality_pid = 'loc9901d119afda';
 
 
 -- update stats
@@ -313,15 +313,20 @@ ALTER TABLE admin_bdys_202108.state_upper_house_electorates CLUSTER ON state_upp
 
 DROP TABLE IF EXISTS admin_bdys_202108.local_government_areas CASCADE;
 CREATE TABLE admin_bdys_202108.local_government_areas AS
-SELECT bdy.gid,
-       tab.lga_pid,
-       tab.abb_name AS name,
-       tab.lga_name AS full_name,
-       ste.st_abbrev AS state,
-       bdy.geom
-  FROM raw_admin_bdys_202108.aus_lga AS tab
-  INNER JOIN raw_admin_bdys_202108.aus_lga_polygon AS bdy ON tab.lga_pid = bdy.lga_pid
-  INNER JOIN raw_admin_bdys_202108.aus_state AS ste ON tab.state_pid = ste.state_pid;
+SELECT gid,
+       lga_pid,
+       abb_name AS name,
+       lga_name AS full_name,
+       state,
+       st_multi(st_union(st_buffer(geom, 0.0))) AS geom
+  FROM raw_admin_bdys_202108.aus_lga
+  GROUP BY
+       gid,
+       lga_pid,
+       abb_name,
+       lga_name,
+       state
+  ;
 
 ALTER TABLE admin_bdys_202108.local_government_areas ADD CONSTRAINT local_government_areas_pk PRIMARY KEY (gid);
 CREATE INDEX local_government_areas_geom_idx ON admin_bdys_202108.local_government_areas USING gist(geom);
@@ -335,16 +340,21 @@ ALTER TABLE admin_bdys_202108.local_government_areas CLUSTER ON local_government
 DROP TABLE IF EXISTS admin_bdys_202108.local_government_wards CASCADE;
 CREATE TABLE admin_bdys_202108.local_government_wards AS
 SELECT bdy.gid,
-       tab.ward_pid,
-       lga.lga_pid,
-       tab.name,
-       tab.name AS lga_name,
-       ste.st_abbrev AS state,
-       bdy.geom
-  FROM raw_admin_bdys_202108.aus_ward AS tab
-  INNER JOIN raw_admin_bdys_202108.aus_lga AS lga ON tab.lga_pid = lga.lga_pid
-  INNER JOIN raw_admin_bdys_202108.aus_ward_polygon AS bdy ON tab.ward_pid = bdy.ward_pid
-  INNER JOIN raw_admin_bdys_202108.aus_state AS ste ON tab.state_pid = ste.state_pid;
+       bdy.ward_pid,
+       bdy.lga_pid,
+       bdy.ward_name AS name,
+       lga.lga_name AS lga_name,
+       bdy.state,
+       st_multi(st_union(st_buffer(bdy.geom, 0.0))) AS geom
+  FROM raw_admin_bdys_202108.aus_wards AS bdy
+  INNER JOIN raw_admin_bdys_202108.aus_lga AS lga ON bdy.lga_pid = lga.lga_pid
+  GROUP BY bdy.gid,
+       	   bdy.ward_pid,
+     	   bdy.lga_pid,
+     	   bdy.ward_name,
+   		   lga.lga_name,
+   		   bdy.state
+;
 
 ALTER TABLE admin_bdys_202108.local_government_wards ADD CONSTRAINT local_government_wards_pk PRIMARY KEY (gid);
 CREATE INDEX local_government_wards_geom_idx ON admin_bdys_202108.local_government_wards USING gist(geom);

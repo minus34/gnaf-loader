@@ -115,9 +115,9 @@ def main():
     logger.info("")
     start_time = datetime.now()
     logger.info("Part 3 of 6 : Start raw admin boundary load : {0}".format(start_time))
-    load_raw_admin_boundaries(pg_cur)
+    # load_raw_admin_boundaries(pg_cur)
     # clean_authority_files(pg_cur, settings.raw_admin_bdys_schema, True)
-    # prep_admin_bdys(pg_cur)
+    prep_admin_bdys(pg_cur)
     # create_admin_bdys_for_analysis()
     # logger.info("Part 3 of 6 : Raw admin boundaries loaded! : {0}".format(datetime.now() - start_time))
     #
