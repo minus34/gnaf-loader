@@ -33,6 +33,7 @@ SELECT loc_pid,
 ANALYZE admin_bdys.locality_bdys;
 
 
+
 -- cookie cut ACT districts to areas without a gazetted locality; and add to locality bdys table
 
 -- create temp table of ACT districts
