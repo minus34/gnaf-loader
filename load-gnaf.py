@@ -100,13 +100,13 @@ def main():
     drop_tables_and_vacuum_db(pg_cur)
     create_raw_gnaf_tables(pg_cur)
     populate_raw_gnaf()
+    clean_authority_files(pg_cur, settings.raw_gnaf_schema, False)
     index_raw_gnaf()
     if settings.primary_foreign_keys:
-        create_primary_foreign_keys(False)
+        create_primary_foreign_keys()
     else:
         logger.info("\t- Step 6 of 7 : primary & foreign keys NOT created")
     analyse_raw_gnaf_tables(pg_cur)
-    clean_authority_files(pg_cur, settings.raw_gnaf_schema, True)
     # set postgres search path back to the default
     pg_cur.execute("SET search_path = public, pg_catalog")
     logger.info("Part 2 of 6 : Raw GNAF loaded! : {0}".format(datetime.now() - start_time))
@@ -116,7 +116,7 @@ def main():
     # start_time = datetime.now()
     # logger.info("Part 3 of 6 : Start raw admin boundary load : {0}".format(start_time))
     # load_raw_admin_boundaries(pg_cur)
-    # clean_authority_files(pg_cur, settings.raw_admin_bdys_schema, False)
+    # clean_authority_files(pg_cur, settings.raw_admin_bdys_schema, True)
     # prep_admin_bdys(pg_cur)
     # create_admin_bdys_for_analysis()
     # logger.info("Part 3 of 6 : Raw admin boundaries loaded! : {0}".format(datetime.now() - start_time))
@@ -263,15 +263,10 @@ def index_raw_gnaf():
 
 
 # create raw gnaf primary & foreign keys (for data integrity) using multiprocessing
-def create_primary_foreign_keys(aut=False):
+def create_primary_foreign_keys():
     start_time = datetime.now()
 
-    # FK & PK for authority tables or not?
-    if aut:
-        key_sql = geoscape.open_sql_file("01-06c-raw-gnaf-aut-create-primary-foreign-keys.sql")
-    else:
-        key_sql = geoscape.open_sql_file("01-06-raw-gnaf-create-primary-foreign-keys.sql")
-
+    key_sql = geoscape.open_sql_file("01-06-raw-gnaf-create-primary-foreign-keys.sql")
     key_sql_list = key_sql.split("--")
     sql_list = []
 
@@ -285,10 +280,7 @@ def create_primary_foreign_keys(aut=False):
     # run queries in separate processes
     geoscape.multiprocess_list("sql", sql_list, logger)
 
-    if aut:
-        logger.info("\t\t - authority table primary & foreign keys created : {0}".format(datetime.now() - start_time))
-    else:
-        logger.info("\t- Step 6 of 7 : primary & foreign keys created : {0}".format(datetime.now() - start_time))
+    logger.info("\t- Step 6 of 7 : primary & foreign keys created : {0}".format(datetime.now() - start_time))
 
 
 # analyse raw GNAF tables that have not stats - need actual row counts for QA at the end
@@ -486,12 +478,6 @@ def clean_authority_files(pg_cur, schema_name, create_indexes=False):
         # This is required due to complexities introduced by mix of authority
         #   and non-authority table admin bdy layers in the Aug 2021 release
         if create_indexes:
-            # create PKs and FKs on GNAF authority tables
-            if settings.primary_foreign_keys:
-                create_primary_foreign_keys(True)
-        else:
-            # sort out PKs on admin bdy authority tables
-
             # drop primary key on gid field
             try:
                 pg_cur.execute("ALTER TABLE ONLY {0}.{1} DROP CONSTRAINT {1}_pkey"
