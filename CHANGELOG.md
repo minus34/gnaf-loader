@@ -1,10 +1,11 @@
 ### August 2021 Release
 #### Data
-- 
+- Existing locality_pids have been replaced by Geoscape
+- `locality_pid_linkage` table added to link old and new locality_pids
+- Tables and foreign keys for ABS Census 2021 meshblocks added
 #### Code
 - Refactored input parameters & settings into a new .py file
 - Postgres connections now come from a connection pool for better multiprocessing
-
 
 ### May 2021 Release
 - Renamed all references to PSMA to Geoscape, reflecting the new data provider's name
