@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # need a Python 3.7+ environment with Psycopg2
-conda activate minus34
+conda activate geo
 
 # get the directory this script is running from
 GNAF_SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
@@ -53,6 +53,7 @@ python3 /Users/$(whoami)/git/minus34/gnaf-loader/load-gnaf.py --pgport=5432 --pg
 #
 ## first - activate or create Conda environment with Apache Spark + Sedona
 ##. /Users/$(whoami)/git/iag_geo/spark_testing/apache_sedona/01_setup_sedona.sh
+
 #conda activate sedona
 #
 #python ${GNAF_SCRIPT_DIR}/../spark/02_export_gnaf_and_admin_bdys_to_s3.py
