@@ -6,7 +6,6 @@
 - _old_locality_pid_ field has been added to the following GNAF tables: `address_principals, address_aliases, localities, streets, address_principal_admin_boundaries, address_alias_admin_boundaries`
 - _old_locality_pid_ field has been added to the following admin bdy tables: `locality_bdys, locality_bdys_analysis`
 - _mb_2021_code_ field has been added to `address_principals, address_aliases`
-- **IMPORTANT:** a number of addresses have incorrect old locality pids assigned due to there being multiple old pids matching a single new pid
 
 #### Code
 - Refactored input parameters & settings into a new .py file
