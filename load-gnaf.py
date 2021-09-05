@@ -567,8 +567,8 @@ def create_admin_bdys_for_analysis():
                 sql = sql.replace("name", "locality_name")
                 # add postcodes
                 sql = sql.replace("locality_name text NOT NULL,",
-                                  "locality_name text NOT NULL, postcode text NULL,")
-                sql = sql.replace("locality_name,", "locality_name, postcode,")
+                                  "locality_name text NOT NULL, old_locality_name text NOT NULL, postcode text NULL,")
+                sql = sql.replace("locality_name,", "locality_name, old_locality_name, postcode,")
 
             sql_list.append(sql)
         geoscape.multiprocess_list("sql", sql_list, logger)
