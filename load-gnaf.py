@@ -342,9 +342,8 @@ def load_raw_admin_boundaries(pg_cur):
                             file_dict["file_path"] = os.path.join(root, file_name)
 
                         if file_dict.get("file_path") is not None:
-                            file_dict["pg_table"] = \
-                                file_name.lower().replace(state + "_", "aus_", 1)\
-                                    .replace("_shp.dbf", "").replace(".shp", "")
+                            file_dict["pg_table"] = file_name.lower().replace(state + "_", "aus_", 1)\
+                                .replace(".dbf", "").replace(".shp", "").replace("_shp", "")
 
                             file_dict["pg_schema"] = settings.raw_admin_bdys_schema
 

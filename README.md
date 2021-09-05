@@ -2,7 +2,7 @@
 A quick way to load the complete Geocoded National Address File of Australia (GNAF) and Australian Administrative Boundaries into Postgres, simplified and ready to use as reference data for geocoding, analysis, visualisation and aggregation.
 
 ### What's GNAF?
-Have a look at [these intro slides](http://minus34.com/opendata/intro-to-gnaf.pptx) ([PDF](http://minus34.com/opendata/intro-to-gnaf.pdf)), as well as the [data.gov.au page](https://data.gov.au/dataset/geocoded-national-address-file-g-naf).
+Have a look at [these intro slides](https://minus34.com/opendata/intro-to-gnaf.pptx) ([PDF](https://minus34.com/opendata/intro-to-gnaf.pdf)), as well as the [data.gov.au page](https://data.gov.au/dataset/geocoded-national-address-file-g-naf).
 
 ### There are 3 options for loading the data
 1. [Run](https://github.com/minus34/gnaf-loader#option-1---run-loadgnafpy) the load-gnaf Python script and build the database yourself in a single step
@@ -13,7 +13,7 @@ Have a look at [these intro slides](http://minus34.com/opendata/intro-to-gnaf.pp
 Running the Python script takes 30-120 minutes on a Postgres server configured to take advantage of the RAM available.
 
 ### Performance
-To get a good load time you'll need to configure your Postgres server for performance. There's a good guide [here](http://revenant.ca/www/postgis/workshop/tuning.html), noting it's a few years old and some of the memory parameters can be beefed up if you have the RAM.
+To get a good load time you'll need to configure your Postgres server for performance. There's a good guide [here](https://postgis.net/workshops/postgis-intro/tuning.html), noting it's a few years old and some of the memory parameters can be beefed up if you have the RAM.
 
 ### Pre-requisites
 - Postgres 10.x and above with PostGIS 2.2+
@@ -109,8 +109,8 @@ Should take 15-60 minutes.
 - A knowledge of [Postgres pg_restore parameters](https://www.postgresql.org/docs/12/app-pgrestore.html)
 
 ### Process
-1. Download [gnaf-202108.dmp](http://minus34.com/opendata/geoscape-202108/gnaf-202108.dmp) (~1.2Gb)
-2. Download [admin-bdys-202108.dmp](http://minus34.com/opendata/geoscape-202108/admin-bdys-202108.dmp) (~2.7Gb)
+1. Download [gnaf-202108.dmp](https://minus34.com/opendata/geoscape-202108/gnaf-202108.dmp) (~1.2Gb)
+2. Download [admin-bdys-202108.dmp](https://minus34.com/opendata/geoscape-202108/admin-bdys-202108.dmp) (~2.7Gb)
 3. Edit the restore-gnaf-admin-bdys.bat or .sh script in the supporting-files folder for your database parameters and for the location of pg_restore
 5. Run the script, come back in 15-60 minutes and enjoy!
 
