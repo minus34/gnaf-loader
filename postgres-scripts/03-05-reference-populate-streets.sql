@@ -29,7 +29,7 @@ SELECT str.street_locality_pid,
   LEFT OUTER JOIN raw_gnaf.street_type_aut AS typ ON str.street_type_code = typ.code
   LEFT OUTER JOIN raw_gnaf.street_suffix_aut AS suf ON str.street_suffix_code = suf.code
   LEFT OUTER JOIN raw_gnaf.street_class_aut AS cls ON str.street_class_code = cls.code
-  LEFT OUTER JOIN raw_gnaf.locality_pid_lookup AS old ON loc.locality_pid = old.locality_pid;
+  LEFT OUTER JOIN raw_gnaf.locality_pid_linkage AS old ON loc.locality_pid = old.locality_pid;
 
 ---------------------------------------------------------------------------------------------------------
 -- update stats, add an index & primary key for integrity and to speed up creation of addresses table

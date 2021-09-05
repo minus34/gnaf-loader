@@ -15,7 +15,7 @@ FROM raw_gnaf.locality AS loc
 INNER JOIN raw_gnaf.state AS st ON loc.state_pid = st.state_pid
 INNER JOIN raw_gnaf.locality_class_aut AS aut ON loc.locality_class_code = aut.code
 LEFT OUTER JOIN raw_gnaf.locality_point AS pnt ON loc.locality_pid = pnt.locality_pid
-LEFT OUTER JOIN raw_gnaf.locality_pid_lookup AS old ON loc.locality_pid = old.locality_pid
+LEFT OUTER JOIN raw_gnaf.locality_pid_linkage AS old ON loc.locality_pid = old.locality_pid
 GROUP BY loc.locality_pid,
          old.ab_locality_pid,
          loc.locality_name,
