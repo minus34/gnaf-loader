@@ -475,7 +475,7 @@ def clean_authority_files(pg_cur, schema_name, create_indexes=False):
             pg_cur.execute("INSERT INTO {}.{} (code, name, description) SELECT * FROM temp_aut"
                            .format(schema_name, table_name))
 
-            logger.info("\t\t - {} duplicates removed from {}.{}"
+            logger.info("\t\t- {} duplicates removed from {}.{}"
                         .format(duplicate_row_count, schema_name, table_name))
 
         # This is required due to complexities introduced by mix of authority
@@ -506,7 +506,7 @@ def clean_authority_files(pg_cur, schema_name, create_indexes=False):
     if error_count > 0:
         exit()
 
-    logger.info("\t\t - authority tables deduplicated"
+    logger.info("\t\t- authority tables deduplicated"
                 .format(schema_name, len(tables), datetime.now() - start_time))
 
 
@@ -567,8 +567,8 @@ def create_admin_bdys_for_analysis():
                 sql = sql.replace("name", "locality_name")
                 # add postcodes
                 sql = sql.replace("locality_name text NOT NULL,",
-                                  "locality_name text NOT NULL, old_locality_name text NOT NULL, postcode text NULL,")
-                sql = sql.replace("locality_name,", "locality_name, old_locality_name, postcode,")
+                                  "old_locality_pid text NULL, locality_name text NOT NULL, postcode text NULL,")
+                sql = sql.replace("locality_name,", "old_locality_pid, locality_name, postcode,")
 
             sql_list.append(sql)
         geoscape.multiprocess_list("sql", sql_list, logger)
