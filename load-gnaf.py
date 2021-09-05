@@ -101,7 +101,7 @@ def main():
     create_raw_gnaf_tables(pg_cur)
     populate_raw_gnaf()
     clean_authority_files(pg_cur, settings.raw_gnaf_schema, False)
-    index_raw_gnaf()
+    index_raw_gnaf(pg_cur)
     if settings.primary_foreign_keys:
         create_primary_foreign_keys()
     else:
@@ -248,7 +248,7 @@ def get_raw_gnaf_files(prefix):
 
 
 # index raw gnaf using multiprocessing
-def index_raw_gnaf():
+def index_raw_gnaf(pg_cur):
     # Step 5 of 7 : create indexes
     start_time = datetime.now()
 
@@ -259,6 +259,11 @@ def index_raw_gnaf():
             sql_list.append(sql)
 
     geoscape.multiprocess_list("sql", sql_list, logger)
+
+    # create distinct new & old locality pid lookup table
+    pg_cur.execute(geoscape.open_sql_file("01-05b-create-distinct-locality-pid-linkage-table.sql"))
+
+
     logger.info("\t- Step 5 of 7 : indexes created: {0}".format(datetime.now() - start_time))
 
 
