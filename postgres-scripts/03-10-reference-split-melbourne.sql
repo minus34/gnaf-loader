@@ -88,8 +88,9 @@ UPDATE gnaf.streets
 -----------------------------------------------------------------------------------------------------------------------------
 -- gnaf localities, locality aliases and locality neighbours
 -----------------------------------------------------------------------------------------------------------------------------
-INSERT INTO gnaf.localities(locality_pid, locality_name, postcode, state, std_locality_name, latitude, longitude, locality_class, reliability, address_count, street_count, has_boundary, unique_locality_state, geom)
+INSERT INTO gnaf.localities(locality_pid, old_locality_pid, locality_name, postcode, state, std_locality_name, latitude, longitude, locality_class, reliability, address_count, street_count, has_boundary, unique_locality_state, geom)
 SELECT locality_pid || '_1',
+       old_locality_pid || '_1',
        locality_name,
        postcode,
        state,
@@ -106,8 +107,9 @@ SELECT locality_pid || '_1',
   FROM gnaf.localities
   WHERE locality_pid = 'loc9901d119afda';
 
-INSERT INTO gnaf.localities(locality_pid, locality_name, postcode, state, std_locality_name, latitude, longitude, locality_class, reliability, address_count, street_count, has_boundary, unique_locality_state, geom)
+INSERT INTO gnaf.localities(locality_pid, old_locality_pid, locality_name, postcode, state, std_locality_name, latitude, longitude, locality_class, reliability, address_count, street_count, has_boundary, unique_locality_state, geom)
 SELECT locality_pid || '_2',
+       old_locality_pid || '_2',
        locality_name,
        '3004',
        state,

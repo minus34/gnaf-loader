@@ -1,8 +1,9 @@
 
 -- main insert -- 684781 rows
-INSERT INTO gnaf.streets (street_locality_pid, locality_pid, street_name, street_type, street_suffix, full_street_name, locality_name, postcode, state, street_type_abbrev, street_suffix_abbrev, street_class, latitude, longitude, geom)
+INSERT INTO gnaf.streets (street_locality_pid, locality_pid, old_locality_pid, street_name, street_type, street_suffix, full_street_name, locality_name, postcode, state, street_type_abbrev, street_suffix_abbrev, street_class, latitude, longitude, geom)
 SELECT str.street_locality_pid,
        str.locality_pid,
+       old.ab_locality_pid,
        str.street_name,
        str.street_type_code AS street_type,
        suf.name AS street_suffix,
@@ -27,7 +28,8 @@ SELECT str.street_locality_pid,
   LEFT OUTER JOIN gnaf.localities AS loc ON str.locality_pid = loc.locality_pid
   LEFT OUTER JOIN raw_gnaf.street_type_aut AS typ ON str.street_type_code = typ.code
   LEFT OUTER JOIN raw_gnaf.street_suffix_aut AS suf ON str.street_suffix_code = suf.code
-  LEFT OUTER JOIN raw_gnaf.street_class_aut AS cls ON str.street_class_code = cls.code;
+  LEFT OUTER JOIN raw_gnaf.street_class_aut AS cls ON str.street_class_code = cls.code
+  LEFT OUTER JOIN raw_gnaf.locality_pid_lookup AS old ON loc.locality_pid = old.locality_pid;
 
 ---------------------------------------------------------------------------------------------------------
 -- update stats, add an index & primary key for integrity and to speed up creation of addresses table

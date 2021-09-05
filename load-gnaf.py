@@ -707,6 +707,7 @@ def boundary_tag_gnaf(pg_cur):
                                  "gnaf_pid text NOT NULL,"
                                  # "alias_principal character(1) NOT NULL,"
                                  "locality_pid text NOT NULL,"
+                                 "old_locality_pid text NULL,"
                                  "locality_name text NOT NULL,"
                                  "postcode text,"
                                  "state text NOT NULL"
@@ -766,13 +767,13 @@ def boundary_tag_gnaf(pg_cur):
 
     # create insert statement for multiprocessing
     insert_field_list = list()
-    insert_field_list.append("(gnaf_pid, locality_pid, locality_name, postcode, state")
+    insert_field_list.append("(gnaf_pid, locality_pid, old_locality_pid, locality_name, postcode, state")
 
     insert_join_list = list()
     insert_join_list.append("FROM {}.address_principals AS pnts ".format(settings.gnaf_schema, ))
 
     select_field_list = list()
-    select_field_list.append("SELECT pnts.gnaf_pid, pnts.locality_pid, "
+    select_field_list.append("SELECT pnts.gnaf_pid, pnts.locality_pid, pnts.old_locality_pid, "
                              "pnts.locality_name, pnts.postcode, pnts.state")
 
     drop_table_list = list()
