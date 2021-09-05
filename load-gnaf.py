@@ -74,52 +74,52 @@ def main():
 
     # START LOADING DATA
 
-    # # PART 1 - create new schemas
-    # logger.info("")
-    # start_time = datetime.now()
-    # logger.info("Part 1 of 6 : Create schemas : {0}".format(start_time))
-    #
-    # if settings.raw_gnaf_schema != "public":
-    #     pg_cur.execute("CREATE SCHEMA IF NOT EXISTS {0} AUTHORIZATION {1}"
-    #                    .format(settings.raw_gnaf_schema, settings.pg_user))
-    # if settings.raw_admin_bdys_schema != "public":
-    #     pg_cur.execute("CREATE SCHEMA IF NOT EXISTS {0} AUTHORIZATION {1}"
-    #                    .format(settings.raw_admin_bdys_schema, settings.pg_user))
-    # if settings.admin_bdys_schema != "public":
-    #     pg_cur.execute("CREATE SCHEMA IF NOT EXISTS {0} AUTHORIZATION {1}"
-    #                    .format(settings.admin_bdys_schema, settings.pg_user))
-    # if settings.gnaf_schema != "public":
-    #     pg_cur.execute("CREATE SCHEMA IF NOT EXISTS {0} AUTHORIZATION {1}"
-    #                    .format(settings.gnaf_schema, settings.pg_user))
-    # logger.info("Part 1 of 6 : Schemas created! : {0}".format(datetime.now() - start_time))
-    #
-    # # PART 2 - load gnaf from PSV files
-    # logger.info("")
-    # start_time = datetime.now()
-    # logger.info("Part 2 of 6 : Start raw GNAF load : {0}".format(start_time))
-    # drop_tables_and_vacuum_db(pg_cur)
-    # create_raw_gnaf_tables(pg_cur)
-    # populate_raw_gnaf()
-    # clean_authority_files(pg_cur, settings.raw_gnaf_schema, False)
-    # index_raw_gnaf()
-    # if settings.primary_foreign_keys:
-    #     create_primary_foreign_keys()
-    # else:
-    #     logger.info("\t- Step 6 of 7 : primary & foreign keys NOT created")
-    # analyse_raw_gnaf_tables(pg_cur)
-    # # set postgres search path back to the default
-    # pg_cur.execute("SET search_path = public, pg_catalog")
-    # logger.info("Part 2 of 6 : Raw GNAF loaded! : {0}".format(datetime.now() - start_time))
-    #
-    # # PART 3 - load raw admin boundaries from Shapefiles
-    # logger.info("")
-    # start_time = datetime.now()
-    # logger.info("Part 3 of 6 : Start raw admin boundary load : {0}".format(start_time))
-    # load_raw_admin_boundaries(pg_cur)
-    # clean_authority_files(pg_cur, settings.raw_admin_bdys_schema, True)
-    # prep_admin_bdys(pg_cur)
-    # create_admin_bdys_for_analysis()
-    # logger.info("Part 3 of 6 : Raw admin boundaries loaded! : {0}".format(datetime.now() - start_time))
+    # PART 1 - create new schemas
+    logger.info("")
+    start_time = datetime.now()
+    logger.info("Part 1 of 6 : Create schemas : {0}".format(start_time))
+
+    if settings.raw_gnaf_schema != "public":
+        pg_cur.execute("CREATE SCHEMA IF NOT EXISTS {0} AUTHORIZATION {1}"
+                       .format(settings.raw_gnaf_schema, settings.pg_user))
+    if settings.raw_admin_bdys_schema != "public":
+        pg_cur.execute("CREATE SCHEMA IF NOT EXISTS {0} AUTHORIZATION {1}"
+                       .format(settings.raw_admin_bdys_schema, settings.pg_user))
+    if settings.admin_bdys_schema != "public":
+        pg_cur.execute("CREATE SCHEMA IF NOT EXISTS {0} AUTHORIZATION {1}"
+                       .format(settings.admin_bdys_schema, settings.pg_user))
+    if settings.gnaf_schema != "public":
+        pg_cur.execute("CREATE SCHEMA IF NOT EXISTS {0} AUTHORIZATION {1}"
+                       .format(settings.gnaf_schema, settings.pg_user))
+    logger.info("Part 1 of 6 : Schemas created! : {0}".format(datetime.now() - start_time))
+
+    # PART 2 - load gnaf from PSV files
+    logger.info("")
+    start_time = datetime.now()
+    logger.info("Part 2 of 6 : Start raw GNAF load : {0}".format(start_time))
+    drop_tables_and_vacuum_db(pg_cur)
+    create_raw_gnaf_tables(pg_cur)
+    populate_raw_gnaf()
+    clean_authority_files(pg_cur, settings.raw_gnaf_schema, False)
+    index_raw_gnaf()
+    if settings.primary_foreign_keys:
+        create_primary_foreign_keys()
+    else:
+        logger.info("\t- Step 6 of 7 : primary & foreign keys NOT created")
+    analyse_raw_gnaf_tables(pg_cur)
+    # set postgres search path back to the default
+    pg_cur.execute("SET search_path = public, pg_catalog")
+    logger.info("Part 2 of 6 : Raw GNAF loaded! : {0}".format(datetime.now() - start_time))
+
+    # PART 3 - load raw admin boundaries from Shapefiles
+    logger.info("")
+    start_time = datetime.now()
+    logger.info("Part 3 of 6 : Start raw admin boundary load : {0}".format(start_time))
+    load_raw_admin_boundaries(pg_cur)
+    clean_authority_files(pg_cur, settings.raw_admin_bdys_schema, True)
+    prep_admin_bdys(pg_cur)
+    create_admin_bdys_for_analysis()
+    logger.info("Part 3 of 6 : Raw admin boundaries loaded! : {0}".format(datetime.now() - start_time))
 
     # PART 4 - create flattened and standardised GNAF and Administrative Boundary reference tables
     logger.info("")
