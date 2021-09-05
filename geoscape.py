@@ -196,10 +196,6 @@ def intermediate_shapefile_load_step(work_dict):
 # imports a Shapefile into Postgres in 2 steps: SHP > SQL; SQL > Postgres
 # overcomes issues trying to use psql with PGPASSWORD set at runtime
 def import_shapefile_to_postgres(file_path, pg_table, pg_schema, delete_table, spatial):
-    pg_conn = settings.pg_pool.getconn()
-    pg_conn.autocommit = True
-    pg_cur = pg_conn.cursor()
-
     # delete target table or append to it?
     if delete_table:
         # add delete and spatial index flag
@@ -240,6 +236,10 @@ def import_shapefile_to_postgres(file_path, pg_table, pg_schema, delete_table, s
     sql = sql.replace("DROP TABLE IF EXISTS IF EXISTS ", "DROP TABLE IF EXISTS ")
 
     # import data to Postgres
+    pg_conn = settings.pg_pool.getconn()
+    pg_conn.autocommit = True
+    pg_cur = pg_conn.cursor()
+
     try:
         pg_cur.execute(sql)
     except Exception as ex:
@@ -250,6 +250,9 @@ def import_shapefile_to_postgres(file_path, pg_table, pg_schema, delete_table, s
                                    "error_debug_{}.sql".format(file_name,)), "w")
         target.write(sql)
 
+        pg_cur.close()
+        settings.pg_pool.putconn(pg_conn)
+
         return "\tImporting {} - Couldn't run Shapefile SQL\nshp2pgsql result was: {} ".format(file_name, ex)
 
     # Cluster table on spatial index for performance
@@ -259,6 +262,8 @@ def import_shapefile_to_postgres(file_path, pg_table, pg_schema, delete_table, s
         try:
             pg_cur.execute(sql)
         except Exception as ex:
+            pg_cur.close()
+            settings.pg_pool.putconn(pg_conn)
             return "\tImporting {} - Couldn't cluster on spatial index : {}".format(pg_table, ex)
 
     pg_cur.close()

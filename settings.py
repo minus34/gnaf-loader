@@ -159,7 +159,7 @@ pg_connect_string = "dbname='{0}' host='{1}' port='{2}' user='{3}' password='{4}
 
 # create Postgres connection pool
 try:
-    pg_pool = psycopg2.pool.SimpleConnectionPool(1, max_processes * 2, pg_connect_string)
+    pg_pool = psycopg2.pool.SimpleConnectionPool(1, max_processes + 2, pg_connect_string)
 except psycopg2.Error:
     print("Unable to connect to database - EXITING!\nACTION: Check your Postgres parameters and/or database security")
     exit()
