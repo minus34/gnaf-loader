@@ -35,8 +35,8 @@ ANALYZE admin_bdys.locality_bdys;
 
 -- add old locality_pids
 UPDATE admin_bdys.locality_bdys as new
-    SET old_locality_pid = old.ab_locality_pid
-FROM raw_gnaf.locality_pid_linkage AS old
+    SET old_locality_pid = old.old_locality_pid
+FROM raw_gnaf.locality_pid_linkage_distinct AS old
 WHERE new.locality_pid = old.locality_pid;
 
 ANALYZE admin_bdys.locality_bdys;
@@ -65,17 +65,17 @@ ALTER TABLE temp_districts CLUSTER ON temp_districts_geom_idx;
 
 INSERT INTO temp_districts
 SELECT dat.loc_pid,
-       link.ab_locality_pid,
+       link.old_locality_pid,
        dat.loc_name,
        dat.state,
        dat.loc_class,
        st_multi(st_union(st_buffer(dat.geom, 0.0))) AS geom
   FROM raw_admin_bdys.aus_localities AS dat
-  LEFT OUTER JOIN raw_gnaf.locality_pid_linkage AS link ON dat.loc_pid = link.locality_pid
+  LEFT OUTER JOIN raw_gnaf.locality_pid_linkage_distinct AS link ON dat.loc_pid = link.locality_pid
   WHERE dat.loc_class = 'District'
     AND dat.state = 'ACT'
   GROUP BY dat.loc_pid,
-           link.ab_locality_pid,
+           link.old_locality_pid,
            dat.loc_name,
            dat.state,
            dat.loc_class;
