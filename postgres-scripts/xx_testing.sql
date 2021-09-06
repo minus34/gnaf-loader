@@ -25,4 +25,4 @@ select count(*) from fred
 ;
 
 
-select * from gnaf_202108.qa;
+select * from admin_bdys_202108.qa_comparison;

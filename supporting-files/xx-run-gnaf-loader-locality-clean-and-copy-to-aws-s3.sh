@@ -19,7 +19,7 @@ echo "--------------------------------------------------------------------------
 echo "Run gnaf-loader and locality boundary clean"
 echo "---------------------------------------------------------------------------------------------------------------------"
 
-python3 /Users/$(whoami)/git/minus34/gnaf-loader/load-gnaf.py --pgport=5432 --pgdb=geo --max-processes=6 --gnaf-tables-path="${GNAF_PATH}" --admin-bdys-path="${BDYS_PATH}"
+python3 /Users/$(whoami)/git/minus34/gnaf-loader/load-gnaf.py --pgport=5432 --pgdb=geo --max-processes=6 --gnaf-tables-path="${GNAF_PATH}" --admin-bdys-path="${BDYS_PATH}" --previous-geoscape-version 202102
 #python3 /Users/$(whoami)/git/iag_geo/psma-admin-bdys/locality-clean.py --pgport=5432 --pgdb=geo --max-processes=6 --output-path=${OUTPUT_FOLDER}
 #
 #echo "---------------------------------------------------------------------------------------------------------------------"
