@@ -2,9 +2,10 @@
 
 #### Data
 - Existing locality_pids have been replaced by Geoscape
-- Tables and foreign keys for ABS Census 2021 meshblocks added
 - _old_locality_pid_ field has been added to the following GNAF tables: `address_principals, address_aliases, localities, streets, address_principal_admin_boundaries, address_alias_admin_boundaries`
 - _old_locality_pid_ field has been added to the following admin bdy tables: `locality_bdys, locality_bdys_analysis`
+- Tables and foreign keys for ABS Census 2021 meshblocks added
+- ABS Census 2021 meshblock, SA1, SA2, SA3, SA4 and GSCC
 - _mb_2021_code_ field has been added to `address_principals, address_aliases`
 
 #### Code
