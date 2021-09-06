@@ -964,8 +964,23 @@ def create_qa_tables(pg_cur):
             pg_cur.execute(sql)
 
             pg_cur.execute("ANALYZE {}.qa_comparison".format(schema))
+
+            # pretty print row counts to screen
+            pg_cur.execute("SELECT * FROM {}.qa_comparison ORDER BY table_name".format(schema))
+            rows = pg_cur.fetchall()
+
+            logger.info("\t\t------------------------------------------------------------------------")
+            logger.info("\t\t|{:39}|{:10}|{:9}|{:9}|".format("table_name", "difference", "new_count", "old_count"))
+            logger.info("\t\t------------------------------------------------------------------------")
+
+            for row in rows:
+                logger.info("\t\t|{:39}|{:10}|{:9}|{:9}|".format(row[0], row[1], row[2], row[3]))
+
+            logger.info("\t\t------------------------------------------------------------------------")
+
         else:
-            logger.warning("\t\t- Previous schema ({}) doesn't exist - row count comparison not done")
+            logger.warning("\t\t- Previous schema ({}) doesn't exist - row count comparison not done"
+                           .format(previous_schema))
 
         logger.info("\t- Step {} of 2 : got row counts for {} schema : {}"
                     .format(i, schema, datetime.now() - start_time))
