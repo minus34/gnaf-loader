@@ -9,6 +9,7 @@
 - ABS Census 2021 meshblock, SA1, SA2, SA3, SA4 and GCSSA boundaries have been added to Admin Bdys
 - QA process now checks row counts between new & previous versions
 - `--previous-geoscape-version, --previous-gnaf-schema, --previous-admin-schema` runtime parameters added to enable QA row count dcomparison
+- **minus34.com** is now a secure website (long overdue) - all file downloads are now over https:// only
 
 #### Code
 - Refactored input parameters & settings into a new .py file
