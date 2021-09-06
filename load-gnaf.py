@@ -79,64 +79,64 @@ def main():
     start_time = datetime.now()
     logger.info("Part 1 of 6 : Create schemas : {0}".format(start_time))
 
-    # if settings.raw_gnaf_schema != "public":
-    #     pg_cur.execute("CREATE SCHEMA IF NOT EXISTS {0} AUTHORIZATION {1}"
-    #                    .format(settings.raw_gnaf_schema, settings.pg_user))
-    # if settings.raw_admin_bdys_schema != "public":
-    #     pg_cur.execute("CREATE SCHEMA IF NOT EXISTS {0} AUTHORIZATION {1}"
-    #                    .format(settings.raw_admin_bdys_schema, settings.pg_user))
-    # if settings.admin_bdys_schema != "public":
-    #     pg_cur.execute("CREATE SCHEMA IF NOT EXISTS {0} AUTHORIZATION {1}"
-    #                    .format(settings.admin_bdys_schema, settings.pg_user))
-    # if settings.gnaf_schema != "public":
-    #     pg_cur.execute("CREATE SCHEMA IF NOT EXISTS {0} AUTHORIZATION {1}"
-    #                    .format(settings.gnaf_schema, settings.pg_user))
-    # logger.info("Part 1 of 6 : Schemas created! : {0}".format(datetime.now() - start_time))
-    #
-    # # PART 2 - load gnaf from PSV files
-    # logger.info("")
-    # start_time = datetime.now()
-    # logger.info("Part 2 of 6 : Start raw GNAF load : {0}".format(start_time))
-    # drop_tables_and_vacuum_db(pg_cur)
-    # create_raw_gnaf_tables(pg_cur)
-    # populate_raw_gnaf()
-    # clean_authority_files(pg_cur, settings.raw_gnaf_schema, False)
-    # index_raw_gnaf(pg_cur)
-    # if settings.primary_foreign_keys:
-    #     create_primary_foreign_keys()
-    # else:
-    #     logger.info("\t- Step 6 of 7 : primary & foreign keys NOT created")
-    # analyse_raw_gnaf_tables(pg_cur)
-    # # set postgres search path back to the default
-    # pg_cur.execute("SET search_path = public, pg_catalog")
-    # logger.info("Part 2 of 6 : Raw GNAF loaded! : {0}".format(datetime.now() - start_time))
-    #
-    # # PART 3 - load raw admin boundaries from Shapefiles
-    # logger.info("")
-    # start_time = datetime.now()
-    # logger.info("Part 3 of 6 : Start raw admin boundary load : {0}".format(start_time))
-    # load_raw_admin_boundaries(pg_cur)
-    # clean_authority_files(pg_cur, settings.raw_admin_bdys_schema, True)
-    # prep_admin_bdys(pg_cur)
-    # create_admin_bdys_for_analysis()
-    # logger.info("Part 3 of 6 : Raw admin boundaries loaded! : {0}".format(datetime.now() - start_time))
-    #
-    # # PART 4 - create flattened and standardised GNAF and Administrative Boundary reference tables
-    # logger.info("")
-    # start_time = datetime.now()
-    # logger.info("Part 4 of 6 : Start create reference tables : {0}".format(start_time))
-    # create_reference_tables(pg_cur)
-    # logger.info("Part 4 of 6 : Reference tables created! : {0}".format(datetime.now() - start_time))
-    #
-    # # PART 5 - boundary tag GNAF addresses
-    # logger.info("")
-    # if settings.no_boundary_tag:
-    #     logger.warning("Part 5 of 6 : Addresses NOT boundary tagged")
-    # else:
-    #     start_time = datetime.now()
-    #     logger.info("Part 5 of 6 : Start boundary tagging addresses : {0}".format(start_time))
-    #     boundary_tag_gnaf(pg_cur)
-    #     logger.info("Part 5 of 6 : Addresses boundary tagged: {0}".format(datetime.now() - start_time))
+    if settings.raw_gnaf_schema != "public":
+        pg_cur.execute("CREATE SCHEMA IF NOT EXISTS {0} AUTHORIZATION {1}"
+                       .format(settings.raw_gnaf_schema, settings.pg_user))
+    if settings.raw_admin_bdys_schema != "public":
+        pg_cur.execute("CREATE SCHEMA IF NOT EXISTS {0} AUTHORIZATION {1}"
+                       .format(settings.raw_admin_bdys_schema, settings.pg_user))
+    if settings.admin_bdys_schema != "public":
+        pg_cur.execute("CREATE SCHEMA IF NOT EXISTS {0} AUTHORIZATION {1}"
+                       .format(settings.admin_bdys_schema, settings.pg_user))
+    if settings.gnaf_schema != "public":
+        pg_cur.execute("CREATE SCHEMA IF NOT EXISTS {0} AUTHORIZATION {1}"
+                       .format(settings.gnaf_schema, settings.pg_user))
+    logger.info("Part 1 of 6 : Schemas created! : {0}".format(datetime.now() - start_time))
+
+    # PART 2 - load gnaf from PSV files
+    logger.info("")
+    start_time = datetime.now()
+    logger.info("Part 2 of 6 : Start raw GNAF load : {0}".format(start_time))
+    drop_tables_and_vacuum_db(pg_cur)
+    create_raw_gnaf_tables(pg_cur)
+    populate_raw_gnaf()
+    clean_authority_files(pg_cur, settings.raw_gnaf_schema, False)
+    index_raw_gnaf(pg_cur)
+    if settings.primary_foreign_keys:
+        create_primary_foreign_keys()
+    else:
+        logger.info("\t- Step 6 of 7 : primary & foreign keys NOT created")
+    analyse_raw_gnaf_tables(pg_cur)
+    # set postgres search path back to the default
+    pg_cur.execute("SET search_path = public, pg_catalog")
+    logger.info("Part 2 of 6 : Raw GNAF loaded! : {0}".format(datetime.now() - start_time))
+
+    # PART 3 - load raw admin boundaries from Shapefiles
+    logger.info("")
+    start_time = datetime.now()
+    logger.info("Part 3 of 6 : Start raw admin boundary load : {0}".format(start_time))
+    load_raw_admin_boundaries(pg_cur)
+    clean_authority_files(pg_cur, settings.raw_admin_bdys_schema, True)
+    prep_admin_bdys(pg_cur)
+    create_admin_bdys_for_analysis()
+    logger.info("Part 3 of 6 : Raw admin boundaries loaded! : {0}".format(datetime.now() - start_time))
+
+    # PART 4 - create flattened and standardised GNAF and Administrative Boundary reference tables
+    logger.info("")
+    start_time = datetime.now()
+    logger.info("Part 4 of 6 : Start create reference tables : {0}".format(start_time))
+    create_reference_tables(pg_cur)
+    logger.info("Part 4 of 6 : Reference tables created! : {0}".format(datetime.now() - start_time))
+
+    # PART 5 - boundary tag GNAF addresses
+    logger.info("")
+    if settings.no_boundary_tag:
+        logger.warning("Part 5 of 6 : Addresses NOT boundary tagged")
+    else:
+        start_time = datetime.now()
+        logger.info("Part 5 of 6 : Start boundary tagging addresses : {0}".format(start_time))
+        boundary_tag_gnaf(pg_cur)
+        logger.info("Part 5 of 6 : Addresses boundary tagged: {0}".format(datetime.now() - start_time))
 
     # PART 6 - get record counts for QA
     logger.info("")
@@ -873,58 +873,58 @@ def create_qa_tables(pg_cur):
 
         i += 1
 
-        # # STEP 1 - get row counts of tables in each schema, by state, for visual QA
-        #
-        # # create qa table of rows counts
-        # sql = "DROP TABLE IF EXISTS {0}.qa;" \
-        #       "CREATE TABLE {0}.qa (table_name text, aus integer, act integer, nsw integer, " \
-        #       "nt integer, ot integer, qld integer, sa integer, tas integer, vic integer, wa integer) " \
-        #       "WITH (OIDS=FALSE);" \
-        #       "ALTER TABLE {0}.qa OWNER TO {1}".format(schema, settings.pg_user)
-        # pg_cur.execute(sql)
-        #
-        # # get table names in schema
-        # sql = "SELECT table_name FROM information_schema.tables WHERE table_schema = '{0}' AND table_name <> 'qa' " \
-        #       "ORDER BY table_name"\
-        #     .format(schema)
-        # pg_cur.execute(sql)
-        #
-        # table_names = []
-        # for pg_row in pg_cur:
-        #     table_names.append(pg_row[0])
-        #
-        # # get row counts by state
-        # for table_name in table_names:
-        #     sql = "INSERT INTO {0}.qa " \
-        #           "SELECT '{1}', SUM(AUS), SUM(ACT), SUM(NSW), SUM(NT), SUM(OT), " \
-        #           "SUM(QLD), SUM(SA), SUM(TAS), SUM(VIC), SUM(WA) " \
-        #           "FROM (" \
-        #           "SELECT 1 AS AUS," \
-        #           "CASE WHEN state = 'ACT' THEN 1 ELSE 0 END AS ACT," \
-        #           "CASE WHEN state = 'NSW' THEN 1 ELSE 0 END AS NSW," \
-        #           "CASE WHEN state = 'NT' THEN 1 ELSE 0 END AS NT," \
-        #           "CASE WHEN state = 'OT' THEN 1 ELSE 0 END AS OT," \
-        #           "CASE WHEN state = 'QLD' THEN 1 ELSE 0 END AS QLD," \
-        #           "CASE WHEN state = 'SA' THEN 1 ELSE 0 END AS SA," \
-        #           "CASE WHEN state = 'TAS' THEN 1 ELSE 0 END AS TAS," \
-        #           "CASE WHEN state = 'VIC' THEN 1 ELSE 0 END AS VIC," \
-        #           "CASE WHEN state = 'WA' THEN 1 ELSE 0 END AS WA " \
-        #           "FROM {0}.{1}) AS sqt".format(schema, table_name)
-        #
-        #     try:
-        #         pg_cur.execute(sql)
-        #     except psycopg2.Error:  # triggers when there is no state field in the table
-        #         # change the query for an Australia count only
-        #         sql = "INSERT INTO {0}.qa (table_name, aus) " \
-        #               "SELECT '{1}', Count(*) FROM {0}.{1}".format(schema, table_name)
-        #
-        #         try:
-        #             pg_cur.execute(sql)
-        #         except Exception as ex:
-        #             # if no state field - change the query for an Australia count only
-        #             logger.warning("Couldn't get row count for {0}.{1} : {2}".format(schema, table_name, ex))
-        #
-        # pg_cur.execute("ANALYZE {0}.qa".format(schema))
+        # STEP 1 - get row counts of tables in each schema, by state, for visual QA
+
+        # create qa table of rows counts
+        sql = "DROP TABLE IF EXISTS {0}.qa;" \
+              "CREATE TABLE {0}.qa (table_name text, aus integer, act integer, nsw integer, " \
+              "nt integer, ot integer, qld integer, sa integer, tas integer, vic integer, wa integer) " \
+              "WITH (OIDS=FALSE);" \
+              "ALTER TABLE {0}.qa OWNER TO {1}".format(schema, settings.pg_user)
+        pg_cur.execute(sql)
+
+        # get table names in schema
+        sql = "SELECT table_name FROM information_schema.tables WHERE table_schema = '{0}' AND table_name <> 'qa' " \
+              "ORDER BY table_name"\
+            .format(schema)
+        pg_cur.execute(sql)
+
+        table_names = []
+        for pg_row in pg_cur:
+            table_names.append(pg_row[0])
+
+        # get row counts by state
+        for table_name in table_names:
+            sql = "INSERT INTO {0}.qa " \
+                  "SELECT '{1}', SUM(AUS), SUM(ACT), SUM(NSW), SUM(NT), SUM(OT), " \
+                  "SUM(QLD), SUM(SA), SUM(TAS), SUM(VIC), SUM(WA) " \
+                  "FROM (" \
+                  "SELECT 1 AS AUS," \
+                  "CASE WHEN state = 'ACT' THEN 1 ELSE 0 END AS ACT," \
+                  "CASE WHEN state = 'NSW' THEN 1 ELSE 0 END AS NSW," \
+                  "CASE WHEN state = 'NT' THEN 1 ELSE 0 END AS NT," \
+                  "CASE WHEN state = 'OT' THEN 1 ELSE 0 END AS OT," \
+                  "CASE WHEN state = 'QLD' THEN 1 ELSE 0 END AS QLD," \
+                  "CASE WHEN state = 'SA' THEN 1 ELSE 0 END AS SA," \
+                  "CASE WHEN state = 'TAS' THEN 1 ELSE 0 END AS TAS," \
+                  "CASE WHEN state = 'VIC' THEN 1 ELSE 0 END AS VIC," \
+                  "CASE WHEN state = 'WA' THEN 1 ELSE 0 END AS WA " \
+                  "FROM {0}.{1}) AS sqt".format(schema, table_name)
+
+            try:
+                pg_cur.execute(sql)
+            except psycopg2.Error:  # triggers when there is no state field in the table
+                # change the query for an Australia count only
+                sql = "INSERT INTO {0}.qa (table_name, aus) " \
+                      "SELECT '{1}', Count(*) FROM {0}.{1}".format(schema, table_name)
+
+                try:
+                    pg_cur.execute(sql)
+                except Exception as ex:
+                    # if no state field - change the query for an Australia count only
+                    logger.warning("Couldn't get row count for {0}.{1} : {2}".format(schema, table_name, ex))
+
+        pg_cur.execute("ANALYZE {0}.qa".format(schema))
 
         # STEP 2 - compare row counts with previous Geoscape release
 
