@@ -86,24 +86,32 @@ parser.add_argument(
 geoscape_version, previous_geoscape_version = get_geoscape_version(datetime.today())
 parser.add_argument(
     "--geoscape-version", default=geoscape_version,
-    help="Geoscape release version number as YYYYMM. Defaults to latest release year and month \"<geoscape-version>\".")
+    help="Geoscape release version number as YYYYMM. Defaults to latest release year and month \""
+         + geoscape_version + "\".")
 parser.add_argument(
     "--previous-geoscape-version", default=previous_geoscape_version,
     help="Previous Geoscape release version number as YYYYMM; used for QA comparison. "
-         "Defaults to previous release to \"<geoscape-version>\".")
+         "Defaults to \"" + previous_geoscape_version + "\".")
 parser.add_argument(
     "--raw-gnaf-schema",
-    help="Schema name to store raw GNAF tables in. Defaults to \"raw_gnaf_<geoscape-version>\".")
+    help="Schema name to store raw GNAF tables in. Defaults to \"raw_gnaf_" + geoscape_version + "\".")
 parser.add_argument(
     "--raw-admin-schema",
-    help="Schema name to store raw admin boundary tables in. Defaults to \"raw_admin_bdys_<geoscape-version>\".")
+    help="Schema name to store raw admin boundary tables in. Defaults to \"raw_admin_bdys_" + geoscape_version + "\".")
 parser.add_argument(
     "--gnaf-schema",
-    help="Destination schema name to store final GNAF tables in. Defaults to \"gnaf_<geoscape-version>\".")
+    help="Destination schema name to store final GNAF tables in. Defaults to \"gnaf_" + geoscape_version + "\".")
 parser.add_argument(
     "--admin-schema",
     help="Destination schema name to store final admin boundary tables in. Defaults to \"admin_bdys_"
          + geoscape_version + "\".")
+parser.add_argument(
+    "--previous-gnaf-schema",
+    help="Schema with previous version of GNAF tables in. Defaults to \"gnaf_" + previous_geoscape_version + "\".")
+parser.add_argument(
+    "--previous-admin-schema",
+    help="Schema with previous version of GNAF tables in. Defaults to \"admin_bdys_"
+         + previous_geoscape_version + "\".")
 
 # directories
 parser.add_argument(
