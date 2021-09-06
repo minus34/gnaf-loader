@@ -24,8 +24,8 @@ RUN /etc/init.d/postgresql start \
 # download and restore GNAF & Admin Boundary Postgres dump files
 RUN mkdir -p /data \
     && cd /data \
-    && wget --quiet http://minus34.com/opendata/geoscape-202108/gnaf-202108.dmp \
-    && wget --quiet http://minus34.com/opendata/geoscape-202108/admin-bdys-202108.dmp \
+    && wget --quiet https://minus34.com/opendata/geoscape-202108/gnaf-202108.dmp \
+    && wget --quiet https://minus34.com/opendata/geoscape-202108/admin-bdys-202108.dmp \
     && /etc/init.d/postgresql start \
     && pg_restore -Fc -d postgres -h localhost -p 5432 -U postgres /data/gnaf-202108.dmp \
     && pg_restore -Fc -d postgres -h localhost -p 5432 -U postgres /data/admin-bdys-202108.dmp \
