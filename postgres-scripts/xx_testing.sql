@@ -23,3 +23,6 @@ with fred as (
 )
 select count(*) from fred
 ;
+
+
+select * from gnaf_202108.qa;

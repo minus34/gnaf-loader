@@ -10,21 +10,28 @@ from datetime import datetime
 from psycopg2 import pool
 
 
-# get latest Geoscape release version as YYYYMM, as of the date provided
+# get latest Geoscape release version as YYYYMM, as of the date provided, as well as the prev. version 3 months prior
 def get_geoscape_version(date):
     month = date.month
     year = date.year
 
     if month == 1:
-        return str(year - 1) + "11"
+        gs_version = str(year - 1) + "11"
+        previous_gs_version = str(year - 1) + "08"
     elif 2 <= month < 5:
-        return str(year) + "02"
+        gs_version = str(year) + "02"
+        previous_gs_version = str(year - 1) + "11"
     elif 5 <= month < 8:
-        return str(year) + "05"
+        gs_version = str(year) + "05"
+        previous_gs_version = str(year) + "02"
     elif 8 <= month < 11:
-        return str(year) + "08"
+        gs_version = str(year) + "08"
+        previous_gs_version = str(year) + "05"
     else:
-        return str(year) + "11"
+        gs_version = str(year) + "11"
+        previous_gs_version = str(year) + "08"
+
+    return gs_version, previous_gs_version
 
 
 # get python, psycopg2 and OS versions
@@ -76,10 +83,14 @@ parser.add_argument(
          "otherwise \"password\".")
 
 # schema names for the raw gnaf, flattened reference and admin boundary tables
-geoscape_version = get_geoscape_version(datetime.today())
+geoscape_version, previous_geoscape_version = get_geoscape_version(datetime.today())
 parser.add_argument(
     "--geoscape-version", default=geoscape_version,
-    help="Geoscape Version number as YYYYMM. Defaults to last release year and month \"<geoscape-version>\".")
+    help="Geoscape release version number as YYYYMM. Defaults to latest release year and month \"<geoscape-version>\".")
+parser.add_argument(
+    "--previous-geoscape-version", default=previous_geoscape_version,
+    help="Previous Geoscape release version number as YYYYMM; used for QA comparison. "
+         "Defaults to previous release to \"<geoscape-version>\".")
 parser.add_argument(
     "--raw-gnaf-schema",
     help="Schema name to store raw GNAF tables in. Defaults to \"raw_gnaf_<geoscape-version>\".")
@@ -126,6 +137,8 @@ max_processes = args.max_processes
 
 geoscape_version = args.geoscape_version
 
+previous_geoscape_version = args.previous_geoscape_version
+
 states_to_load = args.states
 
 no_boundary_tag = args.no_boundary_tag
@@ -137,6 +150,10 @@ raw_admin_bdys_schema = args.raw_admin_schema or "raw_admin_bdys_" + geoscape_ve
 gnaf_schema = args.gnaf_schema or "gnaf_" + geoscape_version
 
 admin_bdys_schema = args.admin_schema or "admin_bdys_" + geoscape_version
+
+previous_gnaf_schema = args.gnaf_schema or "gnaf_" + previous_geoscape_version
+
+previous_admin_bdys_schema = args.admin_schema or "admin_bdys_" + previous_geoscape_version
 
 gnaf_network_directory = args.gnaf_tables_path.replace("\\", "/")
 
