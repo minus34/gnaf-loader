@@ -8,7 +8,7 @@ ALTER TABLE ONLY address_alias
 
 
 --
--- Name: address_alias_type_aut_pk; Type: CONSTRAINT; Schema: public; Owner: postgres; Tablespace: 
+-- Name: address_alias_type_aut_pk; Type: CONSTRAINT; Schema: public; Owner: postgres; Tablespace:
 --
 
 ALTER TABLE ONLY address_alias_type_aut
@@ -40,6 +40,14 @@ ALTER TABLE ONLY address_mesh_block_2011
 
 
 --
+-- Name: address_mesh_block_2021_pk; Type: CONSTRAINT; Schema: public; Owner: postgres; Tablespace:
+--
+
+ALTER TABLE ONLY address_mesh_block_2021
+    ADD CONSTRAINT address_mesh_block_2021_pk PRIMARY KEY (address_mesh_block_2021_pid);
+
+
+--
 -- Name: address_mesh_block_2016_pk; Type: CONSTRAINT; Schema: public; Owner: postgres; Tablespace:
 --
 
@@ -64,7 +72,7 @@ ALTER TABLE ONLY address_site
 
 
 --
--- Name: address_type_aut_pk; Type: CONSTRAINT; Schema: public; Owner: postgres; Tablespace: 
+-- Name: address_type_aut_pk; Type: CONSTRAINT; Schema: public; Owner: postgres; Tablespace:
 --
 
 ALTER TABLE ONLY address_type_aut
@@ -72,7 +80,7 @@ ALTER TABLE ONLY address_type_aut
 
 
 --
--- Name: flat_type_aut_pk; Type: CONSTRAINT; Schema: public; Owner: postgres; Tablespace: 
+-- Name: flat_type_aut_pk; Type: CONSTRAINT; Schema: public; Owner: postgres; Tablespace:
 --
 
 ALTER TABLE ONLY flat_type_aut
@@ -80,7 +88,7 @@ ALTER TABLE ONLY flat_type_aut
 
 
 --
--- Name: geocode_reliability_aut_pk; Type: CONSTRAINT; Schema: public; Owner: postgres; Tablespace: 
+-- Name: geocode_reliability_aut_pk; Type: CONSTRAINT; Schema: public; Owner: postgres; Tablespace:
 --
 
 ALTER TABLE ONLY geocode_reliability_aut
@@ -88,7 +96,7 @@ ALTER TABLE ONLY geocode_reliability_aut
 
 
 --
--- Name: geocode_type_aut_pk; Type: CONSTRAINT; Schema: public; Owner: postgres; Tablespace: 
+-- Name: geocode_type_aut_pk; Type: CONSTRAINT; Schema: public; Owner: postgres; Tablespace:
 --
 
 ALTER TABLE ONLY geocode_type_aut
@@ -96,7 +104,7 @@ ALTER TABLE ONLY geocode_type_aut
 
 
 --
--- Name: geocoded_level_type_aut_pk; Type: CONSTRAINT; Schema: public; Owner: postgres; Tablespace: 
+-- Name: geocoded_level_type_aut_pk; Type: CONSTRAINT; Schema: public; Owner: postgres; Tablespace:
 --
 
 ALTER TABLE ONLY geocoded_level_type_aut
@@ -104,7 +112,7 @@ ALTER TABLE ONLY geocoded_level_type_aut
 
 
 --
--- Name: level_type_aut_pk; Type: CONSTRAINT; Schema: public; Owner: postgres; Tablespace: 
+-- Name: level_type_aut_pk; Type: CONSTRAINT; Schema: public; Owner: postgres; Tablespace:
 --
 
 ALTER TABLE ONLY level_type_aut
@@ -120,7 +128,7 @@ ALTER TABLE ONLY locality_alias
 
 
 --
--- Name: locality_alias_type_aut_pk; Type: CONSTRAINT; Schema: public; Owner: postgres; Tablespace: 
+-- Name: locality_alias_type_aut_pk; Type: CONSTRAINT; Schema: public; Owner: postgres; Tablespace:
 --
 
 ALTER TABLE ONLY locality_alias_type_aut
@@ -128,7 +136,7 @@ ALTER TABLE ONLY locality_alias_type_aut
 
 
 --
--- Name: locality_class_aut_pk; Type: CONSTRAINT; Schema: public; Owner: postgres; Tablespace: 
+-- Name: locality_class_aut_pk; Type: CONSTRAINT; Schema: public; Owner: postgres; Tablespace:
 --
 
 ALTER TABLE ONLY locality_class_aut
@@ -168,6 +176,14 @@ ALTER TABLE ONLY mb_2011
 
 
 --
+-- Name: mb_2021_pk; Type: CONSTRAINT; Schema: public; Owner: postgres; Tablespace:
+--
+
+ALTER TABLE ONLY mb_2021
+    ADD CONSTRAINT mb_2021_pk PRIMARY KEY (mb_2021_pid);
+
+
+--
 -- Name: mb_2016_pk; Type: CONSTRAINT; Schema: public; Owner: postgres; Tablespace:
 --
 
@@ -176,7 +192,7 @@ ALTER TABLE ONLY mb_2016
 
 
 --
--- Name: mb_match_code_aut_pk; Type: CONSTRAINT; Schema: public; Owner: postgres; Tablespace: 
+-- Name: mb_match_code_aut_pk; Type: CONSTRAINT; Schema: public; Owner: postgres; Tablespace:
 --
 
 ALTER TABLE ONLY mb_match_code_aut
@@ -192,7 +208,7 @@ ALTER TABLE ONLY primary_secondary
 
 
 --
--- Name: ps_join_type_aut_pk; Type: CONSTRAINT; Schema: public; Owner: postgres; Tablespace: 
+-- Name: ps_join_type_aut_pk; Type: CONSTRAINT; Schema: public; Owner: postgres; Tablespace:
 --
 
 ALTER TABLE ONLY ps_join_type_aut
@@ -208,7 +224,7 @@ ALTER TABLE ONLY state
 
 
 --
--- Name: street_class_aut_pk; Type: CONSTRAINT; Schema: public; Owner: postgres; Tablespace: 
+-- Name: street_class_aut_pk; Type: CONSTRAINT; Schema: public; Owner: postgres; Tablespace:
 --
 
 ALTER TABLE ONLY street_class_aut
@@ -224,7 +240,7 @@ ALTER TABLE ONLY street_locality_alias
 
 
 --
--- Name: street_locality_alias_type__pk; Type: CONSTRAINT; Schema: public; Owner: postgres; Tablespace: 
+-- Name: street_locality_alias_type__pk; Type: CONSTRAINT; Schema: public; Owner: postgres; Tablespace:
 --
 
 ALTER TABLE ONLY street_locality_alias_type_aut
@@ -248,7 +264,7 @@ ALTER TABLE ONLY street_locality_point
 
 
 --
--- Name: street_suffix_aut_pk; Type: CONSTRAINT; Schema: public; Owner: postgres; Tablespace: 
+-- Name: street_suffix_aut_pk; Type: CONSTRAINT; Schema: public; Owner: postgres; Tablespace:
 --
 
 ALTER TABLE ONLY street_suffix_aut
@@ -256,7 +272,7 @@ ALTER TABLE ONLY street_suffix_aut
 
 
 --
--- Name: street_type_aut_pk; Type: CONSTRAINT; Schema: public; Owner: postgres; Tablespace: 
+-- Name: street_type_aut_pk; Type: CONSTRAINT; Schema: public; Owner: postgres; Tablespace:
 --
 
 ALTER TABLE ONLY street_type_aut
@@ -389,6 +405,30 @@ ALTER TABLE ONLY address_mesh_block_2011
 
 ALTER TABLE ONLY address_mesh_block_2011
     ADD CONSTRAINT address_mesh_block_2011_fk3 FOREIGN KEY (mb_match_code) REFERENCES mb_match_code_aut(code);
+
+
+--
+-- Name: address_mesh_block_2021_fk1; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY address_mesh_block_2021
+    ADD CONSTRAINT address_mesh_block_2021_fk1 FOREIGN KEY (address_detail_pid) REFERENCES address_detail(address_detail_pid);
+
+
+--
+-- Name: address_mesh_block_2021_fk2; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY address_mesh_block_2021
+    ADD CONSTRAINT address_mesh_block_2021_fk2 FOREIGN KEY (mb_2021_pid) REFERENCES mb_2021(mb_2021_pid);
+
+
+--
+-- Name: address_mesh_block_2021_fk3; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY address_mesh_block_2021
+    ADD CONSTRAINT address_mesh_block_2021_fk3 FOREIGN KEY (mb_match_code) REFERENCES mb_match_code_aut(code);
 
 
 --

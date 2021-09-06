@@ -108,6 +108,22 @@ CREATE TABLE address_detail (
 ALTER TABLE address_detail OWNER TO postgres;
 
 --
+-- Name: address_mesh_block_2021; Type: TABLE; Schema: public; Owner: postgres; Tablespace:
+--
+
+CREATE TABLE address_mesh_block_2021 (
+    address_mesh_block_2021_pid character varying(15) NOT NULL,
+    date_created date NOT NULL,
+    date_retired date,
+    address_detail_pid character varying(15) NOT NULL,
+    mb_match_code character varying(15) NOT NULL,
+    mb_2021_pid character varying(15) NOT NULL
+);
+
+
+ALTER TABLE address_mesh_block_2021 OWNER TO postgres;
+
+--
 -- Name: address_mesh_block_2016; Type: TABLE; Schema: public; Owner: postgres; Tablespace:
 --
 
@@ -351,6 +367,21 @@ CREATE TABLE locality_point (
 ALTER TABLE locality_point OWNER TO postgres;
 
 --
+-- Name: mb_2021; Type: TABLE; Schema: public; Owner: postgres; Tablespace:
+--
+
+CREATE TABLE mb_2021 (
+    mb_2021_pid character varying(15) NOT NULL,
+    date_created date NOT NULL,
+    date_retired date,
+    mb_2021_code character varying(15) NOT NULL
+);
+
+
+ALTER TABLE mb_2021 OWNER TO postgres;
+
+
+--
 -- Name: mb_2016; Type: TABLE; Schema: public; Owner: postgres; Tablespace:
 --
 
@@ -576,6 +607,22 @@ CREATE TABLE address_change_type_aut (
 
 ALTER TABLE address_change_type_aut OWNER TO postgres;
 
+
+
+--
+-- Name: address_change_type_aut; Type: TABLE; Schema: public; Owner: postgres; Tablespace:
+--
+
+CREATE TABLE locality_pid_linkage (
+    ab_locality_pid character varying(15) NOT NULL,
+    ab_locality_polygon_pid character varying(15) NOT NULL,
+    locality_pid character varying(15) NOT NULL,
+    locality_polygon_pid character varying(15) NOT NULL,
+    state character varying(3)
+);
+
+
+ALTER TABLE locality_pid_linkage OWNER TO postgres;
 
 
 REVOKE ALL ON SCHEMA public FROM PUBLIC;

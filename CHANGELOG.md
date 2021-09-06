@@ -1,8 +1,26 @@
+### August 2021 Release
+
+#### Data
+- Existing locality_pids have been replaced by Geoscape
+- _old_locality_pid_ field has been added to the following GNAF tables: `address_principals, address_aliases, localities, streets, address_principal_admin_boundaries, address_alias_admin_boundaries`
+- _old_locality_pid_ field has been added to the following Admin Bdy tables: `locality_bdys, locality_bdys_analysis`
+- Table, columns and foreign keys for ABS Census 2021 meshblocks have been added to GNAF
+- _mb_2021_code_ field has been added to `address_principals, address_aliases`
+- ABS Census 2021 meshblock, SA1, SA2, SA3, SA4 and GCSSA boundaries have been added to Admin Bdys
+- QA process now checks row counts between new & previous versions
+- `--previous-geoscape-version, --previous-gnaf-schema, --previous-admin-schema` runtime parameters added to enable QA row count dcomparison
+- **minus34.com** is now a secure website (long overdue) - all file downloads are now over https:// only
+
+#### Code
+- Refactored input parameters & settings into a new .py file
+- Postgres connections now come from a connection pool for better multiprocessing
+
 ### May 2021 Release
 - Renamed all references to PSMA to Geoscape, reflecting the new data provider's name
 - The docker image build process has been completely redone
 - Changes in the Geoscape Admin Boundaries folder structure, resulting in duplicate Authority files, is now handled correctly.
 - Due to the above fix, all authority tables now have a standardised table structure of `gid, code, name, description`.
+
 ### August 2018 Release
 - GNAF now contains an *address_feature_pid* field for determining which addresses are new and which have changed. Previously the *address_detail_pid* on an address would change when a part of the address changed (e.g. 10 Smith St became 10 Smyth St) - even in cases where the building or dwelling it represents didn't change. This made determining which addresses were new and which had changed difficult. More info [here](https://www.psma.com.au/blog/blog/product-update-data-model-changes-improve-g-naf-product-scope)
 - *address_feature_pid* is in the `raw_gnaf_201808.address_feature` table. In the future, the data in this table will be added to the de-normalised schema (i.e. the gnaf_201808 schema).

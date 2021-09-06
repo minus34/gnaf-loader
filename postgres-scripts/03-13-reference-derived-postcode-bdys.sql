@@ -7,3 +7,5 @@ SELECT postcode,
   FROM admin_bdys.locality_bdys
   GROUP BY postcode,
            state;
+
+ANALYZE admin_bdys.postcode_bdys;
