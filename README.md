@@ -54,8 +54,8 @@ The behaviour of gnaf-loader can be controlled by specifying various command lin
 * `--states` space separated list of states to load, eg `--states VIC TAS`. Defaults to loading all states.
 * `--prevacuum` forces the database to be vacuumed after dropping tables. Defaults to off, and specifying this option will slow the import process.
 * `--raw-fk` creates both primary & foreign keys for the raw GNAF tables. Defaults to off, and will slow the import process if specified. Use this option
-if you intend to utilise the raw GNAF tables as anything more then a temporary import step. Note that the final processed tables will always have appropriate
-primary and foreign keys set.
+  if you intend to utilise the raw GNAF tables as anything more then a temporary import step. Note that the final processed tables will always have appropriate
+  primary and foreign keys set.
 * `--raw-unlogged` creates unlogged raw GNAF tables, speeding up the import. Defaults to off. Only specify this option if you don't care about the raw data tables after the import - they will be lost if the server crashes!
 * `--max-processes` specifies the maximum number of parallel processes to use for the data load. Set this to the number of cores on the Postgres server minus 2, but limit to 12 if 16+ cores - there is minimal benefit beyond 12. Defaults to 4.
 * `--no-boundary-tag` DO NOT tag all addresses with some of the key admin boundary IDs for creating aggregates and choropleth maps.
@@ -79,10 +79,10 @@ When using the resulting data from this process - you will need to adhere to the
 - Boundary tagging (on by default) will add 15-60 minutes to the process if you have PostGIS 2.2+. If you have PostGIS 2.1 or lower - it can take HOURS as the boundary tables can't be optimised!
 
 ### IMPORTANT:
-- Whilst you can choose which 4 schemas to load the data into, I haven't QA'd every permutation. Stick with the defaults if you have limited Postgres experience 
+- Whilst you can choose which 4 schemas to load the data into, I haven't QA'd every permutation. Stick with the defaults if you have limited Postgres experience
 - If you're not running the Python script on the Postgres server, you'll need to have access to a network path to the GNAF files on the database server (to create the list of files to process). The alternative is to have a local copy of the raw files
 - The 'create tables' sql script will add the PostGIS extension to the database in the public schema, you don't need to add it to your database
-- There is an option to VACUUM the database at the start after dropping the existing GNAF/Admin Bdy tables - this doesn't really do anything outside of repeated testing. (I was too lazy to take it out of the code as it meant renumbering all the SQL files and I'd like to go to bed now) 
+- There is an option to VACUUM the database at the start after dropping the existing GNAF/Admin Bdy tables - this doesn't really do anything outside of repeated testing. (I was too lazy to take it out of the code as it meant renumbering all the SQL files and I'd like to go to bed now)
 
 ## Option 2 - Use the database in a docker container
 
