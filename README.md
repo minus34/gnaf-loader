@@ -24,7 +24,7 @@ To get a good load time you'll need to configure your Postgres server for perfor
 
 ### Process
 1. Download [Geoscape GNAF from data.gov.au](https://data.gov.au/dataset/geocoded-national-address-file-g-naf)
-2. Download [Geoscape Administrative Boundaries from data.gov.au](https://data.gov.au/dataset/geoscape-administrative-boundaries) (**download the ESRI Shapefile version**)
+2. Download [Geoscape Administrative Boundaries from data.gov.au](https://data.gov.au/dataset/geoscape-administrative-boundaries) (**download the ESRI Shapefile GDA94 version**)
 3. Unzip GNAF to a directory on your Postgres server
 4. Alter security on the directory to grant Postgres read access
 5. Unzip Admin Bdys to a local directory
