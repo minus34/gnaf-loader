@@ -20,17 +20,18 @@ To get a good load time you'll need to configure your Postgres server for perfor
 ### Pre-requisites
 - Postgres 10.x and above with PostGIS 2.2+
 - Add the Postgres bin directory to your system PATH
-- Python 2.7+ or Python 3.6+ with Psycopg2 2.6+
+- Python 3.6+ with Psycopg2 2.6+
 
 ### Process
 1. Download [Geoscape GNAF from data.gov.au](https://data.gov.au/dataset/geocoded-national-address-file-g-naf)
 2. Download [Geoscape Administrative Boundaries from data.gov.au](https://data.gov.au/dataset/geoscape-administrative-boundaries) (**download the ESRI Shapefile GDA94 version**)
 3. Unzip GNAF to a directory on your Postgres server
-4. Alter security on the directory to grant Postgres read access
-5. Unzip Admin Bdys to a local directory
+4. Unzip Admin Bdys to a local directory
+5. Alter security on those directories to grant Postgres read access
 6. Create the target database (if required)
-7. Check the available and required arguments by running load-gnaf.py with the `-h` argument (see command line examples below)
-8. Run the script, come back in 30-120 minutes and enjoy!
+7. Add PostGIS to the database (if required) by running the following SQL: `CREATE EXTENSION postgis`
+8. Check the available and required arguments by running load-gnaf.py with the `-h` argument (see command line examples below)
+9. Run the script, come back in 30-120 minutes and enjoy!
 
 ### Command Line Options
 The behaviour of gnaf-loader can be controlled by specifying various command line options to the script. Supported arguments are:
