@@ -222,6 +222,7 @@ ANALYZE admin_bdys.locality_bdys;
 -- create indexes for later use
 ALTER TABLE admin_bdys.locality_bdys ADD CONSTRAINT locality_bdys_pk PRIMARY KEY (locality_pid);
 CREATE UNIQUE INDEX locality_bdys_gid_idx ON admin_bdys.locality_bdys USING btree(gid);
+CREATE INDEX locality_bdys_state_idx ON admin_bdys.locality_bdys USING btree(state);
 CREATE INDEX locality_bdys_geom_idx ON admin_bdys.locality_bdys USING gist(geom);
 ALTER TABLE admin_bdys.locality_bdys CLUSTER ON locality_bdys_geom_idx;
 
