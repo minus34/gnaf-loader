@@ -8,7 +8,7 @@ Have a look at [these intro slides](https://minus34.com/opendata/intro-to-gnaf.p
 
 ### There are 3 options for loading the data
 1. [Run](https://github.com/minus34/gnaf-loader#option-1---run-loadgnafpy) the load-gnaf Python script and build the database yourself in a single step
-2. [Pull](https://github.com/minus34/gnaf-loader#option-2---use-the-database-in-a-docker-container) the database from Docker Hub and run it in a container
+2. [Pull](https://github.com/minus34/gnaf-loader#option-2---run-the-database-in-a-docker-container) the database from Docker Hub and run it in a container
 3. [Download](https://github.com/minus34/gnaf-loader#option-3---load-pg_dump-files) the GNAF and/or Admin Bdys Postgres dump files & restore them in your Postgres 12+ database
 
 ## Option 1 - Run load.gnaf.py
@@ -86,16 +86,16 @@ When using the resulting data from this process - you will need to adhere to the
 - The 'create tables' sql script will add the PostGIS extension to the database in the public schema, you don't need to add it to your database
 - There is an option to VACUUM the database at the start after dropping the existing GNAF/Admin Bdy tables - this doesn't really do anything outside of repeated testing. (I was too lazy to take it out of the code as it meant renumbering all the SQL files and I'd like to go to bed now)
 
-## Option 2 - Use the database in a docker container
+## Option 2 - Run the database in a docker container
 
-GNAF and the Admin Boundaries are ready to use in Postgres in a container on Docker Hub.
+GNAF and the Admin Boundaries are ready to use in Postgres in an image on Docker Hub.
 
 ### Process
 1. In your docker environment pull the image using `docker pull minus34/gnafloader:latest`
 2. Run using `docker run --publish=5433:5432 minus34/gnafloader:latest`
 3. Access Postgres in the container via port `5433`. Default login is - user: `postgres`, password: `password`
 
-*Note: the Docker image is 6Gb*
+*Note: the compressed Docker image is 6Gb, uncompressed is 16Gb*
 
 **WARNING: The default postgres superuser password is insecure and should be changed using:**
 
@@ -113,7 +113,7 @@ Should take 15-60 minutes.
 ### Process
 1. Download [gnaf-202108.dmp](https://minus34.com/opendata/geoscape-202108/gnaf-202108.dmp) (~1.4Gb)
 2. Download [admin-bdys-202108.dmp](https://minus34.com/opendata/geoscape-202108/admin-bdys-202108.dmp) (~3.6Gb)
-3. Edit the restore-gnaf-admin-bdys.bat or .sh script in the supporting-files folder for your database parameters and for the location of pg_restore
+3. Edit the _restore-gnaf-admin-bdys.bat_ or _.sh_ script in the supporting-files folder for your database parameters and for the location of pg_restore
 5. Run the script, come back in 15-60 minutes and enjoy!
 
 ### Data Licenses
@@ -127,5 +127,5 @@ GNAF and the Admin Bdys have been customised to remove some of the known, minor 
 - All addresses link to a gazetted locality that has a boundary. Those small number of addresses that don't in raw GNAF have had their locality_pid changed to a gazetted equivalent
 - Localities have had address and street counts added to them
 - Suburb-Locality bdys have been flattened into a single continuous layer of localities - South Australian Hundreds have been removed and ACT districts have been added where there are no gazetted localities
-- The Melbourne, VIC locality has been split into Melbourne, 3000 and Melbourne 3004 localities (the new locality PIDs are VIC 1634_1 & VIC 1634_2). The split occurs at the Yarra River (based on the postcodes in the Melbourne addresses)
+- The Melbourne, VIC locality has been split into Melbourne, 3000 and Melbourne 3004 localities (the new locality PIDs are `loc9901d119afda_1` & `loc9901d119afda_2`). The split occurs at the Yarra River (based on the postcodes in the Melbourne addresses)
 - A postcode boundaries layer has been created using the postcodes in the address tables. Whilst this closely emulates the official Geoscape postcode boundaries, there are several hundred addresses that are in the wrong postcode bdy. Do not treat this data as authoritative
