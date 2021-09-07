@@ -337,7 +337,7 @@ def load_raw_admin_boundaries(pg_cur):
                         if file_name.lower().endswith(".shp"):
                             file_dict["spatial"] = True
                             file_dict["file_path"] = os.path.join(root, file_name)
-                        elif file_name.lower().endswith(".dbf") and not file_name.lower().endswith("_polygon_shp.dbf"):
+                        elif file_name.lower().endswith(".dbf") and not file_name.lower().endswith("_polygon_shp.dbf") and not file_name.lower().endswith("_point_shp.dbf"):
                             file_dict["spatial"] = False
                             file_dict["file_path"] = os.path.join(root, file_name)
 
