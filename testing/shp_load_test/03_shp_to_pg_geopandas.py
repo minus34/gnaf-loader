@@ -1,12 +1,15 @@
 import argparse
 import geopandas
+import os
 import sqlalchemy
 
 # get test number
 parser = argparse.ArgumentParser(description="Test load SHP > Postgres")
 parser.add_argument("--test", help="the test number")
+parser.add_argument("--path", help="path to the input SHP file")
 args = parser.parse_args()
 test_number = args.test
+file_path = args.path
 
 # -- START EDIT SETTINGS ----------------------------------------------------------------------------------------------
 
@@ -14,8 +17,6 @@ test_number = args.test
 sql_alchemy_engine_string = "postgresql+psycopg2://postgres:password@localhost:5432/geo"
 
 # -- END EDIT SETTINGS ------------------------------------------------------------------------------------------------
-
-input_file_path = "/Users/s57405/Downloads/AUG21_Admin_Boundaries_ESRIShapefileorDBFfile/Localities_AUG21_GDA94_SHP/Localities/Localities AUGUST 2021/Standard/{}_localities.shp"
 
 states = ["ACT", "NSW", "NT", "OT", "QLD", "SA", "TAS", "VIC", "WA"]
 
@@ -30,7 +31,7 @@ sql_engine = sqlalchemy.create_engine(sql_alchemy_engine_string, isolation_level
 
 # process each state sequentially
 for state in states:
-    input_file = input_file_path.format(state)
+    input_file = os.path.join(file_path, "{}_localities.shp".format(state))
 
     if state == "ACT":
         print("  - importing {}".format(state), end="")
