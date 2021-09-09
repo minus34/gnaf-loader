@@ -26,3 +26,30 @@ select count(*) from fred
 
 
 select * from admin_bdys_202108.qa_comparison;
+
+
+select gid,
+       mb_21ppid,
+       dt_create,
+       mb_21pid,
+       mb21_code,
+       mb_cat,
+       chng_flag,
+       chng_label,
+       sa1_21pid,
+       sa1_21code,
+       sa2_21code,
+       sa2_21name,
+       sa3_21code,
+       sa3_21name,
+       sa4_21code,
+       sa4_21name,
+       gcc_21code,
+       gcc_21name,
+       state_pid,
+       area_sqm,
+       mb21_dwell,
+       mb21_pop,
+       loci21_uri,
+       geom
+from raw_admin_bdys_202108.aus_mb_2021

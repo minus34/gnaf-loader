@@ -1,3 +1,7 @@
+### November 2021 Release
+- The ABS Census meshblock boundary tables `abs_20**_mb` have had their meshblock code (`mb**_code`) fields changed to _bigint_ type to bring them inline with GNAF tables, to speed up joins
+- All ABS Census 2021 boundary tables have had their columns re-ordered into a similar structure to the 2011 & 2016 tables. The state_pid field has been removed 
+
 ### August 2021 Release
 
 #### Data
