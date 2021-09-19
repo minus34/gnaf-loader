@@ -28,7 +28,7 @@ conda config --env --set channel_priority strict
 conda activate geo
 
 # install packages for sedona only
-echo "y" | conda install -c conda-forge gdal pygeos geopandas psycopg2 geoalchemy2
+echo "y" | conda install -c conda-forge gdal pygeos geopandas psycopg2 geoalchemy2 rasterio
 
 # --------------------------
 # extra bits
