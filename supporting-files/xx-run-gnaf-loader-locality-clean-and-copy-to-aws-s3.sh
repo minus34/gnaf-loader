@@ -28,9 +28,9 @@ echo "--------------------------------------------------------------------------
 
 mkdir -p "${OUTPUT_FOLDER}"
 
-/Applications/Postgres.app/Contents/Versions/12/bin/pg_dump -Fc -d geo -n gnaf_202108 -p 5432 -U postgres -f "${OUTPUT_FOLDER}/gnaf-202108.dmp" --no-owner
+/Applications/Postgres.app/Contents/Versions/13/bin/pg_dump -Fc -d geo -n gnaf_202108 -p 5432 -U postgres -f "${OUTPUT_FOLDER}/gnaf-202108.dmp" --no-owner
 echo "GNAF schema exported to dump file"
-/Applications/Postgres.app/Contents/Versions/12/bin/pg_dump -Fc -d geo -n admin_bdys_202108 -p 5432 -U postgres -f "${OUTPUT_FOLDER}/admin-bdys-202108.dmp" --no-owner
+/Applications/Postgres.app/Contents/Versions/13/bin/pg_dump -Fc -d geo -n admin_bdys_202108 -p 5432 -U postgres -f "${OUTPUT_FOLDER}/admin-bdys-202108.dmp" --no-owner
 echo "Admin Bdys schema exported to dump file"
 
 echo "---------------------------------------------------------------------------------------------------------------------"
