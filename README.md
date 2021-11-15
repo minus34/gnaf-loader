@@ -1,4 +1,4 @@
-**IMPORTANT:** There have been significant changes in the August 2021 release. See the [CHANGELOG](https://github.com/minus34/gnaf-loader/blob/master/CHANGELOG.md) for details
+**IMPORTANT:** There have been significant changes in the November 2021 release. See the [CHANGELOG](https://github.com/minus34/gnaf-loader/blob/master/CHANGELOG.md) for details
 
 # gnaf-loader
 A quick way to load the complete Geocoded National Address File of Australia (GNAF) and Australian Administrative Boundaries into Postgres, simplified and ready to use as reference data for geocoding, analysis, visualisation and aggregation.
