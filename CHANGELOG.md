@@ -1,5 +1,4 @@
 ### November 2021 Release
-- `load-gnaf.py` only runs on Python 3.6 and above due to the use of f-strings (replaces .format) and concurrent.futures (replaces multiprocesing)
 - Postgres dump files now support Postgres 13+ only. If you're running an earlier version of Postgres, you can still run the Python code to get full access to the data. Also consider using the Docker container as it's a very simple way to launch a server.
 - Geoscape have removed the ABS Census 2011 boundaries and references from the GNAF tables
 - GDA2020 GNAF and Admin Bdys input files are now supported (see below)
