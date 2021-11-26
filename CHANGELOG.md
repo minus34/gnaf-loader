@@ -1,6 +1,9 @@
 ### November 2021 Release
+- `load-gnaf.py` only runs on Python 3.6 and above due to the use of f-strings (replaces .format) and concurrent.futures (replaces multiprocesing)
 - Postgres dump files now support Postgres 13+ only. If you're running an earlier version of Postgres, you can still run the Python code to get full access to the data. Also consider using the Docker container as it's a very simple way to launch a server.
-- Geoscape have removed the ABS Census 2011 boundaries and references from the GNAF tables 
+- Geoscape have removed the ABS Census 2011 boundaries and references from the GNAF tables
+- GDA2020 GNAF and Admin Bdys input files are now supported (see below)
+- A new flag `--srid` has been added to set the coordinate system of the input data. Valid values are _4283_ (GDA94) and _7844_ (GDA2020)
 - The ABS Census meshblock boundary tables `abs_20**_mb` have had their meshblock code (`mb**_code`) fields changed to _bigint_ type to bring them inline with GNAF tables, to speed up joins
 - All ABS Census 2021 boundary tables have had their columns re-ordered into a similar structure to the 2016 tables. The state_pid field has been removed
 

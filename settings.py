@@ -62,6 +62,10 @@ parser.add_argument(
     help="DO NOT tag all addresses with admin boundary IDs for creating aggregates and choropleth maps. "
          "IMPORTANT: this will contribute 15-60 minutes to the process if you have PostGIS 2.2+. "
          "WARNING: if you have PostGIS 2.1 or lower - this process can take hours")
+parser.add_argument(
+    "--srid", type=int, default=4283,
+    help="Sets the coordinate system of the input data. Valid values are 4283 (GDA94) and 7844 (GDA2020)")
+
 
 # PG Options
 parser.add_argument(
@@ -150,6 +154,12 @@ previous_geoscape_version = args.previous_geoscape_version
 states_to_load = args.states
 
 no_boundary_tag = args.no_boundary_tag
+
+srid = args.srid
+
+if srid not in (4283, 7844):
+    print("Invalid coordinate system (SRID) - EXITING!\nValid values are 4283 (GDA94) and 7844 (GDA2020)")
+    exit()
 
 raw_gnaf_schema = args.raw_gnaf_schema or "raw_gnaf_" + geoscape_version
 
