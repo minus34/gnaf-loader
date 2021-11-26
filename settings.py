@@ -7,7 +7,6 @@ import psycopg2
 import sys
 
 from datetime import datetime
-from psycopg2 import pool
 
 
 # get latest Geoscape release version as YYYYMM, as of the date provided, as well as the prev. version 3 months prior
@@ -192,13 +191,6 @@ pg_password = args.pgpassword or os.getenv("PGPASSWORD", "password")
 pg_connect_string = "dbname='{0}' host='{1}' port='{2}' user='{3}' password='{4}'" \
     .format(pg_db, pg_host, pg_port, pg_user, pg_password)
 
-# create Postgres connection pool
-try:
-    pg_pool = psycopg2.pool.ThreadedConnectionPool(1, max_processes + 2, pg_connect_string)
-except psycopg2.Error:
-    print("Unable to connect to database - EXITING!\nACTION: Check your Postgres parameters and/or database security")
-    exit()
-
 # set postgres script directory
 sql_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), "postgres-scripts")
 
@@ -223,7 +215,7 @@ if "TAS" in states_to_load or "VIC" in states_to_load or "WA" in states_to_load:
 # get Postgres, PostGIS & GEOS versions and flag if ST_Subdivide is supported
 
 # get Postgres connection & cursor
-temp_pg_conn = pg_pool.getconn()
+temp_pg_conn = psycopg2.connect(pg_connect_string)
 temp_pg_cur = temp_pg_conn.cursor()
 
 # get Postgres version
@@ -236,7 +228,7 @@ lib_strings = temp_pg_cur.fetchone()[0].replace("\"", "").split(" ")
 
 temp_pg_cur.close()
 temp_pg_cur = None
-pg_pool.putconn(temp_pg_conn)
+temp_pg_conn.close()
 temp_pg_conn = None
 
 postgis_version = "UNKNOWN"

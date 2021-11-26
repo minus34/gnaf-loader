@@ -31,7 +31,7 @@ import os
 import psycopg2
 import logging.config
 import geoscape
-import settings  # gets global vars, including the Postgres connection pool
+import settings  # gets global vars
 
 from datetime import datetime
 
@@ -45,7 +45,7 @@ def main():
     logger.info("\t- on {}".format(settings.os_version))
 
     # get Postgres connection & cursor
-    pg_conn = settings.pg_pool.getconn()
+    pg_conn = psycopg2.connect(settings.pg_connect_string)
     pg_conn.autocommit = True
     pg_cur = pg_conn.cursor()
 
@@ -147,8 +147,7 @@ def main():
 
     # close Postgres connection
     pg_cur.close()
-    settings.pg_pool.putconn(pg_conn)
-    # pg_pool.close()
+    pg_conn.close()
 
     logger.info("")
     logger.info("Total time : : {0}".format(datetime.now() - full_start_time))
