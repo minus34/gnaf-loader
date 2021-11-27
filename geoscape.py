@@ -83,7 +83,6 @@ def prep_sql_list(sql_list):
 
 # set schema names in the SQL script
 def prep_sql(sql):
-
     if settings.raw_gnaf_schema is not None:
         sql = sql.replace(" raw_gnaf.", " {0}.".format(settings.raw_gnaf_schema, ))
     if settings.raw_admin_bdys_schema is not None:
@@ -205,7 +204,7 @@ def import_shapefile_to_postgres(file_path, pg_table, pg_schema, delete_table, s
 
     # assign coordinate system if spatial, otherwise flag as non-spatial
     if spatial:
-        spatial_or_dbf_flags = "-s 4283"
+        spatial_or_dbf_flags = f"-s {settings.srid}"
     else:
         spatial_or_dbf_flags = "-G -n"
 
