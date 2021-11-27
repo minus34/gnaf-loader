@@ -36,7 +36,7 @@ def multiprocess_list(mp_type, work_list, logger):
 
 
 def run_sql_multiprocessing(the_sql):
-    pg_conn = settings.pg_pool.getconn()
+    pg_conn = psycopg2.connect(settings.pg_connect_string)
     pg_conn.autocommit = True
     pg_cur = pg_conn.cursor()
 
@@ -51,7 +51,7 @@ def run_sql_multiprocessing(the_sql):
         result = "SQL FAILED! : {0} : {1}".format(the_sql, ex)
 
     pg_cur.close()
-    settings.pg_pool.putconn(pg_conn)
+    pg_conn.close()
 
     return result
 
@@ -236,7 +236,7 @@ def import_shapefile_to_postgres(file_path, pg_table, pg_schema, delete_table, s
     sql = sql.replace("DROP TABLE IF EXISTS IF EXISTS ", "DROP TABLE IF EXISTS ")
 
     # import data to Postgres
-    pg_conn = settings.pg_pool.getconn()
+    pg_conn = psycopg2.connect(settings.pg_connect_string)
     pg_conn.autocommit = True
     pg_cur = pg_conn.cursor()
 
@@ -251,7 +251,7 @@ def import_shapefile_to_postgres(file_path, pg_table, pg_schema, delete_table, s
         target.write(sql)
 
         pg_cur.close()
-        settings.pg_pool.putconn(pg_conn)
+        pg_conn.close()
 
         return "\tImporting {} - Couldn't run Shapefile SQL\nshp2pgsql result was: {} ".format(file_name, ex)
 
@@ -263,10 +263,10 @@ def import_shapefile_to_postgres(file_path, pg_table, pg_schema, delete_table, s
             pg_cur.execute(sql)
         except Exception as ex:
             pg_cur.close()
-            settings.pg_pool.putconn(pg_conn)
+            pg_conn.close()
             return "\tImporting {} - Couldn't cluster on spatial index : {}".format(pg_table, ex)
 
     pg_cur.close()
-    settings.pg_pool.putconn(pg_conn)
+    pg_conn.close()
 
     return "SUCCESS"
