@@ -1,5 +1,42 @@
 
 
+-- : null value in column "latitude" of relation "temp_addresses" violates not-null constraint
+--DETAIL:  Failing row contains (586652, GASA_720237538, SA3616793, loc553beb711212, P, null, null, null, null, null, 284, null, SALEYARDS, ROAD, null, 5353, 1, D/89746/A/20, 40013032000, 40013032000, null, null, PROPERTY ACCESS POINT SETBACK, 2, null).
+
+select *
+from raw_gnaf_202111.address_default_geocode
+where latitude is null or longitude is null;
+
+--GASA_424662224
+--GASA_424664998
+--GASA_424826328
+--GASA_425108741
+--GASA_718982294
+--GASA_719772942
+--GASA_719778496
+--GASA_720237538
+--GASA_720495806
+--GASA_720586798
+
+select *
+from raw_gnaf_202111.address_site_geocode
+where latitude is null or longitude is null;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 -- root        : INFO     SQL FAILED! : ALTER TABLE ONLY gnaf_202108.locality_neighbour_lookup ADD CONSTRAINT locality_neighbour_lookup_pk PRIMARY KEY (locality_pid, neighbour_locality_pid); : could not create unique index "locality_neighbour_lookup_pk"
 -- DETAIL:  Key (locality_pid, neighbour_locality_pid)=(loc46e919f53d9f, loc5ecbe4a59b8c) is duplicated.
 
