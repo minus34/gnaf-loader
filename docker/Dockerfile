@@ -24,14 +24,14 @@ RUN /etc/init.d/postgresql start \
 # download and restore GNAF & Admin Boundary Postgres dump files
 RUN mkdir -p /data \
     && cd /data \
-    && wget --quiet https://minus34.com/opendata/geoscape-202108/gnaf-202108.dmp \
-    && wget --quiet https://minus34.com/opendata/geoscape-202108/admin-bdys-202108.dmp \
+    && wget --quiet https://minus34.com/opendata/geoscape-202111/gnaf-202111.dmp \
+    && wget --quiet https://minus34.com/opendata/geoscape-202111/admin-bdys-202111.dmp \
     && /etc/init.d/postgresql start \
-    && pg_restore -Fc -d postgres -h localhost -p 5432 -U postgres /data/gnaf-202108.dmp \
-    && pg_restore -Fc -d postgres -h localhost -p 5432 -U postgres /data/admin-bdys-202108.dmp \
+    && pg_restore -Fc -d postgres -h localhost -p 5432 -U postgres /data/gnaf-202111.dmp \
+    && pg_restore -Fc -d postgres -h localhost -p 5432 -U postgres /data/admin-bdys-202111.dmp \
     && /etc/init.d/postgresql stop \
-    && rm /data/gnaf-202108.dmp \
-    && rm /data/admin-bdys-202108.dmp
+    && rm /data/gnaf-202111.dmp \
+    && rm /data/admin-bdys-202111.dmp
 
 # enable external access to postgres - WARNING: these are insecure settings! Edit these to restrict access
 RUN echo "host all  all    0.0.0.0/0  md5" >> /etc/postgresql/13/main/pg_hba.conf
