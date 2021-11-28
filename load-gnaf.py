@@ -259,9 +259,8 @@ def index_raw_gnaf(pg_cur):
 
     geoscape.multiprocess_list("sql", sql_list, logger)
 
-    # create distinct new & old locality pid lookup table
-    pg_cur.execute(geoscape.open_sql_file("01-05b-create-distinct-locality-pid-linkage-table.sql"))
-
+    # # create distinct new & old locality pid lookup table
+    # pg_cur.execute(geoscape.open_sql_file("01-05b-create-distinct-locality-pid-linkage-table.sql"))
 
     logger.info("\t- Step 5 of 7 : indexes created: {0}".format(datetime.now() - start_time))
 

@@ -1,6 +1,6 @@
 
 -- insert into unlogged table (as this is step 1 of 2 to create the flattened address table)
-INSERT INTO gnaf.temp_addresses (gnaf_pid, street_locality_pid, locality_pid, old_locality_pid, alias_principal,
+INSERT INTO gnaf.temp_addresses (gnaf_pid, street_locality_pid, locality_pid, alias_principal,
                                  primary_secondary, building_name, lot_number, flat_number, level_number, 
                                  number_first, number_last, street_name, street_type, street_suffix, 
                                  postcode, confidence, legal_parcel_id, mb_2016_code, mb_2021_code, latitude,
@@ -8,7 +8,7 @@ INSERT INTO gnaf.temp_addresses (gnaf_pid, street_locality_pid, locality_pid, ol
 SELECT adr.address_detail_pid AS gnaf_pid,
        adr.street_locality_pid,
        adr.locality_pid,
-       old.old_locality_pid,
+--       old.old_locality_pid,
        adr.alias_principal,
        adr.primary_secondary,
        adr.building_name,

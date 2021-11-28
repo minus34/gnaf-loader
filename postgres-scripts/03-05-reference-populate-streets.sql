@@ -1,9 +1,9 @@
 
 -- main insert -- 684781 rows
-INSERT INTO gnaf.streets (street_locality_pid, locality_pid, old_locality_pid, street_name, street_type, street_suffix, full_street_name, locality_name, postcode, state, street_type_abbrev, street_suffix_abbrev, street_class, latitude, longitude, geom)
+INSERT INTO gnaf.streets (street_locality_pid, locality_pid, street_name, street_type, street_suffix, full_street_name, locality_name, postcode, state, street_type_abbrev, street_suffix_abbrev, street_class, latitude, longitude, geom)
 SELECT str.street_locality_pid,
        str.locality_pid,
-       old.old_locality_pid,
+--       old.old_locality_pid,
        str.street_name,
        str.street_type_code AS street_type,
        suf.name AS street_suffix,

@@ -1,7 +1,7 @@
 
 -- principals insert
 INSERT INTO gnaf.address_principals(
-            gnaf_pid, street_locality_pid, locality_pid, old_locality_pid, alias_principal,
+            gnaf_pid, street_locality_pid, locality_pid, alias_principal,
             primary_secondary, building_name, lot_number, flat_number, level_number, 
             number_first, number_last, street_name, street_type, street_suffix, address,
             locality_name, postcode, state, locality_postcode, confidence, 
@@ -10,7 +10,7 @@ INSERT INTO gnaf.address_principals(
 SELECT adr.gnaf_pid,
        adr.street_locality_pid,
        adr.locality_pid,
-       adr.old_locality_pid,
+--       adr.old_locality_pid,
        adr.alias_principal,
        adr.primary_secondary,
        adr.building_name,
@@ -62,7 +62,7 @@ SELECT adr.gnaf_pid,
 
 -- aliases insert
 INSERT INTO gnaf.address_aliases(
-            gnaf_pid, street_locality_pid, locality_pid, old_locality_pid, alias_principal,
+            gnaf_pid, street_locality_pid, locality_pid, alias_principal,
             primary_secondary, building_name, lot_number, flat_number, level_number, 
             number_first, number_last, street_name, street_type, street_suffix, address,
             locality_name, postcode, state, locality_postcode, confidence, 
@@ -71,7 +71,7 @@ INSERT INTO gnaf.address_aliases(
 SELECT adr.gnaf_pid,
        adr.street_locality_pid,
        adr.locality_pid,
-       adr.old_locality_pid,
+--       adr.old_locality_pid,
        adr.alias_principal,
        adr.primary_secondary,
        adr.building_name,
