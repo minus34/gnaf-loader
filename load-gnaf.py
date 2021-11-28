@@ -99,7 +99,7 @@ def main():
     logger.info("Part 2 of 6 : Start raw GNAF load : {0}".format(start_time))
     drop_tables_and_vacuum_db(pg_cur)
     create_raw_gnaf_tables(pg_cur)
-    populate_raw_gnaf()
+    populate_raw_gnaf(pg_cur)
     clean_authority_files(pg_cur, settings.raw_gnaf_schema, False)
     index_raw_gnaf(pg_cur)
     if settings.primary_foreign_keys:
@@ -199,7 +199,7 @@ def create_raw_gnaf_tables(pg_cur):
 
 
 # load raw gnaf authority & state tables using multiprocessing
-def populate_raw_gnaf():
+def populate_raw_gnaf(pg_cur):
     # Step 4 of 7 : load raw gnaf authority & state tables
     start_time = datetime.now()
 
@@ -219,6 +219,11 @@ def populate_raw_gnaf():
         # load all PSV files using multiprocessing
         geoscape.multiprocess_list("sql", sql_list, logger)
         logger.info("\t- Step 4 of 7 : tables populated : {0}".format(datetime.now() - start_time))
+
+        # fix missing geocodes (added due to missing data in 202111 release)
+        sql = geoscape.open_sql_file("01-04-raw-gnaf-fix-missing-geocodes.sql")
+        pg_cur.execute(sql)
+        logger.info("\t\t- fixed missing geocodes : {0}".format(datetime.now() - start_time))
 
 
 def get_raw_gnaf_files(prefix):
