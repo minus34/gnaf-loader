@@ -8,6 +8,7 @@
 - The ABS Census meshblock boundary tables `abs_20**_mb` have had their meshblock code (`mb**_code`) fields changed to _bigint_ type to bring them inline with GNAF tables, to speed up joins
 - All ABS Census 2021 boundary tables have had their columns re-ordered into a similar structure to the 2016 tables. The state_pid field has been removed
 - GDA2020 GNAF and Admin Bdys input files are now supported (see below)
+- Added fix for missing coordinates in default geocode table. Affects 10 South Australian addresses
 
 #### Code
 - A new flag `--srid` has been added to set the coordinate system of the input data. Valid values are _4283_ (GDA94) and _7844_ (GDA2020)
