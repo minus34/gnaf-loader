@@ -218,12 +218,13 @@ def populate_raw_gnaf(pg_cur):
     else:
         # load all PSV files using multiprocessing
         geoscape.multiprocess_list("sql", sql_list, logger)
-        logger.info("\t- Step 4 of 7 : tables populated : {0}".format(datetime.now() - start_time))
 
         # fix missing geocodes (added due to missing data in 202111 release)
         sql = geoscape.open_sql_file("01-04-raw-gnaf-fix-missing-geocodes.sql")
         pg_cur.execute(sql)
-        logger.info("\t\t- fixed missing geocodes : {0}".format(datetime.now() - start_time))
+
+        logger.info("\t- Step 4 of 7 : tables populated : {0}".format(datetime.now() - start_time))
+        logger.info("\t\t- fixed missing geocodes")
 
 
 def get_raw_gnaf_files(prefix):
