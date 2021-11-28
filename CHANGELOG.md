@@ -3,6 +3,9 @@
 #### Data
 - Postgres dump files now support Postgres 13+ only. If you're running an earlier version of Postgres, you can still run the Python code to get full access to the data. Also consider using the Docker container as it's a very simple way to launch a server.
 - Geoscape have removed the ABS Census 2011 boundaries and references from the GNAF tables
+- _old_locality_pid_ field has been removed from the following GNAF tables as the new and old locality_pid lookup table has been removed. Maintaining the field would have introduced a dependancy on the previous version of GNAF, overcomplicating the processing: `address_principals, address_aliases, localities, streets, address_principal_admin_boundaries, address_alias_admin_boundaries`
+- _old_locality_pid_ field has been removed from the following Admin Bdy tables for the above reasons: `locality_bdys, locality_bdys_analysis`
+
 - The ABS Census meshblock boundary tables `abs_20**_mb` have had their meshblock code (`mb**_code`) fields changed to _bigint_ type to bring them inline with GNAF tables, to speed up joins
 - All ABS Census 2021 boundary tables have had their columns re-ordered into a similar structure to the 2016 tables. The state_pid field has been removed
 - GDA2020 GNAF and Admin Bdys input files are now supported (see below)
