@@ -4,7 +4,7 @@ import multiprocessing
 import math
 import os
 # import platform
-# import psycopg2
+import psycopg2
 import settings
 import subprocess
 # import sys
