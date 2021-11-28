@@ -47,7 +47,7 @@ DROP TABLE IF EXISTS raw_gnaf.address_change_type_aut CASCADE;
 DROP TABLE IF EXISTS raw_gnaf.address_mesh_block_2021 CASCADE;
 DROP TABLE IF EXISTS raw_gnaf.mb_2021 CASCADE;
 DROP TABLE IF EXISTS raw_gnaf.locality_pid_linkage CASCADE;
-DROP TABLE IF EXISTS raw_gnaf.locality_pid_linkage_distinct CASCADE;
+--DROP TABLE IF EXISTS raw_gnaf.locality_pid_linkage_distinct CASCADE;
 
 ---- drop raw admin boundaries - bit of a who cares...
 --DROP TABLE IF EXISTS raw_admin_bdys.aus_comm_electoral CASCADE;

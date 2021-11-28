@@ -57,7 +57,7 @@ SELECT adr.address_detail_pid AS gnaf_pid,
   LEFT OUTER JOIN raw_gnaf.geocode_type_aut AS gty ON pnt.geocode_type_code = gty.code
   LEFT OUTER JOIN raw_gnaf.flat_type_aut AS flt ON adr.flat_type_code = flt.code
   LEFT OUTER JOIN raw_gnaf.level_type_aut AS lvl ON adr.level_type_code = lvl.code
-  LEFT OUTER JOIN raw_gnaf.locality_pid_linkage_distinct AS old ON adr.locality_pid = old.locality_pid
+--  LEFT OUTER JOIN raw_gnaf.locality_pid_linkage_distinct AS old ON adr.locality_pid = old.locality_pid
 --  LEFT OUTER JOIN (
 --  SELECT mb1.address_detail_pid, mb2.mb_2011_code
 --    FROM raw_gnaf.address_mesh_block_2011 AS mb1
