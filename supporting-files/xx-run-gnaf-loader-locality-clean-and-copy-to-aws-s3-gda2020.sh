@@ -4,7 +4,7 @@
 conda activate geo
 
 # get the directory this script is running from
-GNAF_SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
 # ---------------------------------------------------------------------------------------------------------------------
 # edit these to taste - NOTE: you can't use "~" for your home folder, Postgres doesn't like it
@@ -48,14 +48,14 @@ echo "--------------------------------------------------------------------------
 
 conda activate sedona
 
-python ${GNAF_SCRIPT_DIR}/../spark/02_export_gnaf_and_admin_bdys_to_s3.py
+python ${SCRIPT_DIR}/../spark/02_export_gnaf_and_admin_bdys_to_s3.py
 
-aws --profile=${AWS_PROFILE} s3 sync ${GNAF_SCRIPT_DIR}/../spark/data s3://minus34.com/opendata/geoscape-202111-gda2020/parquet --acl public-read
+aws --profile=${AWS_PROFILE} s3 sync ${SCRIPT_DIR}/../spark/data s3://minus34.com/opendata/geoscape-202111-gda2020/parquet --acl public-read
 
 echo "---------------------------------------------------------------------------------------------------------------------"
 echo "build gnaf-loader docker image and push to Docker Hub"
 echo "---------------------------------------------------------------------------------------------------------------------"
 
-cd ${GNAF_SCRIPT_DIR}/docker
+cd ${SCRIPT_DIR}/../docker
 docker build --squash --tag minus34/gnafloader:latest-gda2020 --tag minus34/gnafloader:202111-gda2020 --no-cache --build-arg BASE_URL="https://minus34.com/opendata/geoscape-202111-gda2020" .
 docker push --all-tags minus34/gnafloader
