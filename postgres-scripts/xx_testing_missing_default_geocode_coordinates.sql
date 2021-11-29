@@ -1,9 +1,10 @@
 
+-- Error in gnaf-loader
 
 -- : null value in column "latitude" of relation "temp_addresses" violates not-null constraint
 --DETAIL:  Failing row contains (586652, GASA_720237538, SA3616793, loc553beb711212, P, null, null, null, null, null, 284, null, SALEYARDS, ROAD, null, 5353, 1, D/89746/A/20, 40013032000, 40013032000, null, null, PROPERTY ACCESS POINT SETBACK, 2, null).
 
--- find default geocodes with no la/longs -- 10 records
+-- find default geocodes with no lat/longs -- 10 records
 select *
 from raw_gnaf_202111.address_default_geocode
 where latitude is null or longitude is null;
@@ -20,7 +21,7 @@ where latitude is null or longitude is null;
 --GASA_720586798
 
 
--- get address_site_pids for gnaf_pids with no cords
+-- get address_site_pids for gnaf_pids with no coords
 select address_detail_pid, address_site_pid from raw_gnaf_202111.address_detail
 where address_detail_pid in (
 'GASA_424662224',
@@ -48,7 +49,7 @@ where address_detail_pid in (
 --GASA_720586798	715971839
 
 
--- check if lat/longs exist in full geocode table using address_site_pids - all 10 have coords
+-- check if lat/longs exist in full geocode table using address_site_pids: all 10 have coords & good geocodes
 select *
 from raw_gnaf_202111.address_site_geocode
 where address_site_pid in (
