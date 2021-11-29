@@ -57,5 +57,5 @@ echo "build gnaf-loader docker image and push to Docker Hub"
 echo "---------------------------------------------------------------------------------------------------------------------"
 
 cd /Users/$(whoami)/git/minus34/gnaf-loader/docker
-docker build --squash --tag minus34/gnafloader:latest-gda2020 --tag minus34/gnafloader:202111-gda2020 --build-arg BASE_URL="https://minus34.com/opendata/geoscape-202111-gda2020" .
+docker build --squash --tag minus34/gnafloader:latest-gda2020 --tag minus34/gnafloader:202111-gda2020 --no-cache --build-arg BASE_URL="https://minus34.com/opendata/geoscape-202111-gda2020" .
 docker push --all-tags minus34/gnafloader
