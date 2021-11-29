@@ -56,6 +56,6 @@ echo "--------------------------------------------------------------------------
 echo "build gnaf-loader docker image and push to Docker Hub"
 echo "---------------------------------------------------------------------------------------------------------------------"
 
-cd /Users/$(whoami)/git/minus34/gnaf-loader/docker
+cd ${GNAF_SCRIPT_DIR}/docker
 docker build --squash --tag minus34/gnafloader:latest --tag minus34/gnafloader:202111 --no-cache .
 docker push --all-tags minus34/gnafloader

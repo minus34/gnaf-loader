@@ -12,8 +12,8 @@ GNAF_SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd
 
 AWS_PROFILE="default"
 OUTPUT_FOLDER="/Users/$(whoami)/tmp/geoscape_202111_gda2020"
-GNAF_PATH="/Users/$(whoami)/Downloads/g-naf_nov21_australia_gda94_psv_104"
-BDYS_PATH="/Users/$(whoami)/Downloads/NOV21_AdminBounds_GDA94_SHP"
+GNAF_PATH="/Users/$(whoami)/Downloads/g-naf_nov21_australia_gda2020_psv_104"
+BDYS_PATH="/Users/$(whoami)/Downloads/NOV21_AdminBounds_GDA2020_SHP"
 
 echo "---------------------------------------------------------------------------------------------------------------------"
 echo "Run gnaf-loader and locality boundary clean"
@@ -56,6 +56,6 @@ echo "--------------------------------------------------------------------------
 echo "build gnaf-loader docker image and push to Docker Hub"
 echo "---------------------------------------------------------------------------------------------------------------------"
 
-cd /Users/$(whoami)/git/minus34/gnaf-loader/docker
+cd ${GNAF_SCRIPT_DIR}/docker
 docker build --squash --tag minus34/gnafloader:latest-gda2020 --tag minus34/gnafloader:202111-gda2020 --no-cache --build-arg BASE_URL="https://minus34.com/opendata/geoscape-202111-gda2020" .
 docker push --all-tags minus34/gnafloader
