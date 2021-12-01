@@ -9,7 +9,7 @@ Have a look at [these intro slides](https://minus34.com/opendata/intro-to-gnaf.p
 ### There are 3 options for loading the data
 1. [Run](https://github.com/minus34/gnaf-loader#option-1---run-loadgnafpy) the load-gnaf Python script and build the database yourself in a single step
 2. [Pull](https://github.com/minus34/gnaf-loader#option-2---run-the-database-in-a-docker-container) the database from Docker Hub and run it in a container
-3. [Download](https://github.com/minus34/gnaf-loader#option-3---load-pg_dump-files) the GNAF and/or Admin Bdys Postgres dump files & restore them in your Postgres 12+ database
+3. [Download](https://github.com/minus34/gnaf-loader#option-3---load-pg_dump-files) the GNAF and/or Admin Bdys Postgres dump files & restore them in your Postgres 13+ database
 
 ## Option 1 - Run load.gnaf.py
 Running the Python script takes 30-120 minutes on a Postgres server configured to take advantage of the RAM available.
@@ -112,8 +112,8 @@ Should take 15-60 minutes.
 - A knowledge of [Postgres pg_restore parameters](https://www.postgresql.org/docs/12/app-pgrestore.html)
 
 ### Process
-1. Download [gnaf-202111.dmp](https://minus34.com/opendata/geoscape-202111/gnaf-202111.dmp) (~1.4Gb)
-2. Download [admin-bdys-202111.dmp](https://minus34.com/opendata/geoscape-202111/admin-bdys-202111.dmp) (~3.6Gb)
+1. Download [gnaf-202111.dmp](https://minus34.com/opendata/geoscape-202111/gnaf-202111.dmp) (~1.3Gb)
+2. Download [admin-bdys-202111.dmp](https://minus34.com/opendata/geoscape-202111/admin-bdys-202111.dmp) (~3.3Gb)
 3. Edit the _restore-gnaf-admin-bdys.bat_ or _.sh_ script in the supporting-files folder for your database parameters and for the location of pg_restore
 5. Run the script, come back in 15-60 minutes and enjoy!
 
