@@ -6,7 +6,7 @@
 DROP TABLE IF EXISTS admin_bdys.abs_2016_mb CASCADE;
 CREATE TABLE admin_bdys.abs_2016_mb AS
 SELECT bdy.gid,
-       tab.mb_16code::text,
+       tab.mb_16code::bigint,
        aut.name::text AS mb_category,
        tab.sa1_16main,
        tab.sa1_16_7cd,

@@ -16,11 +16,11 @@ SELECT adr.address_detail_pid AS gnaf_pid,
   FROM raw_gnaf_201608.address_detail AS adr
   INNER JOIN raw_gnaf_201608.address_default_geocode as pnt ON adr.address_detail_pid = pnt.address_detail_pid
   LEFT OUTER JOIN raw_gnaf_201608.geocode_type_aut AS gty ON pnt.geocode_type_code = gty.code
-  LEFT OUTER JOIN (
-  SELECT mb1.address_detail_pid, mb2.mb_2011_code
-    FROM raw_gnaf_201608.address_mesh_block_2011 AS mb1
-    INNER JOIN raw_gnaf_201608.mb_2011 AS mb2 ON mb1.mb_2011_pid = mb2.mb_2011_pid
-  ) AS mb11 ON adr.address_detail_pid = mb11.address_detail_pid
+--  LEFT OUTER JOIN (
+--  SELECT mb1.address_detail_pid, mb2.mb_2011_code
+--    FROM raw_gnaf_201608.address_mesh_block_2011 AS mb1
+--    INNER JOIN raw_gnaf_201608.mb_2011 AS mb2 ON mb1.mb_2011_pid = mb2.mb_2011_pid
+--  ) AS mb11 ON adr.address_detail_pid = mb11.address_detail_pid
   LEFT OUTER JOIN (
   SELECT mb1.address_detail_pid, mb2.mb_2016_code
     FROM raw_gnaf_201608.address_mesh_block_2016 AS mb1

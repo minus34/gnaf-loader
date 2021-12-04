@@ -31,7 +31,7 @@ import os
 import psycopg2
 import logging.config
 import geoscape
-import settings  # gets global vars, including the Postgres connection pool
+import settings  # gets global vars
 
 from datetime import datetime
 
@@ -45,7 +45,7 @@ def main():
     logger.info("\t- on {}".format(settings.os_version))
 
     # get Postgres connection & cursor
-    pg_conn = settings.pg_pool.getconn()
+    pg_conn = psycopg2.connect(settings.pg_connect_string)
     pg_conn.autocommit = True
     pg_cur = pg_conn.cursor()
 
@@ -56,7 +56,7 @@ def main():
         logger.fatal("Unable to add PostGIS extension\nACTION: Check your Postgres user privileges or PostGIS install")
         return False
 
-    # test if ST_SubDivide exists (only in PostGIS 2.2+). It's used to split boundaries for faster processing
+    # test if ST_Subdivide exists (only in PostGIS 2.2+). It's used to split boundaries for faster processing
     logger.info("\t- using Postgres {} and PostGIS {} (with GEOS {})"
                 .format(settings.pg_version, settings.postgis_version, settings.geos_version))
 
@@ -99,7 +99,7 @@ def main():
     logger.info("Part 2 of 6 : Start raw GNAF load : {0}".format(start_time))
     drop_tables_and_vacuum_db(pg_cur)
     create_raw_gnaf_tables(pg_cur)
-    populate_raw_gnaf()
+    populate_raw_gnaf(pg_cur)
     clean_authority_files(pg_cur, settings.raw_gnaf_schema, False)
     index_raw_gnaf(pg_cur)
     if settings.primary_foreign_keys:
@@ -147,8 +147,7 @@ def main():
 
     # close Postgres connection
     pg_cur.close()
-    settings.pg_pool.putconn(pg_conn)
-    # pg_pool.close()
+    pg_conn.close()
 
     logger.info("")
     logger.info("Total time : : {0}".format(datetime.now() - full_start_time))
@@ -200,7 +199,7 @@ def create_raw_gnaf_tables(pg_cur):
 
 
 # load raw gnaf authority & state tables using multiprocessing
-def populate_raw_gnaf():
+def populate_raw_gnaf(pg_cur):
     # Step 4 of 7 : load raw gnaf authority & state tables
     start_time = datetime.now()
 
@@ -219,7 +218,13 @@ def populate_raw_gnaf():
     else:
         # load all PSV files using multiprocessing
         geoscape.multiprocess_list("sql", sql_list, logger)
+
+        # fix missing geocodes (added due to missing data in 202111 release)
+        sql = geoscape.open_sql_file("01-04-raw-gnaf-fix-missing-geocodes.sql")
+        pg_cur.execute(sql)
+
         logger.info("\t- Step 4 of 7 : tables populated : {0}".format(datetime.now() - start_time))
+        logger.info("\t\t- fixed missing geocodes")
 
 
 def get_raw_gnaf_files(prefix):
@@ -260,9 +265,8 @@ def index_raw_gnaf(pg_cur):
 
     geoscape.multiprocess_list("sql", sql_list, logger)
 
-    # create distinct new & old locality pid lookup table
-    pg_cur.execute(geoscape.open_sql_file("01-05b-create-distinct-locality-pid-linkage-table.sql"))
-
+    # # create distinct new & old locality pid lookup table
+    # pg_cur.execute(geoscape.open_sql_file("01-05b-create-distinct-locality-pid-linkage-table.sql"))
 
     logger.info("\t- Step 5 of 7 : indexes created: {0}".format(datetime.now() - start_time))
 
@@ -520,7 +524,7 @@ def prep_admin_bdys(pg_cur):
 
     # create tables using multiprocessing - using flag in file to split file up into sets of statements
     sql_list = geoscape.open_sql_file("02-02a-prep-admin-bdys-tables.sql").split("-- # --")
-    sql_list = sql_list + geoscape.open_sql_file("02-02b-prep-census-2011-bdys-tables.sql").split("-- # --")
+    # sql_list = sql_list + geoscape.open_sql_file("02-02b-prep-census-2011-bdys-tables.sql").split("-- # --")
     sql_list = sql_list + geoscape.open_sql_file("02-02c-prep-census-2016-bdys-tables.sql").split("-- # --")
     sql_list = sql_list + geoscape.open_sql_file("02-02d-prep-census-2021-bdys-tables.sql").split("-- # --")
 
@@ -571,8 +575,8 @@ def create_admin_bdys_for_analysis():
                 sql = sql.replace("name", "locality_name")
                 # add postcodes
                 sql = sql.replace("locality_name text NOT NULL,",
-                                  "old_locality_pid text NULL, locality_name text NOT NULL, postcode text NULL,")
-                sql = sql.replace("locality_name,", "old_locality_pid, locality_name, postcode,")
+                                  "locality_name text NOT NULL, postcode text NULL,")
+                sql = sql.replace("locality_name,", "locality_name, postcode,")
 
             sql_list.append(sql)
         geoscape.multiprocess_list("sql", sql_list, logger)
@@ -711,7 +715,7 @@ def boundary_tag_gnaf(pg_cur):
                                  "gnaf_pid text NOT NULL,"
                                  # "alias_principal character(1) NOT NULL,"
                                  "locality_pid text NOT NULL,"
-                                 "old_locality_pid text NULL,"
+                                 # "old_locality_pid text NULL,"
                                  "locality_name text NOT NULL,"
                                  "postcode text,"
                                  "state text NOT NULL"
@@ -771,13 +775,13 @@ def boundary_tag_gnaf(pg_cur):
 
     # create insert statement for multiprocessing
     insert_field_list = list()
-    insert_field_list.append("(gnaf_pid, locality_pid, old_locality_pid, locality_name, postcode, state")
+    insert_field_list.append("(gnaf_pid, locality_pid, locality_name, postcode, state")
 
     insert_join_list = list()
     insert_join_list.append("FROM {}.address_principals AS pnts ".format(settings.gnaf_schema, ))
 
     select_field_list = list()
-    select_field_list.append("SELECT pnts.gnaf_pid, pnts.locality_pid, pnts.old_locality_pid, "
+    select_field_list.append("SELECT pnts.gnaf_pid, pnts.locality_pid, "
                              "pnts.locality_name, pnts.postcode, pnts.state")
 
     drop_table_list = list()

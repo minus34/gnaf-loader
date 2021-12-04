@@ -7,7 +7,7 @@ DROP TABLE IF EXISTS admin_bdys.locality_bdys CASCADE;
 CREATE TABLE admin_bdys.locality_bdys(
   gid SERIAL NOT NULL,
   locality_pid text NOT NULL,
-  old_locality_pid text NULL,
+--   old_locality_pid text NULL,
   locality_name text NOT NULL,
   postcode text NULL,
   state text NOT NULL,
@@ -33,18 +33,6 @@ SELECT loc_pid,
 
 ANALYZE admin_bdys.locality_bdys;
 
--- add old locality_pids
-UPDATE admin_bdys.locality_bdys as new
-    SET old_locality_pid = old.old_locality_pid
-FROM raw_gnaf.locality_pid_linkage_distinct AS old
-WHERE new.locality_pid = old.locality_pid;
-
-ANALYZE admin_bdys.locality_bdys;
-
-
-
-select * from admin_bdys.locality_bdys where locality_name = 'Melbourne';
-
 
 -- cookie cut ACT districts to areas without a gazetted locality; and add to locality bdys table
 
@@ -52,7 +40,7 @@ select * from admin_bdys.locality_bdys where locality_name = 'Melbourne';
 DROP TABLE IF EXISTS temp_districts;
 CREATE TEMPORARY TABLE temp_districts (
   locality_pid text NOT NULL PRIMARY KEY,
-  old_locality_pid text NULL,
+--   old_locality_pid text NULL,
   locality_name text NOT NULL,
   state text NOT NULL,
   locality_class text NOT NULL,
@@ -65,17 +53,15 @@ ALTER TABLE temp_districts CLUSTER ON temp_districts_geom_idx;
 
 INSERT INTO temp_districts
 SELECT dat.loc_pid,
-       link.old_locality_pid,
+--        NULL,
        dat.loc_name,
        dat.state,
        dat.loc_class,
        st_multi(st_union(st_buffer(dat.geom, 0.0))) AS geom
   FROM raw_admin_bdys.aus_localities AS dat
-  LEFT OUTER JOIN raw_gnaf.locality_pid_linkage_distinct AS link ON dat.loc_pid = link.locality_pid
   WHERE dat.loc_class = 'District'
     AND dat.state = 'ACT'
   GROUP BY dat.loc_pid,
-           link.old_locality_pid,
            dat.loc_name,
            dat.state,
            dat.loc_class;
@@ -85,7 +71,7 @@ ANALYZE temp_districts;
 -- Insert the ACT localities merged into a single multipolygon as the cookie cutter
 INSERT INTO temp_districts
   SELECT 'DUMMY',
-         'DUMMY',
+--          'DUMMY',
          'DUMMY',
          'XYZ',
          'DUMMY',
@@ -105,7 +91,7 @@ DELETE FROM temp_districts WHERE locality_pid = 'DUMMY';
 -- while we're at it - fill the big gap in SA with an unincorporated area
 INSERT INTO temp_districts
 SELECT 'locsa999999',
-       'SA999999',
+--        'SA999999',
        'UNINCORPORATED',
        'SA',
        'UNOFFICIAL SUBURB',
@@ -115,16 +101,16 @@ SELECT 'locsa999999',
 
 
 -- insert the districts into the gazetted localities, whilst ignoring the remaining slivers (Admin boundary topology is not perfect)
-INSERT INTO admin_bdys.locality_bdys (locality_pid, old_locality_pid, locality_name, state, locality_class, geom)
+INSERT INTO admin_bdys.locality_bdys (locality_pid, locality_name, state, locality_class, geom)
 SELECT locality_pid,
-       old_locality_pid,
+--        old_locality_pid,
        locality_name,
        state,
        locality_class,
        ST_Multi(ST_Union(geom))
   FROM (
     SELECT locality_pid,
-           old_locality_pid,
+--            old_locality_pid,
            locality_name,
            state,
            locality_class,
@@ -134,7 +120,7 @@ SELECT locality_pid,
   ) AS sqt
   WHERE area > 0.000001
   GROUP BY locality_pid,
-           old_locality_pid,
+--            old_locality_pid,
            locality_name,
            state,
            locality_class;
@@ -143,9 +129,9 @@ DROP TABLE temp_districts;
 
 
 -- insert the missing boundary for Thistle Island, SA - from a polygon in the raw state boundaries
-INSERT INTO admin_bdys.locality_bdys (locality_pid, old_locality_pid, locality_name, state, locality_class, geom)
+INSERT INTO admin_bdys.locality_bdys (locality_pid, locality_name, state, locality_class, geom)
 SELECT '250190776' AS locality_pid,
-       '250190776' AS old_locality_pid,
+--        '250190776' AS old_locality_pid,
        'THISTLE ISLAND' AS locality_name,
        'SA' AS state,
        'TOPOGRAPHIC LOCALITY' AS locality_class,
@@ -160,7 +146,7 @@ DROP TABLE IF EXISTS temp_bdys;
 CREATE UNLOGGED TABLE temp_bdys
 (
   locality_pid text NOT NULL,
-  old_locality_pid text NOT NULL,
+--   old_locality_pid text NULL,
   locality_name text NOT NULL,
   postcode text NULL,
   state text NOT NULL,
@@ -172,7 +158,7 @@ ALTER TABLE temp_bdys OWNER TO postgres;
 
 insert into temp_bdys
 select locality_pid,
-       old_locality_pid,
+--        'VIC1634',
        locality_name,
        '3000' AS postcode,
        state,
@@ -184,19 +170,19 @@ select locality_pid,
 -- update the locality_pids of the 2 new boundaries
 UPDATE temp_bdys
   SET locality_pid = locality_pid || '_2',
-      old_locality_pid = old_locality_pid || '_2',
+--       old_locality_pid = old_locality_pid || '_2',
       postcode = '3004'
   WHERE ST_Intersects(ST_SetSRID(ST_MakePoint(144.9781, -37.8275), 4283), geom);
 
 UPDATE temp_bdys
-  SET locality_pid = locality_pid || '_1',
-      old_locality_pid = old_locality_pid || '_1'
+  SET locality_pid = locality_pid || '_1'
+--       old_locality_pid = old_locality_pid || '_1'
   WHERE postcode = '3000';
 
 -- insert the new boundaries into the main table, the old record doesn't get deleted yet!
-INSERT INTO admin_bdys.locality_bdys (locality_pid, old_locality_pid, locality_name, postcode, state, locality_class, geom)
+INSERT INTO admin_bdys.locality_bdys (locality_pid, locality_name, postcode, state, locality_class, geom)
 SELECT locality_pid,
-       old_locality_pid,
+--        old_locality_pid,
        locality_name,
        postcode,
        state,
@@ -216,6 +202,14 @@ UPDATE admin_bdys.locality_bdys
         locality_class = upper(locality_class)
 ;
 
+
+-- -- add old locality_pids to unedited localities -- need to rollover old locality pids from GNAF 202111 release - not supplied in 202111 release
+-- UPDATE admin_bdys.locality_bdys as new
+--     SET old_locality_pid = old.old_locality_pid
+-- FROM admin_bdys_202111.locality_bdys AS old
+-- WHERE new.locality_pid = old.locality_pid;
+
+
 -- update stats
 ANALYZE admin_bdys.locality_bdys;
 
@@ -232,7 +226,7 @@ ALTER TABLE admin_bdys.locality_bdys CLUSTER ON locality_bdys_geom_idx;
 --------------------------------------------------------------------------------------
 
 DROP TABLE IF EXISTS admin_bdys.postcode_bdys CASCADE;
-CREATE UNLOGGED TABLE admin_bdys.postcode_bdys
+CREATE TABLE admin_bdys.postcode_bdys
 (
   gid SERIAL NOT NULL,
   postcode text,

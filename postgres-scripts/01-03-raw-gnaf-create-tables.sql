@@ -139,21 +139,21 @@ CREATE TABLE address_mesh_block_2016 (
 
 ALTER TABLE address_mesh_block_2016 OWNER TO postgres;
 
+----
+---- Name: address_mesh_block_2011; Type: TABLE; Schema: public; Owner: postgres; Tablespace:
+----
 --
--- Name: address_mesh_block_2011; Type: TABLE; Schema: public; Owner: postgres; Tablespace: 
+--CREATE TABLE address_mesh_block_2011 (
+--    address_mesh_block_2011_pid character varying(15) NOT NULL,
+--    date_created date NOT NULL,
+--    date_retired date,
+--    address_detail_pid character varying(15) NOT NULL,
+--    mb_match_code character varying(15) NOT NULL,
+--    mb_2011_pid character varying(15) NOT NULL
+--);
 --
-
-CREATE TABLE address_mesh_block_2011 (
-    address_mesh_block_2011_pid character varying(15) NOT NULL,
-    date_created date NOT NULL,
-    date_retired date,
-    address_detail_pid character varying(15) NOT NULL,
-    mb_match_code character varying(15) NOT NULL,
-    mb_2011_pid character varying(15) NOT NULL
-);
-
-
-ALTER TABLE address_mesh_block_2011 OWNER TO postgres;
+--
+--ALTER TABLE address_mesh_block_2011 OWNER TO postgres;
 
 --
 -- Name: address_site; Type: TABLE; Schema: public; Owner: postgres; Tablespace: 
@@ -396,19 +396,19 @@ CREATE TABLE mb_2016 (
 ALTER TABLE mb_2016 OWNER TO postgres;
 
 
+----
+---- Name: mb_2011; Type: TABLE; Schema: public; Owner: postgres; Tablespace:
+----
 --
--- Name: mb_2011; Type: TABLE; Schema: public; Owner: postgres; Tablespace: 
+--CREATE TABLE mb_2011 (
+--    mb_2011_pid character varying(15) NOT NULL,
+--    date_created date NOT NULL,
+--    date_retired date,
+--    mb_2011_code character varying(15) NOT NULL
+--);
 --
-
-CREATE TABLE mb_2011 (
-    mb_2011_pid character varying(15) NOT NULL,
-    date_created date NOT NULL,
-    date_retired date,
-    mb_2011_code character varying(15) NOT NULL
-);
-
-
-ALTER TABLE mb_2011 OWNER TO postgres;
+--
+--ALTER TABLE mb_2011 OWNER TO postgres;
 
 --
 -- Name: mb_match_code_aut; Type: TABLE; Schema: public; Owner: postgres; Tablespace: 
