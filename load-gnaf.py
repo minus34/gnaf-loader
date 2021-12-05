@@ -651,7 +651,7 @@ def create_reference_tables(pg_cur):
     sql = geoscape.open_sql_file("03-13-reference-derived-postcode-bdys.sql")
     sql_list = []
     for state in settings.states_to_load:
-        state_sql = sql.replace("GROUP BY ", "WHERE state = '{0}' GROUP BY ".format(state))
+        state_sql = sql.replace("GROUP BY ", f"WHERE state = '{state}' GROUP BY ")
         sql_list.append(state_sql)
     geoscape.multiprocess_list("sql", sql_list, logger)
 
@@ -771,17 +771,16 @@ def boundary_tag_gnaf(pg_cur):
     for table in table_list:
         pid_field = table[1]
         name_field = pid_field. replace("_pid", "_name")
-        insert_field_list.append(", {0}, {1}".format(pid_field, name_field))
-        select_field_list.append(", temp_{0}_tags.bdy_pid, temp_{0}_tags.bdy_name ".format(table[0]))
-        insert_join_list.append("LEFT OUTER JOIN {0}.temp_{1}_tags ON pnts.gnaf_pid = temp_{1}_tags.gnaf_pid "
-                                .format(settings.gnaf_schema, table[0]))
-        drop_table_list.append("DROP TABLE IF EXISTS {0}.temp_{1}_tags;".format(settings.gnaf_schema, table[0]))
+        insert_field_list.append(f", {pid_field}, {name_field}")
+        select_field_list.append(f", temp_{table[0]}_tags.bdy_pid, temp_{table[0]}_tags.bdy_name ")
+        insert_join_list.append(f"LEFT OUTER JOIN {settings.gnaf_schema}.temp_{table[0]}_tags "
+                                f"ON pnts.gnaf_pid = temp_{table[0]}_tags.gnaf_pid ")
+        drop_table_list.append(f"DROP TABLE IF EXISTS {settings.gnaf_schema}.temp_{table[0]}_tags;")
 
     insert_field_list.append(") ")
 
     insert_statement_list = list()
-    insert_statement_list.append("INSERT INTO {0}.address_principal_admin_boundaries "
-                                 .format(settings.gnaf_schema, ))
+    insert_statement_list.append(f"INSERT INTO {settings.gnaf_schema}.address_principal_admin_boundaries ")
     insert_statement_list.append("".join(insert_field_list))
     insert_statement_list.append("".join(select_field_list))
     insert_statement_list.append("".join(insert_join_list))
@@ -798,27 +797,28 @@ def boundary_tag_gnaf(pg_cur):
     pg_cur.execute("".join(drop_table_list))
 
     # get stats
-    pg_cur.execute("ANALYZE {0}.address_principal_admin_boundaries ".format(settings.gnaf_schema))
+    pg_cur.execute(f"ANALYZE {settings.gnaf_schema}.address_principal_admin_boundaries ")
 
-    logger.info("\t- Step 3 of 7 : principal addresses - bdy tags added to output table : {}"
-                .format(datetime.now() - start_time, ))
+    logger.info(f"\t- Step 3 of 7 : principal addresses - bdy tags added to output table : "
+                f"{datetime.now() - start_time}")
 
     start_time = datetime.now()
 
     # Step 4 of 7 : add index to output table
-    sql = "CREATE INDEX address_principal_admin_boundaries_gnaf_pid_idx " \
-          "ON {0}.address_principal_admin_boundaries USING btree (gnaf_pid)"\
-        .format(settings.gnaf_schema)
+    sql = f"CREATE INDEX address_principal_admin_boundaries_gnaf_pid_idx " \
+          f"ON {settings.gnaf_schema}.address_principal_admin_boundaries USING btree (gnaf_pid)"
     pg_cur.execute(sql)
 
-    logger.info("\t- Step 4 of 7 : created index on bdy tagged address table : {}"
-                .format(datetime.now() - start_time, ))
+    logger.info(f"\t- Step 4 of 7 : created index on bdy tagged address table : {datetime.now() - start_time}")
     start_time = datetime.now()
 
     # Step 5 of 7 : log duplicates - happens when 2 boundaries overlap by a very small amount
     # (can be ignored if there's a small number of records affected)
-    sql = "SELECT gnaf_pid FROM (SELECT Count(*) AS cnt, gnaf_pid FROM {0}.address_principal_admin_boundaries " \
-          "GROUP BY gnaf_pid) AS sqt WHERE cnt > 1".format(settings.gnaf_schema)
+    sql = f"""SELECT gnaf_pid FROM (
+                  SELECT Count(*) AS cnt, gnaf_pid 
+                  FROM {settings.gnaf_schema}.address_principal_admin_boundaries 
+                  GROUP BY gnaf_pid
+              ) AS sqt WHERE cnt > 1"""
     pg_cur.execute(sql)
 
     # get cursor description to test if any rows returned safely
@@ -833,21 +833,21 @@ def boundary_tag_gnaf(pg_cur):
             gnaf_pids.append("\t\t" + duplicate[0])
 
         if len(gnaf_pids) > 0:
-            logger.warning("\t- Step 5 of 7 : found boundary tag duplicates : {}".format(datetime.now() - start_time, ))
+            logger.warning("\t- Step 5 of 7 : found boundary tag duplicates : {datetime.now() - start_time}")
             logger.warning("\n".join(gnaf_pids))
         else:
-            logger.info("\t- Step 5 of 7 : no boundary tag duplicates : {}".format(datetime.now() - start_time, ))
+            logger.info("\t- Step 5 of 7 : no boundary tag duplicates : {datetime.now() - start_time}")
     else:
-        logger.info("\t- Step 5 of 7 : no boundary tag duplicates : {}".format(datetime.now() - start_time, ))
+        logger.info("\t- Step 5 of 7 : no boundary tag duplicates : {datetime.now() - start_time}")
 
     # Step 6 of 7 : Copy principal boundary tags to alias addresses
     pg_cur.execute(geoscape.open_sql_file("04-06-bdy-tags-for-alias-addresses.sql"))
-    logger.info("\t- Step 6 of 7 : alias addresses boundary tagged : {}".format(datetime.now() - start_time, ))
+    logger.info("\t- Step 6 of 7 : alias addresses boundary tagged : {datetime.now() - start_time}")
     start_time = datetime.now()
 
     # Step 7 of 7 : Create view of all bdy tags
     pg_cur.execute(geoscape.open_sql_file("04-07-create-bdy-tag-view.sql"))
-    logger.info("\t- Step 7 of 7 : boundary tagged address view created : {}".format(datetime.now() - start_time, ))
+    logger.info("\t- Step 7 of 7 : boundary tagged address view created : {datetime.now() - start_time}")
 
 
 def create_qa_tables(pg_cur):
