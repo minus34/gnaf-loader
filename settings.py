@@ -188,8 +188,7 @@ pg_db = args.pgdb or os.getenv("PGDATABASE", "geoscape")
 pg_user = args.pguser or os.getenv("PGUSER", "postgres")
 pg_password = args.pgpassword or os.getenv("PGPASSWORD", "password")
 
-pg_connect_string = "dbname='{0}' host='{1}' port='{2}' user='{3}' password='{4}'" \
-    .format(pg_db, pg_host, pg_port, pg_user, pg_password)
+pg_connect_string = f"dbname='{pg_db}' host='{pg_host}' port='{pg_port}' user='{pg_user}' password='{pg_password}'"
 
 # set postgres script directory
 sql_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), "postgres-scripts")

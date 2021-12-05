@@ -40,9 +40,8 @@ def main():
     full_start_time = datetime.now()
 
     # log Python and OS versions
-    logger.info("\t- running Python {} with Psycopg2 {}"
-                .format(settings.python_version, settings.psycopg2_version))
-    logger.info("\t- on {}".format(settings.os_version))
+    logger.info(f"\t- running Python {settings.python_version} with Psycopg2 {settings.psycopg2_version}")
+    logger.info(f"\t- on {settings.os_version}")
 
     # get Postgres connection & cursor
     pg_conn = psycopg2.connect(settings.pg_connect_string)
@@ -57,8 +56,8 @@ def main():
         return False
 
     # test if ST_Subdivide exists (only in PostGIS 2.2+). It's used to split boundaries for faster processing
-    logger.info("\t- using Postgres {} and PostGIS {} (with GEOS {})"
-                .format(settings.pg_version, settings.postgis_version, settings.geos_version))
+    logger.info(f"\t- using Postgres {settings.pg_version} and PostGIS {settings.postgis_version} "
+                f"(with GEOS {settings.geos_version})")
 
     # log the user's input parameters
     logger.info("")
@@ -68,35 +67,31 @@ def main():
 
         if value is not None:
             if arg != "pgpassword":
-                logger.info("\t- {} : {}".format(arg, value))
+                logger.info(f"\t- {arg} : {value}")
             else:
-                logger.info("\t- {} : {}".format(arg, "************"))
+                logger.info(f"\t- {arg} : ************")
 
     # START LOADING DATA
 
     # PART 1 - create new schemas
     logger.info("")
     start_time = datetime.now()
-    logger.info("Part 1 of 6 : Create schemas : {0}".format(start_time))
+    logger.info(f"Part 1 of 6 : Create schemas : {start_time}")
 
     if settings.raw_gnaf_schema != "public":
-        pg_cur.execute("CREATE SCHEMA IF NOT EXISTS {0} AUTHORIZATION {1}"
-                       .format(settings.raw_gnaf_schema, settings.pg_user))
+        pg_cur.execute(f"CREATE SCHEMA IF NOT EXISTS {settings.raw_gnaf_schema} AUTHORIZATION {settings.pg_user}")
     if settings.raw_admin_bdys_schema != "public":
-        pg_cur.execute("CREATE SCHEMA IF NOT EXISTS {0} AUTHORIZATION {1}"
-                       .format(settings.raw_admin_bdys_schema, settings.pg_user))
+        pg_cur.execute(f"CREATE SCHEMA IF NOT EXISTS {settings.raw_admin_bdys_schema} AUTHORIZATION {settings.pg_user}")
     if settings.admin_bdys_schema != "public":
-        pg_cur.execute("CREATE SCHEMA IF NOT EXISTS {0} AUTHORIZATION {1}"
-                       .format(settings.admin_bdys_schema, settings.pg_user))
+        pg_cur.execute(f"CREATE SCHEMA IF NOT EXISTS {settings.admin_bdys_schema} AUTHORIZATION {settings.pg_user}")
     if settings.gnaf_schema != "public":
-        pg_cur.execute("CREATE SCHEMA IF NOT EXISTS {0} AUTHORIZATION {1}"
-                       .format(settings.gnaf_schema, settings.pg_user))
-    logger.info("Part 1 of 6 : Schemas created! : {0}".format(datetime.now() - start_time))
+        pg_cur.execute(f"CREATE SCHEMA IF NOT EXISTS {settings.gnaf_schema} AUTHORIZATION {settings.pg_user}")
+    logger.info(f"Part 1 of 6 : Schemas created! : {datetime.now() - start_time}")
 
     # PART 2 - load gnaf from PSV files
     logger.info("")
     start_time = datetime.now()
-    logger.info("Part 2 of 6 : Start raw GNAF load : {0}".format(start_time))
+    logger.info(f"Part 2 of 6 : Start raw GNAF load : {start_time}")
     drop_tables_and_vacuum_db(pg_cur)
     create_raw_gnaf_tables(pg_cur)
     populate_raw_gnaf(pg_cur)
@@ -109,24 +104,24 @@ def main():
     analyse_raw_gnaf_tables(pg_cur)
     # set postgres search path back to the default
     pg_cur.execute("SET search_path = public, pg_catalog")
-    logger.info("Part 2 of 6 : Raw GNAF loaded! : {0}".format(datetime.now() - start_time))
+    logger.info(f"Part 2 of 6 : Raw GNAF loaded! : {datetime.now() - start_time}")
 
     # PART 3 - load raw admin boundaries from Shapefiles
     logger.info("")
     start_time = datetime.now()
-    logger.info("Part 3 of 6 : Start raw admin boundary load : {0}".format(start_time))
+    logger.info(f"Part 3 of 6 : Start raw admin boundary load : {start_time}")
     load_raw_admin_boundaries(pg_cur)
     clean_authority_files(pg_cur, settings.raw_admin_bdys_schema, True)
     prep_admin_bdys(pg_cur)
     create_admin_bdys_for_analysis()
-    logger.info("Part 3 of 6 : Raw admin boundaries loaded! : {0}".format(datetime.now() - start_time))
+    logger.info(f"Part 3 of 6 : Raw admin boundaries loaded! : {datetime.now() - start_time}")
 
     # PART 4 - create flattened and standardised GNAF and Administrative Boundary reference tables
     logger.info("")
     start_time = datetime.now()
-    logger.info("Part 4 of 6 : Start create reference tables : {0}".format(start_time))
+    logger.info(f"Part 4 of 6 : Start create reference tables : {start_time}")
     create_reference_tables(pg_cur)
-    logger.info("Part 4 of 6 : Reference tables created! : {0}".format(datetime.now() - start_time))
+    logger.info(f"Part 4 of 6 : Reference tables created! : {datetime.now() - start_time}")
 
     # PART 5 - boundary tag GNAF addresses
     logger.info("")
@@ -134,16 +129,16 @@ def main():
         logger.warning("Part 5 of 6 : Addresses NOT boundary tagged")
     else:
         start_time = datetime.now()
-        logger.info("Part 5 of 6 : Start boundary tagging addresses : {0}".format(start_time))
+        logger.info(f"Part 5 of 6 : Start boundary tagging addresses : {start_time}")
         boundary_tag_gnaf(pg_cur)
-        logger.info("Part 5 of 6 : Addresses boundary tagged: {0}".format(datetime.now() - start_time))
+        logger.info(f"Part 5 of 6 : Addresses boundary tagged: {0}".format(datetime.now() - start_time))
 
     # PART 6 - get record counts for QA
     logger.info("")
     start_time = datetime.now()
-    logger.info("Part 6 of 6 : Start row counts : {0}".format(start_time))
+    logger.info(f"Part 6 of 6 : Start row counts : {start_time}")
     create_qa_tables(pg_cur)
-    logger.info("Part 6 of 6 : Got row counts : {0}".format(datetime.now() - start_time))
+    logger.info(f"Part 6 of 6 : Got row counts : {datetime.now() - start_time}")
 
     # close Postgres connection
     pg_cur.close()
@@ -159,13 +154,13 @@ def drop_tables_and_vacuum_db(pg_cur):
     # Step 1 of 7 : drop tables
     start_time = datetime.now()
     pg_cur.execute(geoscape.open_sql_file("01-01-drop-tables.sql"))
-    logger.info("\t- Step 1 of 7 : tables dropped : {0}".format(datetime.now() - start_time))
+    logger.info(f"\t- Step 1 of 7 : tables dropped : {datetime.now() - start_time}")
 
     # Step 2 of 7 : vacuum database (if requested)
     start_time = datetime.now()
     if settings.vacuum_db:
         pg_cur.execute("VACUUM")
-        logger.info("\t- Step 2 of 7 : database vacuumed : {0}".format(datetime.now() - start_time))
+        logger.info(f"\t- Step 2 of 7 : database vacuumed : {datetime.now() - start_time}")
     else:
         logger.info("\t- Step 2 of 7 : database NOT vacuumed")
 
@@ -223,7 +218,7 @@ def populate_raw_gnaf(pg_cur):
         sql = geoscape.open_sql_file("01-04-raw-gnaf-fix-missing-geocodes.sql")
         pg_cur.execute(sql)
 
-        logger.info("\t- Step 4 of 7 : tables populated : {0}".format(datetime.now() - start_time))
+        logger.info(f"\t- Step 4 of 7 : tables populated : {datetime.now() - start_time}")
         logger.info("\t\t- fixed missing geocodes")
 
 
@@ -289,7 +284,7 @@ def create_primary_foreign_keys():
     # run queries in separate processes
     geoscape.multiprocess_list("sql", sql_list, logger)
 
-    logger.info("\t- Step 6 of 7 : primary & foreign keys created : {0}".format(datetime.now() - start_time))
+    logger.info(f"\t- Step 6 of 7 : primary & foreign keys created : {datetime.now() - start_time}")
 
 
 # analyse raw GNAF tables that have not stats - need actual row counts for QA at the end
@@ -310,7 +305,7 @@ def analyse_raw_gnaf_tables(pg_cur):
     # run queries in separate processes
     geoscape.multiprocess_list("sql", sql_list, logger)
 
-    logger.info("\t- Step 7 of 7 : tables analysed : {0}".format(datetime.now() - start_time))
+    logger.info(f"\t- Step 7 of 7 : tables analysed : {datetime.now() - start_time}")
     
 
 # loads the admin bdy shapefiles using the shp2pgsql command line tool (part of PostGIS), using multiprocessing
@@ -399,7 +394,7 @@ def load_raw_admin_boundaries(pg_cur):
             if result != "SUCCESS":
                 logger.warning(result)
 
-        logger.info("\t- Step 1 of 3 : raw admin boundaries loaded : {0}".format(datetime.now() - start_time))
+        logger.info(f"\t- Step 1 of 3 : raw admin boundaries loaded : {datetime.now() - start_time}")
 
 
 def clean_authority_files(pg_cur, schema_name, create_indexes=False):
@@ -557,7 +552,7 @@ def prep_admin_bdys(pg_cur):
         pg_cur.execute(geoscape.prep_sql("DELETE FROM admin_bdys.locality_bdys WHERE locality_pid = 'SA999999'"))
         pg_cur.execute(geoscape.prep_sql("VACUUM ANALYZE admin_bdys.locality_bdys"))
 
-    logger.info("\t- Step 2 of 3 : admin boundaries prepped : {0}".format(datetime.now() - start_time))
+    logger.info(f"\t- Step 2 of 3 : admin boundaries prepped : {datetime.now() - start_time}")
 
 
 def create_admin_bdys_for_analysis():
@@ -580,7 +575,7 @@ def create_admin_bdys_for_analysis():
 
             sql_list.append(sql)
         geoscape.multiprocess_list("sql", sql_list, logger)
-        logger.info("\t- Step 3 of 3 : admin boundaries for analysis created : {0}".format(datetime.now() - start_time))
+        logger.info(f"\t- Step 3 of 3 : admin boundaries for analysis created : {datetime.now() - start_time}")
     else:
         logger.warning("\t- Step 3 of 3 : admin boundaries for analysis NOT created - "
                        "requires PostGIS 2.2+ with GEOS 3.5.0+")
@@ -595,32 +590,32 @@ def create_reference_tables(pg_cur):
     # Step 1 of 14 : create reference tables
     start_time = datetime.now()
     pg_cur.execute(geoscape.open_sql_file("03-01-reference-create-tables.sql"))
-    logger.info("\t- Step  1 of 14 : create reference tables : {0}".format(datetime.now() - start_time))
+    logger.info(f"\t- Step  1 of 14 : create reference tables : {datetime.now() - start_time}")
 
     # Step 2 of 14 : populate localities
     start_time = datetime.now()
     pg_cur.execute(geoscape.open_sql_file("03-02-reference-populate-localities.sql"))
-    logger.info("\t- Step  2 of 14 : localities populated : {0}".format(datetime.now() - start_time))
+    logger.info(f"\t- Step  2 of 14 : localities populated : {datetime.now() - start_time}")
 
     # Step 3 of 14 : populate locality aliases
     start_time = datetime.now()
     pg_cur.execute(geoscape.open_sql_file("03-03-reference-populate-locality-aliases.sql"))
-    logger.info("\t- Step  3 of 14 : locality aliases populated : {0}".format(datetime.now() - start_time))
+    logger.info(f"\t- Step  3 of 14 : locality aliases populated : {datetime.now() - start_time}")
 
     # Step 4 of 14 : populate locality neighbours
     start_time = datetime.now()
     pg_cur.execute(geoscape.open_sql_file("03-04-reference-populate-locality-neighbours.sql"))
-    logger.info("\t- Step  4 of 14 : locality neighbours populated : {0}".format(datetime.now() - start_time))
+    logger.info(f"\t- Step  4 of 14 : locality neighbours populated : {datetime.now() - start_time}")
 
     # Step 5 of 14 : populate streets
     start_time = datetime.now()
     pg_cur.execute(geoscape.open_sql_file("03-05-reference-populate-streets.sql"))
-    logger.info("\t- Step  5 of 14 : streets populated : {0}".format(datetime.now() - start_time))
+    logger.info(f"\t- Step  5 of 14 : streets populated : {datetime.now() - start_time}")
 
     # Step 6 of 14 : populate street aliases
     start_time = datetime.now()
     pg_cur.execute(geoscape.open_sql_file("03-06-reference-populate-street-aliases.sql"))
-    logger.info("\t- Step  6 of 14 : street aliases populated : {0}".format(datetime.now() - start_time))
+    logger.info(f"\t- Step  6 of 14 : street aliases populated : {datetime.now() - start_time}")
 
     # Step 7 of 14 : populate addresses, using multiprocessing
     start_time = datetime.now()
@@ -629,28 +624,28 @@ def create_reference_tables(pg_cur):
     if sql_list is not None:
         geoscape.multiprocess_list("sql", sql_list, logger)
     pg_cur.execute(geoscape.prep_sql("ANALYZE gnaf.temp_addresses;"))
-    logger.info("\t- Step  7 of 14 : addresses populated : {0}".format(datetime.now() - start_time))
+    logger.info(f"\t- Step  7 of 14 : addresses populated : {datetime.now() - start_time}")
 
     # Step 8 of 14 : populate principal alias lookup
     start_time = datetime.now()
     pg_cur.execute(geoscape.open_sql_file("03-08-reference-populate-address-alias-lookup.sql"))
-    logger.info("\t- Step  8 of 14 : principal alias lookup populated : {0}".format(datetime.now() - start_time))
+    logger.info(f"\t- Step  8 of 14 : principal alias lookup populated : {datetime.now() - start_time}")
 
     # Step 9 of 14 : populate primary secondary lookup
     start_time = datetime.now()
     pg_cur.execute(geoscape.open_sql_file("03-09-reference-populate-address-secondary-lookup.sql"))
     pg_cur.execute(geoscape.prep_sql("VACUUM ANALYSE gnaf.address_secondary_lookup"))
-    logger.info("\t- Step  9 of 14 : primary secondary lookup populated : {0}".format(datetime.now() - start_time))
+    logger.info(f"\t- Step  9 of 14 : primary secondary lookup populated : {datetime.now() - start_time}")
 
     # Step 10 of 14 : split the Melbourne locality into its 2 postcodes (3000, 3004)
     start_time = datetime.now()
     pg_cur.execute(geoscape.open_sql_file("03-10-reference-split-melbourne.sql"))
-    logger.info("\t- Step 10 of 14 : Melbourne split : {0}".format(datetime.now() - start_time))
+    logger.info(f"\t- Step 10 of 14 : Melbourne split : {datetime.now() - start_time}")
 
     # Step 11 of 14 : finalise localities assigned to streets and addresses
     start_time = datetime.now()
     pg_cur.execute(geoscape.open_sql_file("03-11-reference-finalise-localities.sql"))
-    logger.info("\t- Step 11 of 14 : localities finalised : {0}".format(datetime.now() - start_time))
+    logger.info(f"\t- Step 11 of 14 : localities finalised : {datetime.now() - start_time}")
 
     # Step 12 of 14 : finalise addresses, using multiprocessing
     start_time = datetime.now()
@@ -661,7 +656,7 @@ def create_reference_tables(pg_cur):
 
     # turf the temp address table
     pg_cur.execute(geoscape.prep_sql("DROP TABLE IF EXISTS gnaf.temp_addresses"))
-    logger.info("\t- Step 12 of 14 : addresses finalised : {0}".format(datetime.now() - start_time))
+    logger.info(f"\t- Step 12 of 14 : addresses finalised : {datetime.now() - start_time}")
 
     # Step 13 of 14 : create almost correct postcode boundaries by aggregating localities, using multiprocessing
     start_time = datetime.now()
@@ -676,7 +671,7 @@ def create_reference_tables(pg_cur):
     if settings.st_subdivide_supported:
         pg_cur.execute(geoscape.open_sql_file("03-13a-create-postcode-analysis-table.sql"))
 
-    logger.info("\t- Step 13 of 14 : postcode boundaries created : {0}".format(datetime.now() - start_time))
+    logger.info(f"\t- Step 13 of 14 : postcode boundaries created : {datetime.now() - start_time}")
 
     # Step 14 of 14 : create indexes, primary and foreign keys, using multiprocessing
     start_time = datetime.now()
@@ -686,8 +681,7 @@ def create_reference_tables(pg_cur):
         if sql[0:2] != "--" and sql[0:2] != "":
             sql_list.append(sql)
     geoscape.multiprocess_list("sql", sql_list, logger)
-    logger.info("\t- Step 14 of 14 : create primary & foreign keys and indexes : {0}"
-                .format(datetime.now() - start_time))
+    logger.info(f"\t- Step 14 of 14 : create primary & foreign keys and indexes : {datetime.now() - start_time}")
 
 
 def boundary_tag_gnaf(pg_cur):
@@ -700,7 +694,7 @@ def boundary_tag_gnaf(pg_cur):
             # if no analysis tables created - use the full tables instead of the subdivided ones
             # WARNING: this can add hours to the processing
             if settings.st_subdivide_supported:
-                table_name = "{}_analysis".format(table[0], )
+                table_name = f"{table[0]}_analysis"
             else:
                 table_name = table[0]
 
@@ -708,18 +702,17 @@ def boundary_tag_gnaf(pg_cur):
 
     # create bdy tagged address tables
     for address_table in ["address_principal", "address_alias"]:
-        pg_cur.execute("DROP TABLE IF EXISTS {}.{}_admin_boundaries CASCADE"
-                       .format(settings.gnaf_schema, address_table))
+        pg_cur.execute(f"DROP TABLE IF EXISTS {settings.gnaf_schema}.{address_table}_admin_boundaries CASCADE")
         create_table_list = list()
-        create_table_list.append("CREATE TABLE {}.{}_admin_boundaries (gid serial NOT NULL,"
-                                 "gnaf_pid text NOT NULL,"
-                                 # "alias_principal character(1) NOT NULL,"
-                                 "locality_pid text NOT NULL,"
-                                 # "old_locality_pid text NULL,"
-                                 "locality_name text NOT NULL,"
-                                 "postcode text,"
-                                 "state text NOT NULL"
-                                 .format(settings.gnaf_schema, address_table))
+        create_table_list.append(f"""CREATE TABLE {settings.gnaf_schema}.{address_table}_admin_boundaries (
+                                 gid serial NOT NULL,
+                                 gnaf_pid text NOT NULL,
+                                 -- alias_principal character(1) NOT NULL,
+                                 locality_pid text NOT NULL,
+                                 -- old_locality_pid text NULL,
+                                 locality_name text NOT NULL,
+                                 postcode text,
+                                 state text NOT NULL""")
 
         for table in table_list:
             pid_field = table[1]
