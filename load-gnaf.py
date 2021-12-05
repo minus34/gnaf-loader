@@ -862,17 +862,19 @@ def create_qa_tables(pg_cur):
         # STEP 1 - get row counts of tables in each schema, by state, for visual QA
 
         # create qa table of rows counts
-        sql = "DROP TABLE IF EXISTS {0}.qa;" \
-              "CREATE TABLE {0}.qa (table_name text, aus integer, act integer, nsw integer, " \
-              "nt integer, ot integer, qld integer, sa integer, tas integer, vic integer, wa integer) " \
-              "WITH (OIDS=FALSE);" \
-              "ALTER TABLE {0}.qa OWNER TO {1}".format(schema, settings.pg_user)
+        sql = f"""DROP TABLE IF EXISTS {schema}.qa;
+                  CREATE TABLE {schema}.qa (table_name text, aus integer, act integer, nsw integer, nt integer, 
+                      ot integer, qld integer, sa integer, tas integer, vic integer, wa integer) 
+                  WITH (OIDS=FALSE);
+                  ALTER TABLE {schema}.qa OWNER TO {settings.pg_user}"""
         pg_cur.execute(sql)
 
         # get table names in schema
-        sql = "SELECT table_name FROM information_schema.tables WHERE table_schema = '{0}' AND table_name <> 'qa' " \
-              "ORDER BY table_name"\
-            .format(schema)
+        sql = f"""SELECT table_name 
+                  FROM information_schema.tables 
+                  WHERE table_schema = '{schema}' 
+                      AND table_name <> 'qa' 
+                  ORDER BY table_name"""
         pg_cur.execute(sql)
 
         table_names = []
@@ -881,36 +883,37 @@ def create_qa_tables(pg_cur):
 
         # get row counts by state
         for table_name in table_names:
-            sql = "INSERT INTO {0}.qa " \
-                  "SELECT '{1}', SUM(AUS), SUM(ACT), SUM(NSW), SUM(NT), SUM(OT), " \
-                  "SUM(QLD), SUM(SA), SUM(TAS), SUM(VIC), SUM(WA) " \
-                  "FROM (" \
-                  "SELECT 1 AS AUS," \
-                  "CASE WHEN state = 'ACT' THEN 1 ELSE 0 END AS ACT," \
-                  "CASE WHEN state = 'NSW' THEN 1 ELSE 0 END AS NSW," \
-                  "CASE WHEN state = 'NT' THEN 1 ELSE 0 END AS NT," \
-                  "CASE WHEN state = 'OT' THEN 1 ELSE 0 END AS OT," \
-                  "CASE WHEN state = 'QLD' THEN 1 ELSE 0 END AS QLD," \
-                  "CASE WHEN state = 'SA' THEN 1 ELSE 0 END AS SA," \
-                  "CASE WHEN state = 'TAS' THEN 1 ELSE 0 END AS TAS," \
-                  "CASE WHEN state = 'VIC' THEN 1 ELSE 0 END AS VIC," \
-                  "CASE WHEN state = 'WA' THEN 1 ELSE 0 END AS WA " \
-                  "FROM {0}.{1}) AS sqt".format(schema, table_name)
+            sql = f"""INSERT INTO {schema}.qa 
+                      SELECT '{table_name}', SUM(AUS), SUM(ACT), SUM(NSW), SUM(NT), SUM(OT), SUM(QLD), SUM(SA), 
+                          SUM(TAS), SUM(VIC), SUM(WA) 
+                      FROM (
+                          SELECT 1 AS AUS,
+                          CASE WHEN state = 'ACT' THEN 1 ELSE 0 END AS ACT,
+                          CASE WHEN state = 'NSW' THEN 1 ELSE 0 END AS NSW,
+                          CASE WHEN state = 'NT' THEN 1 ELSE 0 END AS NT,
+                          CASE WHEN state = 'OT' THEN 1 ELSE 0 END AS OT,
+                          CASE WHEN state = 'QLD' THEN 1 ELSE 0 END AS QLD,
+                          CASE WHEN state = 'SA' THEN 1 ELSE 0 END AS SA,
+                          CASE WHEN state = 'TAS' THEN 1 ELSE 0 END AS TAS,
+                          CASE WHEN state = 'VIC' THEN 1 ELSE 0 END AS VIC,
+                          CASE WHEN state = 'WA' THEN 1 ELSE 0 END AS WA 
+                          FROM {schema}.{table_name}
+                      ) AS sqt"""
 
             try:
                 pg_cur.execute(sql)
             except psycopg2.Error:  # triggers when there is no state field in the table
                 # change the query for an Australia count only
-                sql = "INSERT INTO {0}.qa (table_name, aus) " \
-                      "SELECT '{1}', Count(*) FROM {0}.{1}".format(schema, table_name)
+                sql = f"INSERT INTO {schema}.qa (table_name, aus) " \
+                      f"SELECT '{table_name}', Count(*) FROM {schema}.{table_name}"
 
                 try:
                     pg_cur.execute(sql)
                 except Exception as ex:
                     # if no state field - change the query for an Australia count only
-                    logger.warning("Couldn't get row count for {0}.{1} : {2}".format(schema, table_name, ex))
+                    logger.warning(f"Couldn't get row count for {schema}.{table_name} : {ex}")
 
-        pg_cur.execute("ANALYZE {0}.qa".format(schema))
+        pg_cur.execute(f"ANALYZE {schema}.qa")
 
         # STEP 2 - compare row counts with previous Geoscape release
 
@@ -921,38 +924,35 @@ def create_qa_tables(pg_cur):
             previous_schema = settings.previous_admin_bdys_schema
 
         # check if previous schema exists in database
-        pg_cur.execute("SELECT schema_name FROM information_schema.schemata WHERE schema_name = '{}'"
-                       .format(previous_schema))
+        pg_cur.execute(f"SELECT schema_name FROM information_schema.schemata WHERE schema_name = '{previous_schema}'")
         test_schema_row = pg_cur.fetchone()
 
         if test_schema_row is not None:
             # create qa table of rows counts
-            sql = """DROP TABLE IF EXISTS {0}.qa_comparison;
-                     CREATE TABLE {0}.qa_comparison (
-                         table_name text,
-                         difference integer,
-                         new_count integer,
-                         old_count integer
+            sql = f"""DROP TABLE IF EXISTS {schema}.qa_comparison;
+                      CREATE TABLE {schema}.qa_comparison (
+                          table_name text,
+                          difference integer,
+                          new_count integer,
+                          old_count integer
                      ) WITH (OIDS=FALSE);
-                  ALTER TABLE {0}.qa_comparison OWNER TO {1}"""\
-                .format(schema, settings.pg_user)
+                     ALTER TABLE {schema}.qa_comparison OWNER TO {settings.pg_user}"""
             pg_cur.execute(sql)
 
             # into get counts into qa_comparison table
-            sql = """INSERT INTO {0}.qa_comparison
-                     SELECT new.table_name,
-                            new.aus - old.aus as difference,
-                            new.aus as new_count,
-                            old.aus as old_count
-                         FROM {0}.qa as new
-                         INNER JOIN {1}.qa as old ON new.table_name = old.table_name"""\
-                .format(schema, previous_schema)
+            sql = f"""INSERT INTO {schema}.qa_comparison
+                      SELECT new.table_name,
+                             new.aus - old.aus as difference,
+                             new.aus as new_count,
+                             old.aus as old_count
+                      FROM {schema}.qa as new
+                      INNER JOIN {previous_schema}.qa as old ON new.table_name = old.table_name"""
             pg_cur.execute(sql)
 
-            pg_cur.execute("ANALYZE {}.qa_comparison".format(schema))
+            pg_cur.execute(f"ANALYZE {schema}.qa_comparison")
 
             # pretty print row counts to screen
-            pg_cur.execute("SELECT * FROM {}.qa_comparison ORDER BY table_name".format(schema))
+            pg_cur.execute(f"SELECT * FROM {schema}.qa_comparison ORDER BY table_name")
             rows = pg_cur.fetchall()
 
             logger.info("\t\t------------------------------------------------------------------------")
@@ -965,11 +965,9 @@ def create_qa_tables(pg_cur):
             logger.info("\t\t------------------------------------------------------------------------")
 
         else:
-            logger.warning("\t\t- Previous schema ({}) doesn't exist - row count comparison not done"
-                           .format(previous_schema))
+            logger.warning(f"\t\t- Previous schema ({previous_schema}) doesn't exist - row count comparison not done")
 
-        logger.info("\t- Step {} of 2 : got row counts for {} schema : {}"
-                    .format(i, schema, datetime.now() - start_time))
+        logger.info(f"\t- Step {i} of 2 : got row counts for {schema} schema : {datetime.now() - start_time}")
 
 
 if __name__ == "__main__":
