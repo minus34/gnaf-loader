@@ -131,7 +131,7 @@ def main():
         start_time = datetime.now()
         logger.info(f"Part 5 of 6 : Start boundary tagging addresses : {start_time}")
         boundary_tag_gnaf(pg_cur)
-        logger.info(f"Part 5 of 6 : Addresses boundary tagged: {0}".format(datetime.now() - start_time))
+        logger.info(f"Part 5 of 6 : Addresses boundary tagged : {datetime.now() - start_time}")
 
     # PART 6 - get record counts for QA
     logger.info("")
@@ -145,7 +145,7 @@ def main():
     pg_conn.close()
 
     logger.info("")
-    logger.info("Total time : : {0}".format(datetime.now() - full_start_time))
+    logger.info(f"Total time : {datetime.now() - full_start_time}")
 
     return True
 
@@ -174,10 +174,10 @@ def create_raw_gnaf_tables(pg_cur):
 
     # set search path
     if settings.raw_gnaf_schema != "public":
-        pg_cur.execute("SET search_path = {0}".format(settings.raw_gnaf_schema,))
+        pg_cur.execute(f"SET search_path = {settings.raw_gnaf_schema}")
 
         # alter create table script to run on chosen schema
-        sql = sql.replace("SET search_path = public", "SET search_path = {0}".format(settings.raw_gnaf_schema,))
+        sql = sql.replace("SET search_path = public", f"SET search_path = {settings.raw_gnaf_schema}")
 
     # set tables to unlogged to speed up the load? (if requested)
     # -- they'll have to be rebuilt using this script again after a system crash --
@@ -190,7 +190,7 @@ def create_raw_gnaf_tables(pg_cur):
     # create raw gnaf tables
     pg_cur.execute(sql)
 
-    logger.info("\t- Step 3 of 7 : {1}tables created : {0}".format(datetime.now() - start_time, unlogged_string))
+    logger.info(f"\t- Step 3 of 7 : {unlogged_string}tables created : {datetime.now() - start_time}")
 
 
 # load raw gnaf authority & state tables using multiprocessing
@@ -203,7 +203,7 @@ def populate_raw_gnaf(pg_cur):
 
     # add state file lists
     for state in settings.states_to_load:
-        logger.info("\t\t- Loading state {}".format(state))
+        logger.info(f"\t\t- Loading state {state}")
         sql_list.extend(get_raw_gnaf_files(state))
 
     # are there any files to load?
@@ -239,8 +239,7 @@ def get_raw_gnaf_files(prefix):
                         file_path = file_path.replace("\\", "/")
                         # logger.info(file_path
 
-                    sql = "COPY {0}.{1} FROM '{2}' DELIMITER '|' CSV HEADER;"\
-                        .format(settings.raw_gnaf_schema, table, file_path)
+                    sql = f"COPY {settings.raw_gnaf_schema}.{table} FROM '{file_path}' DELIMITER '|' CSV HEADER;"
 
                     sql_list.append(sql)
 
@@ -263,7 +262,7 @@ def index_raw_gnaf(pg_cur):
     # # create distinct new & old locality pid lookup table
     # pg_cur.execute(geoscape.open_sql_file("01-05b-create-distinct-locality-pid-linkage-table.sql"))
 
-    logger.info("\t- Step 5 of 7 : indexes created: {0}".format(datetime.now() - start_time))
+    logger.info(f"\t- Step 5 of 7 : indexes created : {datetime.now() - start_time}")
 
 
 # create raw gnaf primary & foreign keys (for data integrity) using multiprocessing
@@ -278,7 +277,7 @@ def create_primary_foreign_keys():
         sql = sql.strip()
         if sql[0:6] == "ALTER ":
             # add schema to tables names, in case raw gnaf schema not the default
-            sql = sql.replace("ALTER TABLE ONLY ", "ALTER TABLE ONLY {}.".format(settings.raw_gnaf_schema))
+            sql = sql.replace(f"ALTER TABLE ONLY ", "ALTER TABLE ONLY {settings.raw_gnaf_schema}.")
             sql_list.append(sql)
 
     # run queries in separate processes
@@ -292,15 +291,15 @@ def analyse_raw_gnaf_tables(pg_cur):
     start_time = datetime.now()
     
     # get list of tables that haven't been analysed (i.e. that have no real row count)
-    sql = "SELECT nspname|| '.' || relname AS table_name " \
-          "FROM pg_class C LEFT JOIN pg_namespace N ON (N.oid = C.relnamespace)" \
-          "WHERE nspname = '{0}' AND relkind='r' AND reltuples = 0".format(settings.raw_gnaf_schema)
+    sql = f"""SELECT nspname|| '.' || relname AS table_name 
+              FROM pg_class C LEFT JOIN pg_namespace N ON (N.oid = C.relnamespace)
+              WHERE nspname = '{settings.raw_gnaf_schema}' AND relkind='r' AND reltuples = 0"""
     pg_cur.execute(sql)
 
     sql_list = []
 
     for pg_row in pg_cur:
-        sql_list.append("ANALYZE {0}".format(pg_row[0]))
+        sql_list.append(f"ANALYZE {pg_row[0]}")
 
     # run queries in separate processes
     geoscape.multiprocess_list("sql", sql_list, logger)
@@ -404,12 +403,11 @@ def clean_authority_files(pg_cur, schema_name, create_indexes=False):
     error_count = 0
 
     # get table list for schema
-    sql = """SELECT table_name
-             FROM information_schema.tables
-             WHERE table_schema='{}'
-               AND table_type='BASE TABLE'
-               AND table_name LIKE '%_aut'
-          """.format(schema_name)
+    sql = f"""SELECT table_name
+              FROM information_schema.tables
+              WHERE table_schema='{schema_name}'
+                  AND table_type='BASE TABLE'
+                  AND table_name LIKE '%_aut'"""
     pg_cur.execute(sql)
 
     tables = pg_cur.fetchall()
@@ -420,48 +418,42 @@ def clean_authority_files(pg_cur, schema_name, create_indexes=False):
 
         # fix inconsistent field names with brute force method (issue loading Shapefile/DBF data)
         try:
-            pg_cur.execute("ALTER TABLE {}.{} RENAME COLUMN code_aut TO code"
-                           .format(schema_name, table_name))
+            pg_cur.execute(f"ALTER TABLE {schema_name}.{table_name} RENAME COLUMN code_aut TO code")
         except psycopg2.Error:
             pass
 
         try:
-            pg_cur.execute("ALTER TABLE {}.{} RENAME COLUMN name_aut TO name"
-                           .format(schema_name, table_name))
+            pg_cur.execute(f"ALTER TABLE {schema_name}.{table_name} RENAME COLUMN name_aut TO name")
         except psycopg2.Error:
             pass
 
         try:
-            pg_cur.execute("ALTER TABLE {}.{} RENAME COLUMN dscpn_aut TO description"
-                           .format(schema_name, table_name))
+            pg_cur.execute(f"ALTER TABLE {schema_name}.{table_name} RENAME COLUMN dscpn_aut TO description")
         except psycopg2.Error:
             pass
 
         try:
-            pg_cur.execute("ALTER TABLE {}.{} RENAME COLUMN desc_aut TO description"
-                           .format(schema_name, table_name))
+            pg_cur.execute(f"ALTER TABLE {schema_name}.{table_name} RENAME COLUMN desc_aut TO description")
         except psycopg2.Error:
             pass
 
         try:
-            pg_cur.execute("ALTER TABLE {}.{} RENAME COLUMN descriptio TO description"
-                           .format(schema_name, table_name))
+            pg_cur.execute(f"ALTER TABLE {schema_name}.{table_name} RENAME COLUMN descriptio TO description")
         except psycopg2.Error:
             pass
 
         # fix inconsistent descriptions in meshblock authority table by setting them to null
         if table_name == "aus_mb_category_class_aut":
-            pg_cur.execute("UPDATE {}.{} SET description = NULL".format(schema_name, table_name))
+            pg_cur.execute(f"UPDATE {schema_name}.{table_name} SET description = NULL")
 
         # get original row count
-        pg_cur.execute("SELECT count(*) FROM {}.{}".format(schema_name, table_name))
+        pg_cur.execute(f"SELECT count(*) FROM {schema_name}.{table_name}")
         old_row_count = int(pg_cur.fetchone()[0])
 
         # get distinct records
-        sql = """DROP TABLE IF EXISTS temp_aut;
-                 CREATE TABLE temp_aut AS
-                 SELECT DISTINCT code, name, description FROM {}.{};
-              """.format(schema_name, table_name)
+        sql = f"""DROP TABLE IF EXISTS temp_aut;
+                  CREATE TABLE temp_aut AS
+                  SELECT DISTINCT code, name, description FROM {schema_name}.{table_name};"""
         pg_cur.execute(sql)
 
         # get new row count
@@ -473,44 +465,40 @@ def clean_authority_files(pg_cur, schema_name, create_indexes=False):
 
         if duplicate_row_count > 0:
             # delete all rows
-            pg_cur.execute("TRUNCATE TABLE {}.{}".format(schema_name, table_name))
+            pg_cur.execute(f"TRUNCATE TABLE {schema_name}.{table_name}")
             # insert distinct rows
-            pg_cur.execute("INSERT INTO {}.{} (code, name, description) SELECT * FROM temp_aut"
-                           .format(schema_name, table_name))
+            pg_cur.execute(f"INSERT INTO {schema_name}.{table_name} (code, name, description) SELECT * FROM temp_aut")
 
-            logger.info("\t\t- {} duplicates removed from {}.{}"
-                        .format(duplicate_row_count, schema_name, table_name))
+            logger.info(f"\t\t- {duplicate_row_count} duplicates removed from {schema_name}.{table_name}")
 
         # This is required due to complexities introduced by mix of authority
         #   and non-authority table admin bdy layers in the Aug 2021 release
         if create_indexes:
             # drop primary key on gid field
             try:
-                pg_cur.execute("ALTER TABLE ONLY {0}.{1} DROP CONSTRAINT {1}_pkey"
-                               .format(schema_name, table_name))
+                pg_cur.execute(f"ALTER TABLE ONLY {schema_name}.{table_name} DROP CONSTRAINT {table_name}_pkey")
             except psycopg2.Error as e:
                 pass
 
             # attempt to create a primary key on the authority code - failure will imply a raw data error from Geoscape
             try:
-                pg_cur.execute("ALTER TABLE ONLY {0}.{1} ADD CONSTRAINT {1}_pkey PRIMARY KEY (code)"
-                               .format(schema_name, table_name))
+                pg_cur.execute(f"ALTER TABLE ONLY {schema_name}.{table_name} "
+                               f"ADD CONSTRAINT {table_name}_pkey PRIMARY KEY (code)")
             except psycopg2.Error as ex:
                 error_count += 1
 
-                logger.warning("CAN'T CREATE PRIMARY KEY ON {}:{} DUE TO DUPLICATE AUTHORITY CODE(S) : {}"
-                               .format(schema_name, table_name, ex))
+                logger.warning(f"CAN'T CREATE PRIMARY KEY ON {schema_name}.{table_name} "
+                               f"DUE TO DUPLICATE AUTHORITY CODE(S) : {ex}")
 
         # clean up
         pg_cur.execute("DROP TABLE IF EXISTS temp_aut")
-        pg_cur.execute("VACUUM ANALYZE {}.{}".format(schema_name, table_name))
+        pg_cur.execute(f"VACUUM ANALYZE {schema_name}.{table_name}")
 
     # kill gnaf-loader if duplicates couldn't be fixed - significant data integrity issue
     if error_count > 0:
         exit()
 
-    logger.info("\t\t- authority tables deduplicated"
-                .format(schema_name, len(tables), datetime.now() - start_time))
+    logger.info("\t\t- authority tables deduplicated")
 
 
 def prep_admin_bdys(pg_cur):
@@ -717,9 +705,10 @@ def boundary_tag_gnaf(pg_cur):
         for table in table_list:
             pid_field = table[1]
             name_field = pid_field.replace("_pid", "_name")
-            create_table_list.append(", {} text, {} text".format(pid_field, name_field))
-        create_table_list.append(") WITH (OIDS=FALSE);ALTER TABLE {}.{}_admin_boundaries OWNER TO {}"
-                                 .format(settings.gnaf_schema, address_table, settings.pg_user))
+            create_table_list.append(f", {pid_field} text, {name_field} text")
+        create_table_list.append(f""") WITH (OIDS=FALSE);
+                                     ALTER TABLE {settings.gnaf_schema}.{address_table}_admin_boundaries 
+                                     OWNER TO {settings.pg_user}""")
         pg_cur.execute("".join(create_table_list))
 
     # Step 1 of 7 : tag gnaf addresses with admin boundary IDs, using multiprocessing
@@ -737,7 +726,7 @@ def boundary_tag_gnaf(pg_cur):
         sql = template_sql.format(table[0], table[1])
 
         short_sql_list = geoscape.split_sql_into_list(pg_cur, sql, settings.admin_bdys_schema, table[0],
-                                                  "bdys", "gid", logger)
+                                                      "bdys", "gid", logger)
 
         if short_sql_list is not None:
             sql_list.extend(short_sql_list)
@@ -747,21 +736,22 @@ def boundary_tag_gnaf(pg_cur):
     if sql_list is not None:
         geoscape.multiprocess_list("sql", sql_list, logger)
 
-    logger.info("\t- Step 1 of 7 : principal addresses tagged with admin boundary IDs: {}"
-                .format(datetime.now() - start_time, ))
+    logger.info(f"\t- Step 1 of 7 : principal addresses tagged with admin boundary IDs: {datetime.now() - start_time}")
     start_time = datetime.now()
 
     # Step 2 of 7 : delete invalid matches, create indexes and analyse tables
     sql_list = list()
     for table in table_list:
-        sql = "DELETE FROM {0}.temp_{1}_tags WHERE gnaf_state <> bdy_state AND gnaf_state <> 'OT';" \
-              "CREATE INDEX temp_{1}_tags_gnaf_pid_idx ON {0}.temp_{1}_tags USING btree(gnaf_pid);" \
-              "ANALYZE {0}.temp_{1}_tags".format(settings.gnaf_schema, table[0])
+        sql = f"""DELETE FROM {settings.gnaf_schema}.temp_{table[0]}_tags 
+                      WHERE gnaf_state <> bdy_state AND gnaf_state <> 'OT';
+                  CREATE INDEX temp_{table[0]}_tags_gnaf_pid_idx 
+                      ON {settings.gnaf_schema}.temp_{table[0]}_tags USING btree(gnaf_pid);
+                  ANALYZE {settings.gnaf_schema}.temp_{table[0]}_tags"""""
         sql_list.append(sql)
     geoscape.multiprocess_list("sql", sql_list, logger)
 
-    logger.info("\t- Step 2 of 7 : principal addresses - invalid matches deleted & bdy tag indexes created : {}"
-                .format(datetime.now() - start_time, ))
+    logger.info(f"\t- Step 2 of 7 : principal addresses - invalid matches deleted & bdy tag indexes created : "
+                f"{datetime.now() - start_time}")
     start_time = datetime.now()
 
     # Step 3 of 7 : insert boundary tagged addresses
@@ -771,11 +761,10 @@ def boundary_tag_gnaf(pg_cur):
     insert_field_list.append("(gnaf_pid, locality_pid, locality_name, postcode, state")
 
     insert_join_list = list()
-    insert_join_list.append("FROM {}.address_principals AS pnts ".format(settings.gnaf_schema, ))
+    insert_join_list.append(f"FROM {settings.gnaf_schema}.address_principals AS pnts ")
 
     select_field_list = list()
-    select_field_list.append("SELECT pnts.gnaf_pid, pnts.locality_pid, "
-                             "pnts.locality_name, pnts.postcode, pnts.state")
+    select_field_list.append("SELECT pnts.gnaf_pid, pnts.locality_pid, pnts.locality_name, pnts.postcode, pnts.state")
 
     drop_table_list = list()
 
