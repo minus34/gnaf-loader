@@ -49,6 +49,7 @@ The behaviour of gnaf-loader can be controlled by specifying various command lin
 * `--pgpassword` password for accessing the Postgres server. This defaults to the `PGPASSWORD` environment variable if set, otherwise `password`.
 
 #### Optional Arguments
+* `--srid` Sets the coordinate system of the input data. Valid values are `4283` (the default: GDA94) and `7844` (GDA2020).
 * `--geoscape-version` Geoscape version number in YYYYMM format. Defaults to current year and last release month. e.g. `202111`.
 * `--raw-gnaf-schema` schema name to store raw GNAF tables in. Defaults to `raw_gnaf_<geoscape_version>`.
 * `--raw-admin-schema` schema name to store raw admin boundary tables in. Defaults to `raw_admin_bdys_<geoscape_version>`.
