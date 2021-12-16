@@ -656,7 +656,7 @@ def create_reference_tables(pg_cur):
 
     # create analysis table?
     if settings.st_subdivide_supported:
-        pg_cur.execute(geoscape.open_sql_file("03-13a-create-postcode-analysis-table.sql")).format(settings.srid)
+        pg_cur.execute(geoscape.open_sql_file("03-13a-create-postcode-analysis-table.sql").format(settings.srid))
 
     logger.info(f"\t- Step 13 of 14 : postcode boundaries created : {datetime.now() - start_time}")
 
