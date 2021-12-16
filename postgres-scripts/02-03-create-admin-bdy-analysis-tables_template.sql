@@ -5,7 +5,7 @@ CREATE TABLE admin_bdys.{0}_analysis (
   {1} text NOT NULL,
   name text NOT NULL,
   state text NOT NULL,
-  geom geometry(Polygon, 4283, 2) NOT NULL
+  geom geometry(Polygon, {2}, 2) NOT NULL
 ) WITH (OIDS=FALSE);
 ALTER TABLE admin_bdys.{0}_analysis OWNER TO postgres;
 

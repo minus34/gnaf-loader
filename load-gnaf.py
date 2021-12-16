@@ -506,8 +506,7 @@ def prep_admin_bdys(pg_cur):
     start_time = datetime.now()
 
     # create tables using multiprocessing - using flag in file to split file up into sets of statements
-    sql_list = geoscape.open_sql_file("02-02a-prep-admin-bdys-tables.sql").split("-- # --")
-    # sql_list = sql_list + geoscape.open_sql_file("02-02b-prep-census-2011-bdys-tables.sql").split("-- # --")
+    sql_list = geoscape.open_sql_file("02-02a-prep-admin-bdys-tables.sql").format(settings.srid).split("-- # --")
     sql_list = sql_list + geoscape.open_sql_file("02-02c-prep-census-2016-bdys-tables.sql").split("-- # --")
     sql_list = sql_list + geoscape.open_sql_file("02-02d-prep-census-2021-bdys-tables.sql").split("-- # --")
 
@@ -552,7 +551,7 @@ def create_admin_bdys_for_analysis():
         sql_list = list()
 
         for table in settings.admin_bdy_list:
-            sql = template_sql.format(table[0], table[1])
+            sql = template_sql.format(table[0], table[1], settings.srid)
             if table[0] == "locality_bdys":  # special case, need to change schema name
                 # sql = sql.replace(settings.raw_admin_bdys_schema, settings.admin_bdys_schema)
                 sql = sql.replace("name", "locality_name")
@@ -657,7 +656,7 @@ def create_reference_tables(pg_cur):
 
     # create analysis table?
     if settings.st_subdivide_supported:
-        pg_cur.execute(geoscape.open_sql_file("03-13a-create-postcode-analysis-table.sql"))
+        pg_cur.execute(geoscape.open_sql_file("03-13a-create-postcode-analysis-table.sql")).format(settings.srid)
 
     logger.info(f"\t- Step 13 of 14 : postcode boundaries created : {datetime.now() - start_time}")
 
