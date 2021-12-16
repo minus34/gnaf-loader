@@ -52,4 +52,9 @@ select gid,
        mb21_pop,
        loci21_uri,
        geom
-from raw_admin_bdys_202111.aus_mb_2021
+from raw_admin_bdys_202111.aus_mb_2021;
+
+
+-- yes, you can transorm a geom to its own SRID! (simplifies supporting 2 coord systems in one set of code
+select 'yep' where ST_SetSRID(ST_MakePoint(115.81778, -31.98092), 4283) =
+       ST_transform(ST_SetSRID(ST_MakePoint(115.81778, -31.98092), 4283), 4283);

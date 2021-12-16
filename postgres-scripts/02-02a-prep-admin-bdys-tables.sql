@@ -14,7 +14,7 @@ CREATE TABLE admin_bdys.locality_bdys(
   locality_class text NOT NULL,
   address_count integer NOT NULL DEFAULT 0,
   street_count integer NOT NULL DEFAULT 0,
-  geom geometry(Multipolygon, 4283, 2) NOT NULL
+  geom geometry(Multipolygon, {0}, 2) NOT NULL
 ) WITH (OIDS=FALSE);
 ALTER TABLE admin_bdys.locality_bdys OWNER TO postgres;
 
@@ -44,7 +44,7 @@ CREATE TEMPORARY TABLE temp_districts (
   locality_name text NOT NULL,
   state text NOT NULL,
   locality_class text NOT NULL,
-  geom geometry(Multipolygon, 4283, 2) NULL
+  geom geometry(Multipolygon, {0}, 2) NULL
 ) WITH (OIDS=FALSE);
 ALTER TABLE temp_districts OWNER TO postgres;
 
@@ -95,9 +95,9 @@ SELECT 'locsa999999',
        'UNINCORPORATED',
        'SA',
        'UNOFFICIAL SUBURB',
-       ST_Multi(ST_Buffer(ST_Difference(ST_SetSRID(ST_GeomFromText('POLYGON((128.96007125417 -25.9721745610671,133.1115 -25.9598957395068,133.12 -26.6761603305237,133.797926948924 -26.6925320926041,133.724254019562 -27.5888860665053,133.867506937766 -28.0513883452762,133.892064580886 -29.5739622187522,133.138963525189 -29.5125681109508,133.110312941548 -30.6094761703367,131.645040235353 -30.494873835774,128.98053595677 -30.789565553221,128.96007125417 -25.9721745610671))'), 4283), ST_Union(geom)), 0.0))
+       ST_Multi(ST_Buffer(ST_Difference(ST_Transform(ST_SetSRID(ST_GeomFromText('POLYGON((128.96007125417 -25.9721745610671,133.1115 -25.9598957395068,133.12 -26.6761603305237,133.797926948924 -26.6925320926041,133.724254019562 -27.5888860665053,133.867506937766 -28.0513883452762,133.892064580886 -29.5739622187522,133.138963525189 -29.5125681109508,133.110312941548 -30.6094761703367,131.645040235353 -30.494873835774,128.98053595677 -30.789565553221,128.96007125417 -25.9721745610671))'), 4283), {0}), ST_Union(geom)), 0.0))
   FROM admin_bdys.locality_bdys
-  WHERE ST_Intersects(geom, ST_SetSRID(ST_GeomFromText('POLYGON((128.96007125417 -25.9721745610671,133.1115 -25.9598957395068,133.12 -26.6761603305237,133.797926948924 -26.6925320926041,133.724254019562 -27.5888860665053,133.867506937766 -28.0513883452762,133.892064580886 -29.5739622187522,133.138963525189 -29.5125681109508,133.110312941548 -30.6094761703367,131.645040235353 -30.494873835774,128.98053595677 -30.789565553221,128.96007125417 -25.9721745610671))'), 4283));
+  WHERE ST_Intersects(geom, ST_Transform(ST_SetSRID(ST_GeomFromText('POLYGON((128.96007125417 -25.9721745610671,133.1115 -25.9598957395068,133.12 -26.6761603305237,133.797926948924 -26.6925320926041,133.724254019562 -27.5888860665053,133.867506937766 -28.0513883452762,133.892064580886 -29.5739622187522,133.138963525189 -29.5125681109508,133.110312941548 -30.6094761703367,131.645040235353 -30.494873835774,128.98053595677 -30.789565553221,128.96007125417 -25.9721745610671))'), 4283), {0}));
 
 
 -- insert the districts into the gazetted localities, whilst ignoring the remaining slivers (Admin boundary topology is not perfect)
@@ -136,9 +136,9 @@ SELECT '250190776' AS locality_pid,
        'SA' AS state,
        'TOPOGRAPHIC LOCALITY' AS locality_class,
        ST_Multi(ST_Buffer(geom, 0.0)) AS geom
-       --ST_Multi(ST_Buffer((SELECT geom FROM raw_admin_bdys.aus_state_polygon WHERE ST_Intersects(ST_SetSRID(ST_MakePoint(136.1757, -35.0310), 4283), geom)), 0.0)) as geom;
+       --ST_Multi(ST_Buffer((SELECT geom FROM raw_admin_bdys.aus_state_polygon WHERE ST_Intersects(ST_Transform(ST_SetSRID(ST_MakePoint(136.1757, -35.0310), 4283), {0}), geom)), 0.0)) as geom;
   FROM raw_admin_bdys.aus_state_polygon
-  WHERE ST_Intersects(ST_SetSRID(ST_MakePoint(136.1757, -35.0310), 4283), geom);
+  WHERE ST_Intersects(ST_Transform(ST_SetSRID(ST_MakePoint(136.1757, -35.0310), 4283), {0}), geom);
 
 
 -- split Melbourne into its 2 postcode areas: 3000 (north of the Yarra River) and 3004 (south)
@@ -151,7 +151,7 @@ CREATE UNLOGGED TABLE temp_bdys
   postcode text NULL,
   state text NOT NULL,
 	locality_class text NOT NULL,
-  geom geometry(Multipolygon, 4283, 2) NOT NULL
+  geom geometry(Multipolygon, {0}, 2) NOT NULL
 )
 WITH (OIDS=FALSE);
 ALTER TABLE temp_bdys OWNER TO postgres;
@@ -163,7 +163,7 @@ select locality_pid,
        '3000' AS postcode,
        state,
        locality_class,
-       ST_Multi((ST_Dump(ST_Split(geom, ST_GeomFromText('LINESTRING(144.96691 -37.82135,144.96826 -37.81924,144.97045 -37.81911,144.97235 -37.81921,144.97345 -37.81955,144.97465 -37.82049,144.97734 -37.82321,144.97997 -37.82602,144.98154 -37.82696,144.98299 -37.82735,144.98499 -37.82766,144.9866 -37.82985)', 4283)))).geom) AS geom
+       ST_Multi((ST_Dump(ST_Split(geom, ST_Transform(ST_GeomFromText('LINESTRING(144.96691 -37.82135,144.96826 -37.81924,144.97045 -37.81911,144.97235 -37.81921,144.97345 -37.81955,144.97465 -37.82049,144.97734 -37.82321,144.97997 -37.82602,144.98154 -37.82696,144.98299 -37.82735,144.98499 -37.82766,144.9866 -37.82985)', 4283), {0})))).geom) AS geom
   from admin_bdys.locality_bdys
   where locality_pid = 'loc9901d119afda';
 
@@ -172,7 +172,7 @@ UPDATE temp_bdys
   SET locality_pid = locality_pid || '_2',
 --       old_locality_pid = old_locality_pid || '_2',
       postcode = '3004'
-  WHERE ST_Intersects(ST_SetSRID(ST_MakePoint(144.9781, -37.8275), 4283), geom);
+  WHERE ST_Intersects(ST_Transform(ST_SetSRID(ST_MakePoint(144.9781, -37.8275), 4283), {0}), geom);
 
 UPDATE temp_bdys
   SET locality_pid = locality_pid || '_1'
@@ -233,7 +233,7 @@ CREATE TABLE admin_bdys.postcode_bdys
   state text NOT NULL,
   address_count integer NOT NULL,
   street_count integer NOT NULL,
-  geom geometry(Multipolygon, 4283, 2) NOT NULL
+  geom geometry(Multipolygon, {0}, 2) NOT NULL
 )
 WITH (OIDS=FALSE);
 ALTER TABLE admin_bdys.postcode_bdys OWNER TO postgres;
