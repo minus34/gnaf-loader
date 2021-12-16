@@ -63,7 +63,7 @@ parser.add_argument(
          "WARNING: if you have PostGIS 2.1 or lower - this process can take hours")
 parser.add_argument(
     "--srid", type=int, default=4283,
-    help="Sets the coordinate system of the input data. Valid values are 4283 (GDA94) and 7844 (GDA2020)")
+    help="Sets the coordinate system (SRID aka EPSG number) of the input data. Valid values are 4283 (GDA94) and 7844 (GDA2020)")
 
 
 # PG Options
