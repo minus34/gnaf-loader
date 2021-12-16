@@ -103,7 +103,7 @@ SELECT locality_pid || '_1',
        0 AS street_count,
        'Y' AS has_boundary,
        'N' AS unique_locality_state,
-       ST_SetSRID(ST_MakePoint(144.96326770, -37.81348464), 4283) AS geom
+       ST_SetSRID(ST_MakePoint(144.96326770, -37.81348464), {0}) AS geom
   FROM gnaf.localities
   WHERE locality_pid = 'loc9901d119afda';
 
@@ -122,7 +122,7 @@ SELECT locality_pid || '_2',
        0 AS street_count,
        'Y' AS has_boundary,
        'N' AS unique_locality_state,
-       ST_SetSRID(ST_MakePoint(144.97757127, -37.83356762), 4283) AS geom
+       ST_SetSRID(ST_MakePoint(144.97757127, -37.83356762), {0}) AS geom
   FROM gnaf.localities
   WHERE locality_pid = 'loc9901d119afda';
 

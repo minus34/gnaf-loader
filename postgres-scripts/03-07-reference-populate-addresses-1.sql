@@ -50,7 +50,7 @@ SELECT adr.address_detail_pid AS gnaf_pid,
          WHEN gty.name = 'LOCALITY' THEN 5
          ELSE 2
        END AS reliability,
-       st_setsrid(st_makepoint(pnt.longitude, pnt.latitude), 4283) AS geom
+       st_setsrid(st_makepoint(pnt.longitude, pnt.latitude), {0}) AS geom
   FROM raw_gnaf.address_detail AS adr
   INNER JOIN gnaf.streets AS str ON adr.street_locality_pid = str.street_locality_pid
   INNER JOIN raw_gnaf.address_default_geocode as pnt ON adr.address_detail_pid = pnt.address_detail_pid

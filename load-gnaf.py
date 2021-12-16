@@ -576,12 +576,12 @@ def create_reference_tables(pg_cur):
 
     # Step 1 of 14 : create reference tables
     start_time = datetime.now()
-    pg_cur.execute(geoscape.open_sql_file("03-01-reference-create-tables.sql"))
+    pg_cur.execute(geoscape.open_sql_file("03-01-reference-create-tables.sql").format(settings.srid))
     logger.info(f"\t- Step  1 of 14 : create reference tables : {datetime.now() - start_time}")
 
     # Step 2 of 14 : populate localities
     start_time = datetime.now()
-    pg_cur.execute(geoscape.open_sql_file("03-02-reference-populate-localities.sql"))
+    pg_cur.execute(geoscape.open_sql_file("03-02-reference-populate-localities.sql").format(settings.srid))
     logger.info(f"\t- Step  2 of 14 : localities populated : {datetime.now() - start_time}")
 
     # Step 3 of 14 : populate locality aliases
@@ -596,7 +596,7 @@ def create_reference_tables(pg_cur):
 
     # Step 5 of 14 : populate streets
     start_time = datetime.now()
-    pg_cur.execute(geoscape.open_sql_file("03-05-reference-populate-streets.sql"))
+    pg_cur.execute(geoscape.open_sql_file("03-05-reference-populate-streets.sql").format(settings.srid))
     logger.info(f"\t- Step  5 of 14 : streets populated : {datetime.now() - start_time}")
 
     # Step 6 of 14 : populate street aliases
@@ -606,7 +606,7 @@ def create_reference_tables(pg_cur):
 
     # Step 7 of 14 : populate addresses, using multiprocessing
     start_time = datetime.now()
-    sql = geoscape.open_sql_file("03-07-reference-populate-addresses-1.sql")
+    sql = geoscape.open_sql_file("03-07-reference-populate-addresses-1.sql").format(settings.srid)
     sql_list = geoscape.split_sql_into_list(pg_cur, sql, settings.gnaf_schema, "streets", "str", "gid", logger)
     if sql_list is not None:
         geoscape.multiprocess_list("sql", sql_list, logger)
@@ -626,7 +626,7 @@ def create_reference_tables(pg_cur):
 
     # Step 10 of 14 : split the Melbourne locality into its 2 postcodes (3000, 3004)
     start_time = datetime.now()
-    pg_cur.execute(geoscape.open_sql_file("03-10-reference-split-melbourne.sql"))
+    pg_cur.execute(geoscape.open_sql_file("03-10-reference-split-melbourne.sql").format(settings.srid))
     logger.info(f"\t- Step 10 of 14 : Melbourne split : {datetime.now() - start_time}")
 
     # Step 11 of 14 : finalise localities assigned to streets and addresses
