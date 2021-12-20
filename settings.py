@@ -168,9 +168,9 @@ gnaf_schema = args.gnaf_schema or "gnaf_" + geoscape_version
 
 admin_bdys_schema = args.admin_schema or "admin_bdys_" + geoscape_version
 
-previous_gnaf_schema = args.gnaf_schema or "gnaf_" + previous_geoscape_version
+previous_gnaf_schema = args.previous_gnaf_schema or "gnaf_" + previous_geoscape_version
 
-previous_admin_bdys_schema = args.admin_schema or "admin_bdys_" + previous_geoscape_version
+previous_admin_bdys_schema = args.previous_admin_schema or "admin_bdys_" + previous_geoscape_version
 
 gnaf_network_directory = args.gnaf_tables_path.replace("\\", "/")
 
