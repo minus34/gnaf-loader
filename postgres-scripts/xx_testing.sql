@@ -1,5 +1,20 @@
 
 
+
+
+
+select count(*) from gnaf_202111.address_principals; -- 14404238
+
+select count(*)
+from gnaf_202111.address_principals as old,
+     gnaf_202111_gda94.address_principals as new
+where not st_equals(old.geom, new.geom)
+;
+
+
+; -- 14404238
+
+
 -- root        : INFO     SQL FAILED! : ALTER TABLE ONLY gnaf_202111.locality_neighbour_lookup ADD CONSTRAINT locality_neighbour_lookup_pk PRIMARY KEY (locality_pid, neighbour_locality_pid); : could not create unique index "locality_neighbour_lookup_pk"
 -- DETAIL:  Key (locality_pid, neighbour_locality_pid)=(loc46e919f53d9f, loc5ecbe4a59b8c) is duplicated.
 

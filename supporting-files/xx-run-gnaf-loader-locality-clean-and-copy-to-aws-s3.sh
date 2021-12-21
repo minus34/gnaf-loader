@@ -15,12 +15,12 @@ OUTPUT_FOLDER="/Users/$(whoami)/tmp/geoscape_202111"
 GNAF_PATH="/Users/$(whoami)/Downloads/g-naf_nov21_australia_gda94_psv_104"
 BDYS_PATH="/Users/$(whoami)/Downloads/NOV21_AdminBounds_GDA94_SHP"
 
-echo "---------------------------------------------------------------------------------------------------------------------"
-echo "Run gnaf-loader and locality boundary clean"
-echo "---------------------------------------------------------------------------------------------------------------------"
-
-python3 /Users/$(whoami)/git/minus34/gnaf-loader/load-gnaf.py --pgport=5432 --pgdb=geo --max-processes=6 --gnaf-tables-path="${GNAF_PATH}" --admin-bdys-path="${BDYS_PATH}"
-python3 /Users/$(whoami)/git/iag_geo/psma-admin-bdys/locality-clean.py --pgport=5432 --pgdb=geo --max-processes=6 --output-path=${OUTPUT_FOLDER}
+#echo "---------------------------------------------------------------------------------------------------------------------"
+#echo "Run gnaf-loader and locality boundary clean"
+#echo "---------------------------------------------------------------------------------------------------------------------"
+#
+#python3 /Users/$(whoami)/git/minus34/gnaf-loader/load-gnaf.py --pgport=5432 --pgdb=geo --max-processes=6 --gnaf-tables-path="${GNAF_PATH}" --admin-bdys-path="${BDYS_PATH}"
+#python3 /Users/$(whoami)/git/iag_geo/psma-admin-bdys/locality-clean.py --pgport=5432 --pgdb=geo --max-processes=6 --output-path=${OUTPUT_FOLDER}
 
 echo "---------------------------------------------------------------------------------------------------------------------"
 echo "dump postgres schemas to a local folder"
@@ -52,10 +52,10 @@ python ${SCRIPT_DIR}/../spark/02_export_gnaf_and_admin_bdys_to_s3.py
 
 aws --profile=${AWS_PROFILE} s3 sync ${SCRIPT_DIR}/../spark/data s3://minus34.com/opendata/geoscape-202111/parquet --acl public-read
 
-echo "---------------------------------------------------------------------------------------------------------------------"
-echo "build gnaf-loader docker image and push to Docker Hub"
-echo "---------------------------------------------------------------------------------------------------------------------"
-
-cd ${SCRIPT_DIR}/../docker
-docker build --squash --tag minus34/gnafloader:latest --tag minus34/gnafloader:202111 --no-cache .
-docker push --all-tags minus34/gnafloader
+#echo "---------------------------------------------------------------------------------------------------------------------"
+#echo "build gnaf-loader docker image and push to Docker Hub"
+#echo "---------------------------------------------------------------------------------------------------------------------"
+#
+#cd ${SCRIPT_DIR}/../docker
+#docker build --squash --tag minus34/gnafloader:latest --tag minus34/gnafloader:202111 --no-cache  --no-cache --build-arg BASE_URL="https://minus34.com/opendata/geoscape-202111" .
+#docker push --all-tags minus34/gnafloader
