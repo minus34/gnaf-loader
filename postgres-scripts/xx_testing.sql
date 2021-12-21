@@ -5,14 +5,12 @@
 
 select count(*) from gnaf_202111.address_principals; -- 14404238
 
+-- find geoms that don't match
 select count(*)
-from gnaf_202111.address_principals as old,
-     gnaf_202111_gda94.address_principals as new
-where not st_equals(old.geom, new.geom)
+from gnaf_202111.address_principals as old
+inner join gnaf_202111_gda94.address_principals as new on old.gnaf_pid = new.gnaf_pid
+	and not st_equals(old.geom, new.geom)
 ;
-
-
-; -- 14404238
 
 
 -- root        : INFO     SQL FAILED! : ALTER TABLE ONLY gnaf_202111.locality_neighbour_lookup ADD CONSTRAINT locality_neighbour_lookup_pk PRIMARY KEY (locality_pid, neighbour_locality_pid); : could not create unique index "locality_neighbour_lookup_pk"

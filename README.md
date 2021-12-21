@@ -49,7 +49,7 @@ The behaviour of gnaf-loader can be controlled by specifying various command lin
 * `--pgpassword` password for accessing the Postgres server. This defaults to the `PGPASSWORD` environment variable if set, otherwise `password`.
 
 #### Optional Arguments
-* `--srid` Sets the coordinate system of the input data. Valid values are `4283` (the default: GDA94) and `7844` (GDA2020).
+* `--srid` Sets the coordinate system of the input data. Valid values are `4283` (the default: GDA94 lat/long) and `7844` (GDA2020 lat/long).
 * `--geoscape-version` Geoscape version number in YYYYMM format. Defaults to current year and last release month. e.g. `202111`.
 * `--raw-gnaf-schema` schema name to store raw GNAF tables in. Defaults to `raw_gnaf_<geoscape_version>`.
 * `--raw-admin-schema` schema name to store raw admin boundary tables in. Defaults to `raw_admin_bdys_<geoscape_version>`.
@@ -113,9 +113,9 @@ Should take 15-60 minutes.
 - A knowledge of [Postgres pg_restore parameters](https://www.postgresql.org/docs/12/app-pgrestore.html)
 
 ### Process
-1. Download [gnaf-202111.dmp](https://minus34.com/opendata/geoscape-202111/gnaf-202111.dmp) (~1.8Gb)
-2. Download [admin-bdys-202111.dmp](https://minus34.com/opendata/geoscape-202111/admin-bdys-202111.dmp) (~2.8Gb)
-3. Edit the _restore-gnaf-admin-bdys.bat_ or _.sh_ script in the supporting-files folder for your database parameters and for the location of pg_restore
+1. Download the [GNAF dump file](https://minus34.com/opendata/geoscape-202111/gnaf-202111.dmp) or [GNAF GDA2020 dump file](https://minus34.com/opendata/geoscape-202111-gda2020/gnaf-202111.dmp) (~1.8Gb)
+2. Download the [Admin Bdys dump file](https://minus34.com/opendata/geoscape-202111/admin-bdys-202111.dmp) or [Admin Bdys GDA2020 dump file](https://minus34.com/opendata/geoscape-202111-gda2020/admin-bdys-202111.dmp) (~2.8Gb)
+3. Edit the _restore-gnaf-admin-bdys.bat_ or _.sh_ script in the supporting-files folder for your dump file names, database parameters and for the location of pg_restore
 5. Run the script, come back in 15-60 minutes and enjoy!
 
 ### Data Licenses
