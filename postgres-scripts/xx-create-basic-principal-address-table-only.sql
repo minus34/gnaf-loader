@@ -12,7 +12,7 @@ SELECT adr.address_detail_pid AS gnaf_pid,
          WHEN gty.name = 'LOCALITY' THEN 5
          ELSE 2
        END AS reliability,
-       st_setsrid(st_makepoint(pnt.longitude, pnt.latitude), 4283)::geometry(point, 4283) AS geom
+       st_setsrid(st_makepoint(pnt.longitude, pnt.latitude), 4283) AS geom
   FROM raw_gnaf_201608.address_detail AS adr
   INNER JOIN raw_gnaf_201608.address_default_geocode as pnt ON adr.address_detail_pid = pnt.address_detail_pid
   LEFT OUTER JOIN raw_gnaf_201608.geocode_type_aut AS gty ON pnt.geocode_type_code = gty.code

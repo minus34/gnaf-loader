@@ -9,7 +9,7 @@ CREATE UNLOGGED TABLE admin_bdys.postcode_bdys_analysis
   gid SERIAL NOT NULL,
   postcode text,
   state text NOT NULL,
-  geom geometry(Polygon,4283) NOT NULL
+  geom geometry(Polygon, {0}, 2) NOT NULL
 )
 WITH (OIDS=FALSE);
 ALTER TABLE admin_bdys.postcode_bdys_analysis OWNER TO postgres;

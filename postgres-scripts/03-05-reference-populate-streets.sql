@@ -22,7 +22,7 @@ SELECT str.street_locality_pid,
        cls.name AS street_class,
        pnt.latitude,
 	     pnt.longitude,
-	     st_setsrid(st_makepoint(pnt.longitude, pnt.latitude), 4283) AS geom
+	     st_setsrid(st_makepoint(pnt.longitude, pnt.latitude), {0}) AS geom
   FROM raw_gnaf.street_locality AS str
   LEFT OUTER JOIN raw_gnaf.street_locality_point AS pnt ON str.street_locality_pid = pnt.street_locality_pid
   LEFT OUTER JOIN gnaf.localities AS loc ON str.locality_pid = loc.locality_pid

@@ -42,13 +42,13 @@ def run_sql_multiprocessing(the_sql):
 
     # set raw gnaf database schema (it's needed for the primary and foreign key creation)
     if settings.raw_gnaf_schema != "public":
-        pg_cur.execute("SET search_path = {0}, public, pg_catalog".format(settings.raw_gnaf_schema,))
+        pg_cur.execute(f"SET search_path = {settings.raw_gnaf_schema}, public, pg_catalog")
 
     try:
         pg_cur.execute(the_sql)
         result = "SUCCESS"
     except Exception as ex:
-        result = "SQL FAILED! : {0} : {1}".format(the_sql, ex)
+        result = f"SQL FAILED! : {the_sql} : {ex}"
 
     pg_cur.close()
     pg_conn.close()
@@ -59,11 +59,11 @@ def run_sql_multiprocessing(the_sql):
 def run_command_line(cmd):
     # run the command line without any output (it'll still tell you if it fails miserably)
     try:
-        fnull = open(os.devnull, "w")
-        subprocess.call(cmd, shell=True, stdout=fnull, stderr=subprocess.STDOUT)
+        f_null = open(os.devnull, "w")
+        subprocess.call(cmd, shell=True, stdout=f_null, stderr=subprocess.STDOUT)
         result = "SUCCESS"
     except Exception as ex:
-        result = "COMMAND FAILED! : {0} : {1}".format(cmd, ex)
+        result = f"COMMAND FAILED! : {cmd} : {ex}"
 
     return result
 
@@ -84,24 +84,24 @@ def prep_sql_list(sql_list):
 # set schema names in the SQL script
 def prep_sql(sql):
     if settings.raw_gnaf_schema is not None:
-        sql = sql.replace(" raw_gnaf.", " {0}.".format(settings.raw_gnaf_schema, ))
+        sql = sql.replace(" raw_gnaf.", f" {settings.raw_gnaf_schema}.")
     if settings.raw_admin_bdys_schema is not None:
-        sql = sql.replace(" raw_admin_bdys.", " {0}.".format(settings.raw_admin_bdys_schema, ))
+        sql = sql.replace(" raw_admin_bdys.", f" {settings.raw_admin_bdys_schema}.")
     if settings.gnaf_schema is not None:
-        sql = sql.replace(" gnaf.", " {0}.".format(settings.gnaf_schema, ))
+        sql = sql.replace(" gnaf.", f" {settings.gnaf_schema}.")
     if settings.admin_bdys_schema is not None:
-        sql = sql.replace(" admin_bdys.", " {0}.".format(settings.admin_bdys_schema, ))
+        sql = sql.replace(" admin_bdys.", f" {settings.admin_bdys_schema}.")
 
     if settings.pg_user != "postgres":
-        # alter create table script to run with correct Postgres user name
-        sql = sql.replace(" postgres;", " {0};".format(settings.pg_user, ))
+        # alter create table script to run with correct Postgres username
+        sql = sql.replace(" postgres;", f" {settings.pg_user};")
 
     return sql
 
 
 def split_sql_into_list(pg_cur, the_sql, table_schema, table_name, table_alias, table_gid, logger):
     # get min max gid values from the table to split
-    min_max_sql = "SELECT MIN({2}) AS min, MAX({2}) AS max FROM {0}.{1}".format(table_schema, table_name, table_gid)
+    min_max_sql = f"SELECT MIN({table_gid}) AS min, MAX({table_gid}) AS max FROM {table_schema}.{table_name}"
 
     pg_cur.execute(min_max_sql)
 
@@ -120,8 +120,7 @@ def split_sql_into_list(pg_cur, the_sql, table_schema, table_name, table_alias, 
         if float(diff) / float(settings.max_processes) < 10.0:
             rows_per_request = 10
             processes = int(math.floor(float(diff) / 10.0)) + 1
-            logger.info("\t\t- running {0} processes (adjusted due to low row count in table to split)"
-                        .format(processes))
+            logger.info(f"\t\t- running {processes} processes (adjusted due to low row count in table to split)")
         else:
             processes = settings.max_processes
 
@@ -132,8 +131,8 @@ def split_sql_into_list(pg_cur, the_sql, table_schema, table_name, table_alias, 
         for i in range(0, processes):
             end_pkey = start_pkey + rows_per_request
 
-            where_clause = " WHERE {0}.{3} > {1} AND {0}.{3} <= {2}"\
-                .format(table_alias, start_pkey, end_pkey, table_gid)
+            where_clause = \
+                f" WHERE {table_alias}.{table_gid} > {start_pkey} AND {table_alias}.{table_gid} <= {end_pkey}"
 
             if "WHERE " in the_sql:
                 mp_sql = the_sql.replace(" WHERE ", where_clause + " AND ")
@@ -155,7 +154,7 @@ def split_sql_into_list(pg_cur, the_sql, table_schema, table_name, table_alias, 
 
         return sql_list
     except Exception as ex:
-        logger.fatal("Looks like the table in this query is empty: {0}\n{1}".format(min_max_sql, ex))
+        logger.fatal(f"Looks like the table in this query is empty: {min_max_sql}\n{ex}")
         return None
 
 
@@ -209,8 +208,7 @@ def import_shapefile_to_postgres(file_path, pg_table, pg_schema, delete_table, s
         spatial_or_dbf_flags = "-G -n"
 
     # build shp2pgsql command line
-    shp2pgsql_cmd = "shp2pgsql {0} {1} -i \"{2}\" {3}.{4}"\
-        .format(delete_append_flag, spatial_or_dbf_flags, file_path, pg_schema, pg_table)
+    shp2pgsql_cmd = f"shp2pgsql {delete_append_flag} {spatial_or_dbf_flags} -i \"{file_path}\" {pg_schema}.{pg_table}"
     # print(shp2pgsql_cmd)
 
     # convert the Shapefile to SQL statements
@@ -218,7 +216,7 @@ def import_shapefile_to_postgres(file_path, pg_table, pg_schema, delete_table, s
         process = subprocess.Popen(shp2pgsql_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
         sqlobj, err = process.communicate()
     except Exception as ex:
-        return "Importing {} - Couldn't convert Shapefile to SQL : {}".format(file_path, ex)
+        return f"Importing {file_path} - Couldn't convert Shapefile to SQL : {ex}"
 
     # prep Shapefile SQL
     sql = sqlobj.decode("utf-8")  # this is required for Python 3
@@ -245,25 +243,24 @@ def import_shapefile_to_postgres(file_path, pg_table, pg_schema, delete_table, s
         # if import fails for some reason - output sql to file for debugging
         file_name = os.path.basename(file_path)
 
-        target = open(os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                                   "error_debug_{}.sql".format(file_name,)), "w")
+        target = open(os.path.join(os.path.dirname(os.path.realpath(__file__)), f"error_debug_{file_name}.sql"), "w")
         target.write(sql)
 
         pg_cur.close()
         pg_conn.close()
 
-        return "\tImporting {} - Couldn't run Shapefile SQL\nshp2pgsql result was: {} ".format(file_name, ex)
+        return f"\tImporting {file_name} - Couldn't run Shapefile SQL\nshp2pgsql result was: {ex} "
 
     # Cluster table on spatial index for performance
     if delete_table and spatial:
-        sql = "ALTER TABLE {0}.{1} CLUSTER ON {1}_geom_idx".format(pg_schema, pg_table)
+        sql = f"ALTER TABLE {pg_schema}.{pg_table} CLUSTER ON {pg_table}_geom_idx"
 
         try:
             pg_cur.execute(sql)
         except Exception as ex:
             pg_cur.close()
             pg_conn.close()
-            return "\tImporting {} - Couldn't cluster on spatial index : {}".format(pg_table, ex)
+            return f"\tImporting {pg_table} - Couldn't cluster on spatial index : {ex}"
 
     pg_cur.close()
     pg_conn.close()

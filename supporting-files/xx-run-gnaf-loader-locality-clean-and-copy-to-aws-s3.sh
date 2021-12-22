@@ -52,10 +52,3 @@ python ${SCRIPT_DIR}/../spark/02_export_gnaf_and_admin_bdys_to_s3.py
 
 aws --profile=${AWS_PROFILE} s3 sync ${SCRIPT_DIR}/../spark/data s3://minus34.com/opendata/geoscape-202111/parquet --acl public-read
 
-echo "---------------------------------------------------------------------------------------------------------------------"
-echo "build gnaf-loader docker image and push to Docker Hub"
-echo "---------------------------------------------------------------------------------------------------------------------"
-
-cd ${SCRIPT_DIR}/../docker
-docker build --squash --tag minus34/gnafloader:latest --tag minus34/gnafloader:202111 --no-cache .
-docker push --all-tags minus34/gnafloader

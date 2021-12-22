@@ -63,7 +63,7 @@ parser.add_argument(
          "WARNING: if you have PostGIS 2.1 or lower - this process can take hours")
 parser.add_argument(
     "--srid", type=int, default=4283,
-    help="Sets the coordinate system of the input data. Valid values are 4283 (GDA94) and 7844 (GDA2020)")
+    help="Sets the coordinate system (SRID aka EPSG number) of the input data. Valid values are 4283 (GDA94) and 7844 (GDA2020)")
 
 
 # PG Options
@@ -168,9 +168,9 @@ gnaf_schema = args.gnaf_schema or "gnaf_" + geoscape_version
 
 admin_bdys_schema = args.admin_schema or "admin_bdys_" + geoscape_version
 
-previous_gnaf_schema = args.gnaf_schema or "gnaf_" + previous_geoscape_version
+previous_gnaf_schema = args.previous_gnaf_schema or "gnaf_" + previous_geoscape_version
 
-previous_admin_bdys_schema = args.admin_schema or "admin_bdys_" + previous_geoscape_version
+previous_admin_bdys_schema = args.previous_admin_schema or "admin_bdys_" + previous_geoscape_version
 
 gnaf_network_directory = args.gnaf_tables_path.replace("\\", "/")
 
@@ -188,8 +188,7 @@ pg_db = args.pgdb or os.getenv("PGDATABASE", "geoscape")
 pg_user = args.pguser or os.getenv("PGUSER", "postgres")
 pg_password = args.pgpassword or os.getenv("PGPASSWORD", "password")
 
-pg_connect_string = "dbname='{0}' host='{1}' port='{2}' user='{3}' password='{4}'" \
-    .format(pg_db, pg_host, pg_port, pg_user, pg_password)
+pg_connect_string = f"dbname='{pg_db}' host='{pg_host}' port='{pg_port}' user='{pg_user}' password='{pg_password}'"
 
 # set postgres script directory
 sql_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), "postgres-scripts")

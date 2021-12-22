@@ -29,7 +29,7 @@ CREATE TABLE gnaf.temp_addresses
   longitude numeric(11,8) NOT NULL,
   geocode_type text NOT NULL,
   reliability smallint NOT NULL,
-  geom geometry(Point, 4283, 2) NOT NULL
+  geom geometry(Point, {0}, 2) NOT NULL
 )
 WITH (OIDS=FALSE);
 ALTER TABLE gnaf.temp_addresses OWNER TO postgres;
@@ -69,7 +69,7 @@ CREATE TABLE gnaf.address_principals
   longitude numeric(11,8) NOT NULL,
   geocode_type text NOT NULL,
   reliability smallint NOT NULL,
-  geom geometry(Point, 4283, 2) NOT NULL
+  geom geometry(Point, {0}, 2) NOT NULL
 )
 WITH (OIDS=FALSE);
 ALTER TABLE gnaf.address_principals OWNER TO postgres;
@@ -109,7 +109,7 @@ CREATE TABLE gnaf.address_aliases
   longitude numeric(11,8) NOT NULL,
   geocode_type text NOT NULL,
   reliability smallint NOT NULL,
-  geom geometry(Point, 4283, 2) NOT NULL
+  geom geometry(Point, {0}, 2) NOT NULL
 )
 WITH (OIDS=FALSE);
 ALTER TABLE gnaf.address_aliases OWNER TO postgres;
@@ -144,7 +144,7 @@ CREATE TABLE gnaf.streets(
   longitude numeric(11, 8) NULL,
   reliability smallint NOT NULL DEFAULT 4,
   address_count integer NOT NULL DEFAULT 0,
-  geom geometry(Point, 4283, 2) NULL
+  geom geometry(Point, {0}, 2) NULL
 ) WITH (OIDS=FALSE);
 ALTER TABLE gnaf.streets OWNER TO postgres;
 
@@ -181,7 +181,7 @@ CREATE TABLE gnaf.localities(
   street_count integer NOT NULL DEFAULT 0,
   has_boundary character(1) NOT NULL DEFAULT 'N',
   unique_locality_state character(1) NOT NULL DEFAULT 'N',
-  geom geometry(Point, 4283, 2) NULL
+  geom geometry(Point, {0}, 2) NULL
 ) WITH (OIDS=FALSE);
 ALTER TABLE gnaf.localities OWNER TO postgres;
 
