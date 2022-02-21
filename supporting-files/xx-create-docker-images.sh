@@ -9,13 +9,13 @@ echo "build gnaf-loader docker image"
 echo "---------------------------------------------------------------------------------------------------------------------"
 
 cd ${SCRIPT_DIR}/../docker
-docker build --squash --tag minus34/gnafloader:latest --tag minus34/gnafloader:202111 --no-cache  --no-cache --build-arg BASE_URL="https://minus34.com/opendata/geoscape-202111" .
+docker build --squash --tag minus34/gnafloader:latest --tag minus34/gnafloader:202202 --no-cache  --no-cache --build-arg BASE_URL="https://minus34.com/opendata/geoscape-202202" .
 
 echo "---------------------------------------------------------------------------------------------------------------------"
 echo "build gnaf-loader GDA2020 docker image"
 echo "---------------------------------------------------------------------------------------------------------------------"
 
-docker build --squash --tag minus34/gnafloader:latest-gda2020 --tag minus34/gnafloader:202111-gda2020 --no-cache --build-arg BASE_URL="https://minus34.com/opendata/geoscape-202111-gda2020" .
+docker build --squash --tag minus34/gnafloader:latest-gda2020 --tag minus34/gnafloader:202202-gda2020 --no-cache --build-arg BASE_URL="https://minus34.com/opendata/geoscape-202202-gda2020" .
 
 echo "---------------------------------------------------------------------------------------------------------------------"
 echo "push images to Docker Hub"
