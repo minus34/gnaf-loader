@@ -89,9 +89,6 @@ def main():
              .config("spark.sql.debug.maxToStringFields", 100)
              .config("spark.serializer", KryoSerializer.getName)
              .config("spark.kryo.registrator", SedonaKryoRegistrator.getName)
-             .config("spark.jars.packages",
-                     'org.apache.sedona:sedona-python-adapter-3.0_2.12:1.0.1-incubating,'
-                     'org.datasyslab:geotools-wrapper:geotools-24.1')
              .config("spark.sql.adaptive.enabled", "true")
              .config("spark.executor.cores", 1)
              .config("spark.cores.max", num_processors)
