@@ -49,7 +49,7 @@ echo "--------------------------------------------------------------------------
 
 conda activate sedona
 
-python ${SCRIPT_DIR}/../spark/02_export_gnaf_and_admin_bdys_to_s3.py
+python ${SCRIPT_DIR}/../../spark/02_export_gnaf_and_admin_bdys_to_s3.py
 
-aws --profile=${AWS_PROFILE} s3 sync ${SCRIPT_DIR}/../spark/data s3://minus34.com/opendata/geoscape-202202/parquet --acl public-read
+aws --profile=${AWS_PROFILE} s3 sync ${SCRIPT_DIR}/../../spark/data s3://minus34.com/opendata/geoscape-202202/parquet --acl public-read
 

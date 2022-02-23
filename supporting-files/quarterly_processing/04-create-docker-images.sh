@@ -8,7 +8,7 @@ echo "--------------------------------------------------------------------------
 echo "build gnaf-loader docker image"
 echo "---------------------------------------------------------------------------------------------------------------------"
 
-cd ${SCRIPT_DIR}/../docker
+cd ${SCRIPT_DIR}/../../docker
 docker build --squash --tag minus34/gnafloader:latest --tag minus34/gnafloader:202202 --no-cache --build-arg BASE_URL="https://minus34.com/opendata/geoscape-202202" .
 
 echo "---------------------------------------------------------------------------------------------------------------------"
