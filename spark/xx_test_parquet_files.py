@@ -1,25 +1,5 @@
-# ---------------------------------------------------------------------------------------------------------------------
-#
-# script to import each GNAF & administrative boundary table from Postgres & export as GZIPped Parquet files to AWS S3
-#
-# PROCESS
-#
-# 1. get list of tables from Postgres
-# 2. for each table:
-#     a. import into Spark dataframe
-#     b. export as gzip parquet files to local disk
-#     c. copy files to S3
-#
-# note: direct export from Spark to S3 isn't used to avoid Hadoop install and config
-#
-# ---------------------------------------------------------------------------------------------------------------------
 
-# import boto3
-import logging
-import math
 import os
-import psycopg2
-import sys
 
 # from boto3.s3.transfer import TransferConfig
 from datetime import datetime
@@ -51,9 +31,6 @@ def main():
              .config("spark.sql.debug.maxToStringFields", 100)
              .config("spark.serializer", KryoSerializer.getName)
              .config("spark.kryo.registrator", SedonaKryoRegistrator.getName)
-             .config("spark.jars.packages",
-                     'org.apache.sedona:sedona-python-adapter-3.0_2.12:1.0.1-incubating,'
-                     'org.datasyslab:geotools-wrapper:geotools-24.1')
              .config("spark.sql.adaptive.enabled", "true")
              .config("spark.executor.cores", 1)
              .config("spark.cores.max", num_processors)
@@ -72,7 +49,6 @@ def main():
     df = spark.read.parquet(input_path)
 
     print("{} has {} rows : {}".format(input_path, df.count(), datetime.now() - start_time))
-
 
     spark.stop()
 

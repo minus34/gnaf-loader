@@ -1,4 +1,4 @@
--- workaround for missing default coordinates - 202111 release issue
+-- workaround for missing default coordinates - 202202 release issue
 with missing as (
     select address_detail_pid
     from raw_gnaf.address_default_geocode
