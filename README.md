@@ -1,5 +1,3 @@
-**IMPORTANT:** There have been significant changes in the November 2021 release. See the [CHANGELOG](https://github.com/minus34/gnaf-loader/blob/master/CHANGELOG.md) for details
-
 # gnaf-loader
 A quick way to load the complete Geocoded National Address File of Australia (GNAF) and Australian Administrative Boundaries into Postgres, simplified and ready to use as reference data for geocoding, analysis, visualisation and aggregation.
 
@@ -109,8 +107,8 @@ Download Postgres dump files and restore them in your database.
 Should take 15-60 minutes.
 
 ### Pre-requisites
-- Postgres 12+ with PostGIS 3.0+
-- A knowledge of [Postgres pg_restore parameters](https://www.postgresql.org/docs/12/app-pgrestore.html)
+- Postgres 13+ with PostGIS 3.0+
+- A knowledge of [Postgres pg_restore parameters](https://www.postgresql.org/docs/13/app-pgrestore.html)
 
 ### Process
 1. Download the [GNAF dump file](https://minus34.com/opendata/geoscape-202202/gnaf-202202.dmp) or [GNAF GDA2020 dump file](https://minus34.com/opendata/geoscape-202202-gda2020/gnaf-202202.dmp) (~1.8Gb)
