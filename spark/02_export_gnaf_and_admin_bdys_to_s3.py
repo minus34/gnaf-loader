@@ -14,6 +14,7 @@
 #
 # ---------------------------------------------------------------------------------------------------------------------
 
+import argparse
 # import boto3
 import logging
 import math
@@ -21,9 +22,10 @@ import os
 import psycopg2
 import sys
 
-# from boto3.s3.transfer import TransferConfig
+# from boto3.s3.transfer import TransferConfig  # S3 transfer disabled as AWS CLI sync is much faster
 from datetime import datetime
 from multiprocessing import cpu_count
+from pathlib import Path
 
 from pyspark.sql import SparkSession, functions as f
 from sedona.register import SedonaRegistrator
@@ -63,19 +65,28 @@ jdbc_url = "jdbc:postgresql://{HOST}:{PORT}/{DB}".format(**pg_settings)
 # get connect string for psycopg2
 pg_connect_string = "dbname={DB} host={HOST} port={PORT} user={USER} password={PASS}".format(**pg_settings)
 
-# aws details
-s3_bucket = "minus34.com"
-s3_folder = "opendata/geoscape-202202/parquet"
+# # aws details
+# s3_bucket = "minus34.com"
+# s3_folder = "opendata/geoscape-202202/parquet"
 
-# output path for gzipped parquet files
-output_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "data")
+# get runtime arguments
+parser = argparse.ArgumentParser(description="Converts Postgres/PostGIS tables to Parquet files with WKT geometries.")
 
-# database schemas to export to S3
-schema_names = ["gnaf_202202", "admin_bdys_202202"]
+parser.add_argument("--gnaf-schema", help="Input schema name for GNAF tables.")
+parser.add_argument("--admin-schema", help="Input schema name for admin boundary tables.")
+parser.add_argument("--output-path", help="Output path for Parquet files.")
 
 
 def main():
     start_time = datetime.now()
+
+    # get settings
+    args = parser.parse_args()
+    output_path = args.output_path
+    schema_names = [args.gnaf_schema, args.admin_schema]
+
+    # create output path (if required)
+    Path(output_path).mkdir(parents=True, exist_ok=True)
 
     # ----------------------------------------------------------
     # create Spark session and context
@@ -211,8 +222,8 @@ def main():
                 #
                 # export_to_parquet(export_df, table_name)
 
-                export_to_parquet(bdy_df, table_name)
-                # copy_to_s3(schema_name, table_name)
+                export_to_parquet(bdy_df, table_name, output_path)
+                # copy_to_s3(schema_name, table_name, output_path)
 
                 bdy_df.unpersist()
 
@@ -253,35 +264,35 @@ def import_table(spark, sql, min_gid, max_gid, partition_size):
 
 
 # export a dataframe to gz parquet files
-def export_to_parquet(df, name):
+def export_to_parquet(df, name, output_path):
     df.write.option("compression", "gzip") \
         .mode("overwrite") \
         .parquet(os.path.join(output_path, name))
 
 
-def copy_to_s3(schema_name, name):
-
-    # set correct AWS user
-    boto3.setup_default_session(profile_name="default")
-
-    # delete existing files (each time you run this Spark creates new, random parquet file names)
-    s3 = boto3.resource('s3')
-    bucket = s3.Bucket(s3_bucket)
-    bucket.objects.filter(Prefix=os.path.join(s3_folder, schema_name, name)).delete()
-
-    s3_client = boto3.client('s3')
-    config = TransferConfig(multipart_threshold=1024 ** 2)  # 1MB
-
-    # upload one file at a time
-    for root, dirs, files in os.walk(os.path.join(output_path, name)):
-        for file in files:
-            response = s3_client\
-                .upload_file(os.path.join(output_path, name, file), s3_bucket,
-                             os.path.join(s3_folder, schema_name, name, file),
-                             Config=config, ExtraArgs={'ACL': 'public-read'})
-
-            if response is not None:
-                logger.warning("\t\t\t - {} copy to S3 problem : {}".format(name, response))
+# def copy_to_s3(schema_name, name, output_path):
+#
+#     # set correct AWS user
+#     boto3.setup_default_session(profile_name="default")
+#
+#     # delete existing files (each time you run this Spark creates new, random parquet file names)
+#     s3 = boto3.resource('s3')
+#     bucket = s3.Bucket(s3_bucket)
+#     bucket.objects.filter(Prefix=os.path.join(s3_folder, schema_name, name)).delete()
+#
+#     s3_client = boto3.client('s3')
+#     config = TransferConfig(multipart_threshold=1024 ** 2)  # 1MB
+#
+#     # upload one file at a time
+#     for root, dirs, files in os.walk(os.path.join(output_path, name)):
+#         for file in files:
+#             response = s3_client\
+#                 .upload_file(os.path.join(output_path, name, file), s3_bucket,
+#                              os.path.join(s3_folder, schema_name, name, file),
+#                              Config=config, ExtraArgs={'ACL': 'public-read'})
+#
+#             if response is not None:
+#                 logger.warning("\t\t\t - {} copy to S3 problem : {}".format(name, response))
 
 
 if __name__ == "__main__":
