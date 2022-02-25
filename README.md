@@ -8,6 +8,7 @@ Have a look at [these intro slides](https://minus34.com/opendata/intro-to-gnaf.p
 1. [Run](https://github.com/minus34/gnaf-loader#option-1---run-loadgnafpy) the load-gnaf Python script and build the database yourself in a single step
 2. [Pull](https://github.com/minus34/gnaf-loader#option-2---run-the-database-in-a-docker-container) the database from Docker Hub and run it in a container
 3. [Download](https://github.com/minus34/gnaf-loader#option-3---load-pg_dump-files) the GNAF and/or Admin Bdys Postgres dump files & restore them in your Postgres 13+ database
+4. [Use or download](https://github.com/minus34/gnaf-loader#option-3---load-pg_dump-files) Parquet Files in S3 on your big data workflows; either in AWS or your own platform.
 
 ## Option 1 - Run load.gnaf.py
 Running the Python script takes 30-120 minutes on a Postgres server configured to take advantage of the RAM available.
@@ -116,7 +117,16 @@ Should take 15-60 minutes.
 3. Edit the _restore-gnaf-admin-bdys.bat_ or _.sh_ script in the supporting-files folder for your dump file names, database parameters and for the location of pg_restore
 5. Run the script, come back in 15-60 minutes and enjoy!
 
-### Data Licenses
+## Option 4 - Parquet Files in S3
+Parquet versions of all the tables are in a public S3 bucket for use directly in an AWS application or service. They can also be downloaded using the AWS CLI.
+
+The files are here: `s3://minus34.com/opendata/geoscape-202202/parquet/` or `s3://minus34.com/opendata/geoscape-202202-gda2020/parquet/`
+
+### AWS CLI Examples:
+- List all datasets: `aws s3 ls s3://minus34.com/opendata/geoscape-202202/parquet/`
+- Copy all datasets: `aws s3 cp s3://minus34.com/opendata/geoscape-202202/parquet/ <my-local-folder>`
+
+## DATA LICENSES
 
 Incorporates or developed using G-NAF © [Geoscape Australia](https://geoscape.com.au/legal/data-copyright-and-disclaimer/) licensed by the Commonwealth of Australia under the [Open Geo-coded National Address File (G-NAF) End User Licence Agreement](https://data.gov.au/dataset/ds-dga-19432f89-dc3a-4ef3-b943-5326ef1dbecc/distribution/dist-dga-09f74802-08b1-4214-a6ea-3591b2753d30/details?q=).
 
