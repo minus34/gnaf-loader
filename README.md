@@ -120,6 +120,8 @@ Should take 15-60 minutes.
 ## Option 4 - Parquet Files in S3
 Parquet versions of all the tables are in a public S3 bucket for use directly in an AWS application or service. They can also be downloaded using the AWS CLI.
 
+Geometries are stored as Well Known Text (WKT) strings with WGS84 lat/long coordinates (SRID/EPSG:4326). They can be queried using spatial extensions to analytical platforms, such as [Apache Sedona](https://sedona.apache.org/) running on [Apache Spark](https://spark.apache.org/).
+
 The files are here: `s3://minus34.com/opendata/geoscape-202202/parquet/` or `s3://minus34.com/opendata/geoscape-202202-gda2020/parquet/`
 
 ### AWS CLI Examples:
