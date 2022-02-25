@@ -126,7 +126,7 @@ The files are here: `s3://minus34.com/opendata/geoscape-202202/parquet/` or `s3:
 
 ### AWS CLI Examples:
 - List all datasets: `aws s3 ls s3://minus34.com/opendata/geoscape-202202/parquet/`
-- Copy all datasets: `aws s3 cp s3://minus34.com/opendata/geoscape-202202/parquet/ <my-local-folder>`
+- Copy all datasets: `aws s3 sync s3://minus34.com/opendata/geoscape-202202/parquet/ <my-local-folder>`
 
 ## DATA LICENSES
 
