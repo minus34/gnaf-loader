@@ -4,7 +4,7 @@ A quick way to load the complete Geocoded National Address File of Australia (GN
 ### What's GNAF?
 Have a look at [these intro slides](https://minus34.com/opendata/intro-to-gnaf.pptx) ([PDF](https://minus34.com/opendata/intro-to-gnaf.pdf)), as well as the [data.gov.au page](https://data.gov.au/dataset/geocoded-national-address-file-g-naf).
 
-### There are 3 options for loading the data
+### There are 4 options for loading the data
 1. [Run](https://github.com/minus34/gnaf-loader#option-1---run-loadgnafpy) the load-gnaf Python script and build the database yourself in a single step
 2. [Pull](https://github.com/minus34/gnaf-loader#option-2---run-the-database-in-a-docker-container) the database from Docker Hub and run it in a container
 3. [Download](https://github.com/minus34/gnaf-loader#option-3---load-pg_dump-files) the GNAF and/or Admin Bdys Postgres dump files & restore them in your Postgres 13+ database
