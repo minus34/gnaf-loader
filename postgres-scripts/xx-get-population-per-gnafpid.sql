@@ -256,6 +256,7 @@ WITH adr AS (
 	FROM gnaf_202202.address_principals as gnaf
 	INNER JOIN testing.mb_2016_counts AS mb on gnaf.mb_2016_code = mb.mb_2016_code
 	WHERE mb.address_count < mb.person
+	  AND mb.address_count > 0
 	  AND mb.dwelling = 0
 ), row_nums as (
     SELECT *, row_number() OVER (PARTITION BY mb_2016_code ORDER BY duplicate_number, random()) as row_num
@@ -309,27 +310,35 @@ CREATE INDEX basic_address_principals_persons_postcode_idx ON testing.address_pr
 -- QA
 
 -- check dwelling counts by meshblock -- all good!
-select sum(dwelling) from testing.mb_2016_counts where geom is not null; -- 9913151
+select sum(dwelling) from testing.mb_2016_counts where geom is not null; -- 9,913,151
 select sum(dwelling) from testing.mb_2016_counts where geom is null; -- 286
-select count(*) from testing.address_principals_dwelling; -- 9913151
+select count(*) from testing.address_principals_dwelling; -- 9,910,984
 
+-- 9 rows -- 2 with >10 addreses
 select * from testing.mb_2016_counts
 where mb_2016_code NOT IN (select distinct mb_2016_code from testing.address_principals_dwelling)
 and geom is not null
 and dwelling > 0;
 
+
+-- dwelling count differences by MB
 with gnaf as (
 	select  mb_2016_code, count(*) as dwelling from testing.address_principals_dwelling group by mb_2016_code
 )
-select mb.* from testing.mb_2016_counts as mb
+select mb.dwelling - gnaf.dwelling as dwelling_diff,
+       mb.*
+from testing.mb_2016_counts as mb
 inner join gnaf on mb.mb_2016_code = gnaf.mb_2016_code
-and mb.dwelling <> gnaf.dwelling;
+    and mb.dwelling <> gnaf.dwelling
+order by dwelling_diff desc
+;
 
 -- check population counts by meshblock -- all good!
 select sum(person) from testing.mb_2016_counts where geom is not null; -- 23351637
 select sum(person) from testing.mb_2016_counts where geom is null; -- 46354
-select count(*) from testing.address_principals_persons; -- 23351637
+select count(*) from testing.address_principals_persons; -- 23347751
 
+-- 16 rows -- 4 >=10 persons
 select * from testing.mb_2016_counts
 where mb_2016_code NOT IN (select distinct mb_2016_code from testing.address_principals_persons)
 and geom is not null
@@ -339,10 +348,13 @@ and person > 0
 with gnaf as (
 	select  mb_2016_code, count(*) as person from testing.address_principals_persons group by mb_2016_code
 )
-select mb.* from testing.mb_2016_counts as mb
+select mb.person - gnaf.person as person_diff,
+       mb.*
+from testing.mb_2016_counts as mb
 inner join gnaf on mb.mb_2016_code = gnaf.mb_2016_code
-and mb.person <> gnaf.person;
-
+and mb.person <> gnaf.person
+order by person_diff desc
+;
 
 -- TO DO
 -- create a table of random points per person based on meshblocks
