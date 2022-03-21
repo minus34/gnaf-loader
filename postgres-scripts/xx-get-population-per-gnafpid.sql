@@ -345,6 +345,7 @@ and geom is not null
 and person > 0
 ;
 
+-- MBs missing persons in the address points -- 184
 with gnaf as (
 	select  mb_2016_code, count(*) as person from testing.address_principals_persons group by mb_2016_code
 )
