@@ -53,11 +53,11 @@ CREATE TABLE testing.address_principals_dwelling AS
 WITH adr AS (
 SELECT gnaf.gnaf_pid,
        gnaf.postcode,
-        gnaf.mb_2016_code,
+       gnaf.mb_2016_code,
        mb.dwelling,
        mb.person,
-        mb.address_count,
-        gnaf.geom
+       mb.address_count,
+       gnaf.geom
 FROM gnaf_202202.address_principals as gnaf
 INNER JOIN testing.mb_2016_counts AS mb on gnaf.mb_2016_code = mb.mb_2016_code
 WHERE mb.address_count >= mb.dwelling
@@ -67,13 +67,13 @@ WHERE mb.address_count >= mb.dwelling
  FROM adr
 )
 SELECT gnaf_pid,
-    postcode,
-   mb_2016_code,
-   address_count,
-   dwelling,
-   person,
-   'too many addresses'::text as dwelling_count_type,
-   geom
+       postcode,
+       mb_2016_code,
+       address_count,
+       dwelling,
+       person,
+       'too many addresses'::text as dwelling_count_type,
+       geom
 FROM row_nums
 WHERE row_num <= dwelling
 ORDER BY mb_2016_code,
@@ -86,11 +86,11 @@ INSERT INTO testing.address_principals_dwelling
 WITH adr AS (
 SELECT gnaf.gnaf_pid,
        gnaf.postcode,
-        gnaf.mb_2016_code,
+       gnaf.mb_2016_code,
        mb.dwelling,
        mb.person,
-        mb.address_count,
-        gnaf.geom,
+       mb.address_count,
+       gnaf.geom,
        generate_series(1, ceiling(mb.dwelling::float / mb.address_count::float)::integer) as duplicate_number
 FROM gnaf_202202.address_principals as gnaf
 INNER JOIN testing.mb_2016_counts AS mb on gnaf.mb_2016_code = mb.mb_2016_code
@@ -100,13 +100,13 @@ WHERE mb.address_count < mb.dwelling
  FROM adr
 )
 SELECT gnaf_pid,
-    postcode,
-   mb_2016_code,
-   address_count,
-   dwelling,
-   person,
-   'too few addresses' as dwelling_count_type,
-   geom
+       postcode,
+       mb_2016_code,
+       address_count,
+       dwelling,
+       person,
+       'too few addresses' as dwelling_count_type,
+       geom
 FROM row_nums
 WHERE row_num <= dwelling
 ORDER BY mb_2016_code,
@@ -117,13 +117,13 @@ ANALYSE testing.address_principals_dwelling;
 --   3. add random points in meshblocks that have no addresses (8,903 dwellings affected)
 INSERT INTO testing.address_principals_dwelling
 SELECT 'MB' || mb_2016_code::text || '_' || (row_number() OVER ())::text as gnaf_pid,
-    null::text as postcode,
-   mb_2016_code,
-   address_count,
-   dwelling,
-   person,
-   'no addresses' as dwelling_count_type,
-   (ST_Dump(ST_GeneratePoints(geom, dwelling))).geom as geom
+       null::text as postcode,
+       mb_2016_code,
+       address_count,
+       dwelling,
+       person,
+       'no addresses' as dwelling_count_type,
+       (ST_Dump(ST_GeneratePoints(geom, dwelling))).geom as geom
 FROM testing.mb_2016_counts
 WHERE geom is not null
 AND address_count = 0
