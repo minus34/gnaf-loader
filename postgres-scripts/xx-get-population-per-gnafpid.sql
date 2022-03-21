@@ -95,6 +95,7 @@ SELECT gnaf.gnaf_pid,
 FROM gnaf_202202.address_principals as gnaf
 INNER JOIN testing.mb_2016_counts AS mb on gnaf.mb_2016_code = mb.mb_2016_code
 WHERE mb.address_count < mb.dwelling
+    AND address_count > 0
 ), row_nums as (
  SELECT *, row_number() OVER (PARTITION BY mb_2016_code ORDER BY duplicate_number, random()) as row_num
  FROM adr
