@@ -119,7 +119,7 @@ ALTER TABLE gnaf.address_aliases OWNER TO postgres;
 DROP VIEW IF EXISTS gnaf.addresses;
 CREATE VIEW gnaf.addresses AS
   SELECT * FROM gnaf.address_principals
-  UNION
+  UNION ALL
   SELECT * FROM gnaf.address_aliases;
 
 
