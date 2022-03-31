@@ -1,5 +1,39 @@
 
 
+-- addresses missing bdy tags
+drop view if exists gnaf_202202.vw_address_principal_admin_boundaries;
+create view gnaf_202202.vw_address_principal_admin_boundaries as
+select bdy.*,
+       geom
+from gnaf_202202.address_principal_admin_boundaries as bdy
+inner join gnaf_202202.address_principals as gnaf on gnaf.gnaf_pid = bdy.gnaf_pid
+where bdy.lga_pid is null
+  and bdy.state <> 'ACT'
+;
+
+select *
+from gnaf_202202.address_principal_admin_boundaries
+;
+
+
+
+-- addresses missing bdy tags
+select count(*) as address_count,
+       locality_pid,
+       locality_name,
+       postcode,
+       state
+from gnaf_202202.address_principal_admin_boundaries
+where ce_pid is null
+    and state <> 'ACT'
+group by locality_pid,
+         locality_name,
+         postcode,
+         state
+order by address_count desc
+;
+
+
 
 
 
