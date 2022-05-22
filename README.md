@@ -43,13 +43,13 @@ The behaviour of gnaf-loader can be controlled by specifying various command lin
 #### Postgres Parameters
 * `--pghost` the host name for the Postgres server. This defaults to the `PGHOST` environment variable if set, otherwise defaults to `localhost`.
 * `--pgport` the port number for the Postgres server. This defaults to the `PGPORT` environment variable if set, otherwise `5432`.
-* `--pgdb` the database name for Postgres server. This defaults to the `PGDATABASE` environment variable if set, otherwise `geoscape_202202`.
+* `--pgdb` the database name for Postgres server. This defaults to the `PGDATABASE` environment variable if set, otherwise `geoscape_202205`.
 * `--pguser` the username for accessing the Postgres server. This defaults to the `PGUSER` environment variable if set, otherwise `postgres`.
 * `--pgpassword` password for accessing the Postgres server. This defaults to the `PGPASSWORD` environment variable if set, otherwise `password`.
 
 #### Optional Arguments
 * `--srid` Sets the coordinate system of the input data. Valid values are `4283` (the default: GDA94 lat/long) and `7844` (GDA2020 lat/long).
-* `--geoscape-version` Geoscape version number in YYYYMM format. Defaults to current year and last release month. e.g. `202202`.
+* `--geoscape-version` Geoscape version number in YYYYMM format. Defaults to current year and last release month. e.g. `202205`.
 * `--raw-gnaf-schema` schema name to store raw GNAF tables in. Defaults to `raw_gnaf_<geoscape_version>`.
 * `--raw-admin-schema` schema name to store raw admin boundary tables in. Defaults to `raw_admin_bdys_<geoscape_version>`.
 * `--gnaf-schema` destination schema name to store final GNAF tables in. Defaults to `gnaf_<geoscape_version>`.
@@ -64,7 +64,7 @@ The behaviour of gnaf-loader can be controlled by specifying various command lin
 * `--no-boundary-tag` DO NOT tag all addresses with some of the key admin boundary IDs for creating aggregates and choropleth maps.
 
 ### Example Command Line Arguments
-* Local Postgres server: `python load-gnaf.py --gnaf-tables-path="C:\temp\geoscape_202202\G-NAF" --admin-bdys-path="C:\temp\geoscape_202202\Administrative Boundaries"` Loads the GNAF tables to a Postgres server running locally. GNAF archives have been extracted to the folder `C:\temp\geoscape_202202\G-NAF`, and admin boundaries have been extracted to the `C:\temp\geoscape_202202\Administrative Boundaries` folder.
+* Local Postgres server: `python load-gnaf.py --gnaf-tables-path="C:\temp\geoscape_202205\G-NAF" --admin-bdys-path="C:\temp\geoscape_202205\Administrative Boundaries"` Loads the GNAF tables to a Postgres server running locally. GNAF archives have been extracted to the folder `C:\temp\geoscape_202205\G-NAF`, and admin boundaries have been extracted to the `C:\temp\geoscape_202205\Administrative Boundaries` folder.
 * Remote Postgres server: `python load-gnaf.py --gnaf-tables-path="\\svr\shared\gnaf" --local-server-dir="f:\shared\gnaf" --admin-bdys-path="c:\temp\unzipped\AdminBounds_ESRI"` Loads the GNAF tables which have been extracted to the shared folder `\\svr\shared\gnaf`. This shared folder corresponds to the local `f:\shared\gnaf` folder on the Postgres server. Admin boundaries have been extracted to the `c:\temp\unzipped\AdminBounds_ESRI` folder.
 * Loading only selected states: `python load-gnaf.py --states VIC TAS NT ...` Loads only the data for Victoria, Tasmania and Northern Territory
 
@@ -112,8 +112,8 @@ Should take 15-60 minutes.
 - A knowledge of [Postgres pg_restore parameters](https://www.postgresql.org/docs/13/app-pgrestore.html)
 
 ### Process
-1. Download the [GNAF dump file](https://minus34.com/opendata/geoscape-202202/gnaf-202202.dmp) or [GNAF GDA2020 dump file](https://minus34.com/opendata/geoscape-202202-gda2020/gnaf-202202.dmp) (~1.8Gb)
-2. Download the [Admin Bdys dump file](https://minus34.com/opendata/geoscape-202202/admin-bdys-202202.dmp) or [Admin Bdys GDA2020 dump file](https://minus34.com/opendata/geoscape-202202-gda2020/admin-bdys-202202.dmp) (~2.8Gb)
+1. Download the [GNAF dump file](https://minus34.com/opendata/geoscape-202205/gnaf-202205.dmp) or [GNAF GDA2020 dump file](https://minus34.com/opendata/geoscape-202205-gda2020/gnaf-202205.dmp) (~1.8Gb)
+2. Download the [Admin Bdys dump file](https://minus34.com/opendata/geoscape-202205/admin-bdys-202205.dmp) or [Admin Bdys GDA2020 dump file](https://minus34.com/opendata/geoscape-202205-gda2020/admin-bdys-202205.dmp) (~2.8Gb)
 3. Edit the _restore-gnaf-admin-bdys.bat_ or _.sh_ script in the supporting-files folder for your dump file names, database parameters and for the location of pg_restore
 5. Run the script, come back in 15-60 minutes and enjoy!
 
@@ -122,11 +122,11 @@ Parquet versions of all the tables are in a public S3 bucket for use directly in
 
 Geometries are stored as Well Known Text (WKT) strings with WGS84 lat/long coordinates (SRID/EPSG:4326). They can be queried using spatial extensions to analytical platforms, such as [Apache Sedona](https://sedona.apache.org/) running on [Apache Spark](https://spark.apache.org/).
 
-The files are here: `s3://minus34.com/opendata/geoscape-202202/parquet/` or `s3://minus34.com/opendata/geoscape-202202-gda2020/parquet/`
+The files are here: `s3://minus34.com/opendata/geoscape-202205/parquet/` or `s3://minus34.com/opendata/geoscape-202205-gda2020/parquet/`
 
 ### AWS CLI Examples:
-- List all datasets: `aws s3 ls s3://minus34.com/opendata/geoscape-202202/parquet/`
-- Copy all datasets: `aws s3 sync s3://minus34.com/opendata/geoscape-202202/parquet/ <my-local-folder>`
+- List all datasets: `aws s3 ls s3://minus34.com/opendata/geoscape-202205/parquet/`
+- Copy all datasets: `aws s3 sync s3://minus34.com/opendata/geoscape-202205/parquet/ <my-local-folder>`
 
 ## DATA LICENSES
 
