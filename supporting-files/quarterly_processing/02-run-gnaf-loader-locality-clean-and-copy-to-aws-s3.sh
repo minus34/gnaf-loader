@@ -17,11 +17,15 @@ GNAF_PATH="/Users/$(whoami)/Downloads/g-naf_feb22_allstates_gda94_psv_105"
 BDYS_PATH="/Users/$(whoami)/Downloads/FEB22_AdminBounds_GDA94_SHP"
 
 echo "---------------------------------------------------------------------------------------------------------------------"
-echo "Run gnaf-loader and locality boundary clean"
+echo "Run gnaf-loader, locality boundary clean and geo-concordance file create"
 echo "---------------------------------------------------------------------------------------------------------------------"
 
 python3 /Users/$(whoami)/git/minus34/gnaf-loader/load-gnaf.py --pgport=5432 --pgdb=geo --max-processes=6 --gnaf-tables-path="${GNAF_PATH}" --admin-bdys-path="${BDYS_PATH}"
 python3 /Users/$(whoami)/git/iag_geo/psma-admin-bdys/locality-clean.py --pgport=5432 --pgdb=geo --max-processes=6 --output-path=${OUTPUT_FOLDER}
+
+python3 /Users/$(whoami)/git/iag_geo/concord/01_create_concordance_file.py
+FILE_PATH="/Users/$(whoami)/git/iag_geo/concord/data"
+aws --profile=${AWS_PROFILE} s3 sync ${FILE_PATH} s3://minus34.com/opendata/geoscape-202202 --exclude "*" --include "*.csv" --acl public-read
 
 echo "---------------------------------------------------------------------------------------------------------------------"
 echo "dump postgres schemas to a local folder"
