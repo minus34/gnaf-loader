@@ -23,15 +23,17 @@ echo "--------------------------------------------------------------------------
 python3 /Users/$(whoami)/git/minus34/gnaf-loader/load-gnaf.py --pgport=5432 --pgdb=geo --max-processes=6 --gnaf-tables-path="${GNAF_PATH}" --admin-bdys-path="${BDYS_PATH}"
 python3 /Users/$(whoami)/git/iag_geo/psma-admin-bdys/locality-clean.py --pgport=5432 --pgdb=geo --max-processes=6 --output-path=${OUTPUT_FOLDER}
 
-python3 /Users/$(whoami)/git/iag_geo/concord/01_create_concordance_file.py
-FILE_PATH="/Users/$(whoami)/git/iag_geo/concord/data"
-aws --profile=${AWS_PROFILE} s3 sync ${FILE_PATH} s3://minus34.com/opendata/geoscape-202205 --exclude "*" --include "*.csv" --acl public-read
+mkdir -p "${OUTPUT_FOLDER}"
+
+python3 /Users/$(whoami)/git/iag_geo/concord/create_concordance_file.py --output-path=${OUTPUT_FOLDER}
+
+# copy concordance file to GDA94 & GDA2020 folders as GDA2020 would be the same as the GDA94 files
+aws --profile=${AWS_PROFILE} s3 sync ${OUTPUT_FOLDER} s3://minus34.com/opendata/geoscape-202202 --exclude "*" --include "*.csv" --acl public-read
+aws --profile=${AWS_PROFILE} s3 sync ${OUTPUT_FOLDER} s3://minus34.com/opendata/geoscape-202202-gda2020 --exclude "*" --include "*.csv" --acl public-read
 
 echo "---------------------------------------------------------------------------------------------------------------------"
 echo "dump postgres schemas to a local folder"
 echo "---------------------------------------------------------------------------------------------------------------------"
-
-mkdir -p "${OUTPUT_FOLDER}"
 
 /Applications/Postgres.app/Contents/Versions/13/bin/pg_dump -Fc -d geo -n gnaf_202205 -p 5432 -U postgres -f "${OUTPUT_FOLDER}/gnaf-202205.dmp" --no-owner
 echo "GNAF schema exported to dump file"
