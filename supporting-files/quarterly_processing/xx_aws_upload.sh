@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-AWS_PROFILE="default"
+AWS_PROFILE="minus34"
 OUTPUT_FOLDER="/Users/$(whoami)/tmp/geoscape_202205"
 OUTPUT_FOLDER_2020="/Users/$(whoami)/tmp/geoscape_202205_gda2020"
 

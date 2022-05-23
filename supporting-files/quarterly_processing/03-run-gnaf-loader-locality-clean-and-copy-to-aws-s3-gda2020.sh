@@ -11,7 +11,7 @@ SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 # edit these to taste - NOTE: you can't use "~" for your home folder, Postgres doesn't like it
 # ---------------------------------------------------------------------------------------------------------------------
 
-AWS_PROFILE="default"
+AWS_PROFILE="minus34"
 OUTPUT_FOLDER_2020="/Users/$(whoami)/tmp/geoscape_202205_gda2020"
 GNAF_2020_PATH="/Users/$(whoami)/Downloads/g-naf_feb22_allstates_gda2020_psv_105"
 BDYS_2020_PATH="/Users/$(whoami)/Downloads/FEB22_AdminBounds_GDA2020_SHP"

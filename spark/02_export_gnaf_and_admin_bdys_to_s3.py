@@ -273,7 +273,7 @@ def export_to_parquet(df, name, output_path):
 # def copy_to_s3(schema_name, name, output_path):
 #
 #     # set correct AWS user
-#     boto3.setup_default_session(profile_name="default")
+#     boto3.setup_default_session(profile_name="minus34")
 #
 #     # delete existing files (each time you run this Spark creates new, random parquet file names)
 #     s3 = boto3.resource('s3')
