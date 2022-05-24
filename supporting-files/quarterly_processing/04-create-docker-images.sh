@@ -21,10 +21,10 @@ echo "--------------------------------------------------------------------------
 echo "push both images (with 4 tags) to Docker Hub"
 echo "---------------------------------------------------------------------------------------------------------------------"
 
-docker push minus34/gnafloader --alltags
+docker push minus34/gnafloader --all-tags
 
-echo "---------------------------------------------------------------------------------------------------------------------"
-echo "clean up Docker locally - warning: this could accidentally destroy other Docker images"
-echo "---------------------------------------------------------------------------------------------------------------------"
-
-echo 'y' | docker system prune
+#echo "---------------------------------------------------------------------------------------------------------------------"
+#echo "clean up Docker locally - warning: this could accidentally destroy other Docker images"
+#echo "---------------------------------------------------------------------------------------------------------------------"
+#
+#echo 'y' | docker system prune
