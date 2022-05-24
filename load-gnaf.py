@@ -31,7 +31,7 @@ import os
 import psycopg2
 import logging.config
 import geoscape
-import settings  # gets global vars
+import settings  # gets global vars and runtime arguments
 
 from datetime import datetime
 
