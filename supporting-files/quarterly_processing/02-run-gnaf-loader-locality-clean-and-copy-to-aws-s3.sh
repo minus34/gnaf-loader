@@ -17,19 +17,24 @@ GNAF_PATH="/Users/$(whoami)/Downloads/g-naf_may22_allstates_gda94_psv_106"
 BDYS_PATH="/Users/$(whoami)/Downloads/MAY22_AdminBounds_GDA94_SHP"
 
 echo "---------------------------------------------------------------------------------------------------------------------"
-echo "Run gnaf-loader, locality boundary clean and geo-concordance file create"
+echo "Run gnaf-loader and locality boundary clean"
 echo "---------------------------------------------------------------------------------------------------------------------"
 
 python3 /Users/$(whoami)/git/minus34/gnaf-loader/load-gnaf.py --pgport=5432 --pgdb=geo --max-processes=6 --gnaf-tables-path="${GNAF_PATH}" --admin-bdys-path="${BDYS_PATH}"
 python3 /Users/$(whoami)/git/iag_geo/psma-admin-bdys/locality-clean.py --pgport=5432 --pgdb=geo --max-processes=6 --output-path=${OUTPUT_FOLDER}
 
+echo "---------------------------------------------------------------------------------------------------------------------"
+echo "create concordance file"
+echo "---------------------------------------------------------------------------------------------------------------------"
+
+# create concordance file and upload to S3
+
 mkdir -p "${OUTPUT_FOLDER}"
-
-python3 /Users/$(whoami)/git/iag_geo/concord/create_concordance_file.py --output-path=${OUTPUT_FOLDER}
-
-# copy concordance file to GDA94 & GDA2020 folders as GDA2020 would be the same as the GDA94 files
+python3 /Users/$(whoami)/git/iag_geo/concord/create_concordance_file.py --pgdb=geo --output-path=${OUTPUT_FOLDER}
 aws --profile=${AWS_PROFILE} s3 sync ${OUTPUT_FOLDER} s3://minus34.com/opendata/geoscape-202202 --exclude "*" --include "*.csv" --acl public-read
-aws --profile=${AWS_PROFILE} s3 sync ${OUTPUT_FOLDER} s3://minus34.com/opendata/geoscape-202202-gda2020 --exclude "*" --include "*.csv" --acl public-read
+
+# copy concordance score file to GitHub repo local files
+cp ${OUTPUT_FOLDER}/boundary_concordance_score.csv /Users/$(whoami)/git/iag_geo/concord/data/
 
 echo "---------------------------------------------------------------------------------------------------------------------"
 echo "dump postgres schemas to a local folder"

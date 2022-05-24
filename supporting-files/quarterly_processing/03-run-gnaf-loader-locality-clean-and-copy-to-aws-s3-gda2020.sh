@@ -24,10 +24,17 @@ python3 /Users/$(whoami)/git/minus34/gnaf-loader/load-gnaf.py --pgport=5432 --pg
 python3 /Users/$(whoami)/git/iag_geo/psma-admin-bdys/locality-clean.py --pgport=5432 --pgdb=geo --max-processes=6 --output-path=${OUTPUT_FOLDER_2020} --admin-schema admin_bdys_202205_gda2020
 
 echo "---------------------------------------------------------------------------------------------------------------------"
-echo "dump postgres schemas to a local folder"
+echo "create concordance file"
 echo "---------------------------------------------------------------------------------------------------------------------"
 
+# create concordance file and upload to S3
 mkdir -p "${OUTPUT_FOLDER_2020}"
+python3 /Users/$(whoami)/git/iag_geo/concord/create_concordance_file.py --pgdb=geo --admin-schema="admin_bdys_202205_gda2020" --gnaf-schema="gnaf_202205_gda2020" --output-path=${OUTPUT_FOLDER_2020}
+aws --profile=${AWS_PROFILE} s3 sync ${OUTPUT_FOLDER_2020} s3://minus34.com/opendata/geoscape-202205-gda2020 --exclude "*" --include "*.csv" --acl public-read
+
+echo "---------------------------------------------------------------------------------------------------------------------"
+echo "dump postgres schemas to a local folder"
+echo "---------------------------------------------------------------------------------------------------------------------"
 
 /Applications/Postgres.app/Contents/Versions/13/bin/pg_dump -Fc -d geo -n gnaf_202205_gda2020 -p 5432 -U postgres -f "${OUTPUT_FOLDER_2020}/gnaf-202205.dmp" --no-owner
 echo "GNAF schema exported to dump file"
