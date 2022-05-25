@@ -174,9 +174,9 @@ def main():
 
             # import into GeoPandas
             df = import_table(sql_engine, import_query)
-            num_rows = df.count()
-            logger.info(f"\t\t {i}. imported {num_rows} from {table_name} : {datetime.now() - start_time}")
-            start_time = datetime.now()
+            # num_rows = df.shape[0]
+            # logger.info(f"\t\t {i}. imported {num_rows} from {table_name} : {datetime.now() - start_time}")
+            # start_time = datetime.now()
 
             # export
             export_to_geoparquet(df, geom_type, table_name, output_path)
@@ -205,7 +205,7 @@ def import_table(sql_engine, sql):
 # export a dataframe to gz parquet files
 def export_to_geoparquet(df, geom_type, name, output_path):
 
-    table = pa.Table.from_pandas(df.head().to_wkb())
+    table = pa.Table.from_pandas(df.to_wkb())
 
     # add metadata & schema
     metadata = {
