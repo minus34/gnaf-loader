@@ -194,9 +194,8 @@ def main():
 
 # load bdy table from Postgres and create a geospatial dataframe from it
 def import_table(sql_engine, sql):
-
-    # debugging
-    sql += " where state = 'ACT'"
+    # # debugging
+    # sql += " where state = 'ACT'"
 
     df = geopandas.GeoDataFrame.from_postgis(sql, sql_engine, geom_col='geometry')
     return df
