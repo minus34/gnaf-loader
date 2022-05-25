@@ -21,7 +21,7 @@ import psycopg2
 import pyarrow as pa
 import pyarrow.parquet as pq
 import pyproj
-# import sqlalchemy
+import sqlalchemy
 import sys
 
 # from boto3.s3.transfer import TransferConfig  # S3 transfer disabled as AWS CLI sync is much faster
@@ -59,16 +59,15 @@ pg_settings = get_password("localhost_super")
 
 # # create Postgres JDBC url
 # jdbc_url = "jdbc:postgresql://{HOST}:{PORT}/{DB}".format(**pg_settings)
+
 # get connect string for psycopg2
 pg_connect_string = "dbname={DB} host={HOST} port={PORT} user={USER} password={PASS}".format(**pg_settings)
-# # get connect string for sqlalchemy
-# sql_alchemy_engine_string = "postgresql+psycopg2://{USER}:{PASS}@{HOST}:{PORT}/{DB}".format(**pg_settings)
+
+# get connect string for sqlalchemy
+sql_alchemy_engine_string = "postgresql+psycopg2://{USER}:{PASS}@{HOST}:{PORT}/{DB}".format(**pg_settings)
 
 # Set PyGEOS to True to speed up GeoPandas
 geopandas.options.use_pygeos = True
-
-# # create database engine
-# sql_engine = sqlalchemy.create_engine(sql_alchemy_engine_string, isolation_level="AUTOCOMMIT")
 
 # get runtime arguments
 parser = argparse.ArgumentParser(description="Converts Postgres/PostGIS tables to Geoparquet files.")
@@ -88,6 +87,9 @@ def main():
 
     # create output path (if required)
     Path(output_path).mkdir(parents=True, exist_ok=True)
+
+    # create sqlalchemy database engine
+    sql_engine = sqlalchemy.create_engine(sql_alchemy_engine_string, isolation_level="AUTOCOMMIT")
 
     # get list of tables to export to S3
     pg_conn = psycopg2.connect(pg_connect_string)
@@ -169,11 +171,12 @@ def main():
             pg_cur.execute(sql)
 
             import_query = str(pg_cur.fetchone()[0])  # str is just there for intellisense in Pycharm
-            print(import_query)
 
             # import into GeoPandas
-            df = import_table(pg_conn, import_query)
-            print (f"imported : {table_name}")
+            df = import_table(sql_engine, import_query)
+            num_rows = df.count()
+            logger.info(f"\t\t {i}. imported {num_rows} from {table_name} : {datetime.now() - start_time}")
+            start_time = datetime.now()
 
             # export
             export_to_geoparquet(df, geom_type, table_name, output_path)
@@ -190,12 +193,12 @@ def main():
 
 
 # load bdy table from Postgres and create a geospatial dataframe from it
-def import_table(pg_conn, sql):
+def import_table(sql_engine, sql):
 
     # debugging
-    sql += " where locality_name = 'LEICHHARDT' and state = 'NSW'"
+    sql += " where state = 'ACT'"
 
-    df = geopandas.GeoDataFrame.from_postgis(sql, pg_conn, geom_col='geom')
+    df = geopandas.GeoDataFrame.from_postgis(sql, sql_engine, geom_col='geometry')
     return df
 
 
@@ -204,6 +207,7 @@ def export_to_geoparquet(df, geom_type, name, output_path):
 
     table = pa.Table.from_pandas(df.head().to_wkb())
 
+    # add metadata & schema
     metadata = {
         "version": "0.3.0",
         "primary_column": "geometry",
@@ -224,7 +228,8 @@ def export_to_geoparquet(df, geom_type, name, output_path):
     )
     table = table.cast(schema)
 
-    pq.write_table(table, os.path.join(output_path, name))
+    # export to geoparquet
+    pq.write_table(table, os.path.join(output_path, f"{name}.parquet"), compression="snappy")
 
     # df.write.option("compression", "gzip") \
     #     .mode("overwrite") \
