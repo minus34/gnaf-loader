@@ -112,7 +112,7 @@ Should take 15-60 minutes.
 - A knowledge of [Postgres pg_restore parameters](https://www.postgresql.org/docs/13/app-pgrestore.html)
 
 ### Process
-1. Download the [GNAF dump file](https://minus34.com/opendata/geoscape-202205/gnaf-202205.dmp) or [GNAF GDA2020 dump file](https://minus34.com/opendata/geoscape-202205-gda2020/gnaf-202205.dmp) (~1.8Gb)
+1. Download the [GNAF dump file](https://minus34.com/opendata/geoscape-202205/gnaf-202205.dmp) or [GNAF GDA2020 dump file](https://minus34.com/opendata/geoscape-202205-gda2020/gnaf-202205.dmp) (~2.0Gb)
 2. Download the [Admin Bdys dump file](https://minus34.com/opendata/geoscape-202205/admin-bdys-202205.dmp) or [Admin Bdys GDA2020 dump file](https://minus34.com/opendata/geoscape-202205-gda2020/admin-bdys-202205.dmp) (~2.8Gb)
 3. Edit the _restore-gnaf-admin-bdys.bat_ or _.sh_ script in the supporting-files folder for your dump file names, database parameters and for the location of pg_restore
 5. Run the script, come back in 15-60 minutes and enjoy!
