@@ -1,4 +1,4 @@
-## May 2022 Release
+### May 2022 Release
 - Boundary concordance tables have been added to the GNAF schema (`boundary_concordance` & `boundary_concordance_score`. These solve the problem of trying to merge 2 or more datasets based on different census or administrative boundaries such as statistical areas or postcodes. Find out more [here](https://github.com/iag-geo/concord).
 
 ### November 2021 Release
