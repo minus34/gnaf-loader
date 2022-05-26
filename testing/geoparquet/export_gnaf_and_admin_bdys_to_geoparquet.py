@@ -1,35 +1,33 @@
 # ---------------------------------------------------------------------------------------------------------------------
 #
-# script to import each GNAF & administrative boundary table from Postgres & export as GZIPped Parquet files to AWS S3
+# script to import each GNAF & administrative boundary table from Postgres & export as GZIPped Parquet files
 #
 # PROCESS
 #
 # 1. get list of tables from Postgres
 # 2. for each table:
-#     a. import into Spark dataframe
-#     b. export as gzip parquet files to local disk
-#     c. copy files to S3
-#
-# note: direct export from Spark to S3 isn't used to avoid Hadoop install and config
+#     a. import into GeoPandas dataframe
+#     b. export as gzip geoparquet files to local disk using pyarrow
 #
 # ---------------------------------------------------------------------------------------------------------------------
 
 import argparse
-# import boto3
+import geopandas
+import json
 import logging
 import math
 import os
 import psycopg2
+import pyarrow as pa
+import pyarrow.parquet as pq
+import pyproj
+import sqlalchemy
 import sys
 
 # from boto3.s3.transfer import TransferConfig  # S3 transfer disabled as AWS CLI sync is much faster
 from datetime import datetime
 from multiprocessing import cpu_count
 from pathlib import Path
-
-from pyspark.sql import SparkSession, functions as f
-from sedona.register import SedonaRegistrator
-from sedona.utils import SedonaKryoRegistrator, KryoSerializer
 
 # setup logging - code is here to prevent conflict with logging.basicConfig() from one of the imports below
 log_file = os.path.abspath(__file__).replace(".py", ".log")
@@ -59,22 +57,24 @@ def get_password(connection_name):
 
 pg_settings = get_password("localhost_super")
 
-# create Postgres JDBC url
-jdbc_url = "jdbc:postgresql://{HOST}:{PORT}/{DB}".format(**pg_settings)
+# # create Postgres JDBC url
+# jdbc_url = "jdbc:postgresql://{HOST}:{PORT}/{DB}".format(**pg_settings)
 
 # get connect string for psycopg2
 pg_connect_string = "dbname={DB} host={HOST} port={PORT} user={USER} password={PASS}".format(**pg_settings)
 
-# # aws details
-# s3_bucket = "minus34.com"
-# s3_folder = "opendata/geoscape-202205/parquet"
+# get connect string for sqlalchemy
+sql_alchemy_engine_string = "postgresql+psycopg2://{USER}:{PASS}@{HOST}:{PORT}/{DB}".format(**pg_settings)
+
+# Set PyGEOS to True to speed up GeoPandas
+geopandas.options.use_pygeos = True
 
 # get runtime arguments
-parser = argparse.ArgumentParser(description="Converts Postgres/PostGIS tables to Parquet files with WKT geometries.")
+parser = argparse.ArgumentParser(description="Converts Postgres/PostGIS tables to Geoparquet files.")
 
 parser.add_argument("--gnaf-schema", help="Input schema name for GNAF tables.")
 parser.add_argument("--admin-schema", help="Input schema name for admin boundary tables.")
-parser.add_argument("--output-path", help="Output path for Parquet files.")
+parser.add_argument("--output-path", help="Output path for Geoparquet files.")
 
 
 def main():
@@ -88,30 +88,8 @@ def main():
     # create output path (if required)
     Path(output_path).mkdir(parents=True, exist_ok=True)
 
-    # ----------------------------------------------------------
-    # create Spark session and context
-    # ----------------------------------------------------------
-
-    spark = (SparkSession
-             .builder
-             .master("local[*]")
-             .appName("gnaf-loader export")
-             .config("spark.sql.session.timeZone", "UTC")
-             .config("spark.sql.debug.maxToStringFields", 100)
-             .config("spark.serializer", KryoSerializer.getName)
-             .config("spark.kryo.registrator", SedonaKryoRegistrator.getName)
-             .config("spark.sql.adaptive.enabled", "true")
-             .config("spark.executor.cores", 1)
-             .config("spark.cores.max", num_processors)
-             .config("spark.driver.memory", "8g")
-             .config("spark.driver.maxResultSize", "1g")
-             .getOrCreate()
-             )
-
-    # Add Sedona functions and types to Spark
-    SedonaRegistrator.registerAll(spark)
-
-    logger.info("\t - PySpark {} session initiated: {}".format(spark.sparkContext.version, datetime.now() - start_time))
+    # create sqlalchemy database engine
+    sql_engine = sqlalchemy.create_engine(sql_alchemy_engine_string, isolation_level="AUTOCOMMIT")
 
     # get list of tables to export to S3
     pg_conn = psycopg2.connect(pg_connect_string)
@@ -126,14 +104,14 @@ def main():
         i = 1
 
         # get table list for schema
-        sql = """SELECT table_name
-                 FROM information_schema.tables
-                 WHERE table_schema='{}'
-                   AND table_type='BASE TABLE'
-                   AND table_name <> 'qa'
-                   AND table_name NOT LIKE '%_2011_%'
-                   AND table_name NOT LIKE '%_analysis%'
-                   AND table_name NOT LIKE '%_display%'""".format(schema_name)
+        sql = f"""SELECT table_name
+                  FROM information_schema.tables
+                  WHERE table_schema='{schema_name}'
+                    AND table_type='BASE TABLE'
+                    AND table_name <> 'qa'
+                    AND table_name NOT LIKE '%_2011_%'
+                    AND table_name NOT LIKE '%_analysis%'
+                    AND table_name NOT LIKE '%_display%'"""
         pg_cur.execute(sql)
 
         tables = pg_cur.fetchall()
@@ -147,9 +125,9 @@ def main():
             table_name = table[0]
 
             # check what type of geometry field the table has and what it's coordinate system is
-            sql = """SELECT f_geometry_column, type, srid FROM public.geometry_columns
-                     WHERE f_table_schema = '{}'
-                         AND f_table_name = '{}'""".format(schema_name, table_name)
+            sql = f"""SELECT f_geometry_column, type, srid FROM public.geometry_columns
+                      WHERE f_table_schema = '{schema_name}'
+                          AND f_table_name = '{table_name}'"""
             pg_cur.execute(sql)
             result = pg_cur.fetchone()
 
@@ -166,108 +144,95 @@ def main():
             # note: exported geom field will be WGS84 (EPSG:4326) Well Known Binaries (WKB)
             if geom_field is not None:
                 if "POLYGON" in geom_type or "LINESTRING" in geom_type:
-                    geom_sql = ",ST_AsText(ST_Subdivide((ST_Dump(ST_Buffer(geom, 0.0))).geom, 256)) as wkt_geom"
+                    if geom_srid != 4326:
+                        geom_sql = ",ST_Subdivide((ST_Dump(ST_Buffer(ST_Transform(geom, 4326), 0.0))).geom, 256) " \
+                                   "as geometry"
+                    else:
+                        geom_sql = ",ST_Subdivide((ST_Dump(ST_Buffer(geom, 0.0))).geom, 256) as geometry"
                 else:
-                    geom_sql = ",ST_AsText(geom) as wkt_geom"
+                    if geom_srid != 4326:
+                        geom_sql = ",ST_Transform(geom, 4326) as geometry"
 
-                # transform geom to WGS84 if required
-                if geom_srid != 4326:
-                    geom_sql = geom_sql.replace("(geom", "(ST_Transform(geom, 4326)")
+                    else:
+                        geom_sql = ",geom as geometry"
 
             else:
                 geom_sql = ""
 
             # build query to select all columns and the WKB geom if exists
-            sql = """SELECT 'SELECT ' || array_to_string(ARRAY(
-                         SELECT column_name
-                         FROM information_schema.columns
-                         WHERE table_name = '{1}'
-                             AND table_schema = '{0}'
-                             AND column_name NOT IN('geom')
-                     ), ',') || '{2} ' ||
-                            'FROM {0}.{1}' AS sqlstmt"""\
-                .format(schema_name, table_name, geom_sql)
+            sql = f"""SELECT 'SELECT ' || array_to_string(ARRAY(
+                          SELECT column_name
+                          FROM information_schema.columns
+                          WHERE table_name = '{table_name}'
+                              AND table_schema = '{schema_name}'
+                              AND column_name NOT IN('geom')
+                      ), ',') || '{geom_sql} ' ||
+                      'FROM {schema_name}.{table_name}' AS sqlstmt"""
             pg_cur.execute(sql)
-            query = str(pg_cur.fetchone()[0])  # str is just there for intellisense in Pycharm
 
-            # get min and max gid values to enable parallel import from Postgres to Spark
-            # add gid field based on row number if missing
-            if "gid," in query:
-                sql = """SELECT min(gid), max(gid) FROM {}.{}""".format(schema_name, table_name)
-                pg_cur.execute(sql)
-                gid_range = pg_cur.fetchone()
-                min_gid = gid_range[0]
-                max_gid = gid_range[1]
-            else:
-                # get row count as the max gid value
-                sql = """SELECT count(*) FROM {}.{}""".format(schema_name, table_name)
-                pg_cur.execute(sql)
-                min_gid = 1
-                max_gid = pg_cur.fetchone()[0]
+            import_query = str(pg_cur.fetchone()[0])  # str is just there for intellisense in Pycharm
 
-                # add gid field to query
-                query = query.replace("SELECT ", "SELECT row_number() OVER () AS gid,")
+            # import into GeoPandas
+            df = import_table(sql_engine, import_query)
+            # num_rows = df.shape[0]
+            # logger.info(f"\t\t {i}. imported {num_rows} from {table_name} : {datetime.now() - start_time}")
+            # start_time = datetime.now()
 
-            # check table has records
-            if max_gid is not None and max_gid > min_gid:
-                bdy_df = import_table(spark, query, min_gid, max_gid, 100000)
-                # bdy_df.printSchema()
+            # export
+            export_to_geoparquet(df, geom_type, table_name, output_path)
 
-                # # add geometry column if required
-                # if geom_sql != "":
-                #     export_df = bdy_df.withColumn("geom", f.expr("ST_GeomFromWKT(wkt_geom)")) \
-                #         .drop("wkt_geom")
-                # else:
-                #     export_df = bdy_df
-                #
-                # export_to_parquet(export_df, table_name)
-
-                export_to_parquet(bdy_df, table_name, output_path)
-                # copy_to_s3(schema_name, table_name, output_path)
-
-                bdy_df.unpersist()
-
-                logger.info("\t\t {}. exported {} : {}".format(i, table_name, datetime.now() - start_time))
-            else:
-                logger.warning("\t\t {}. {} has no records! : {}".format(i, table_name, datetime.now() - start_time))
+            logger.info(f"\t\t {i}. exported {table_name} : {datetime.now() - start_time}")
+            # else:
+            #     logger.warning("\t\t {}. {} has no records! : {}".format(i, table_name, datetime.now() - start_time))
 
             i += 1
 
     # cleanup
     pg_cur.close()
     pg_conn.close()
-    spark.stop()
 
 
 # load bdy table from Postgres and create a geospatial dataframe from it
-def import_table(spark, sql, min_gid, max_gid, partition_size):
+def import_table(sql_engine, sql):
+    # # debugging
+    # sql += " where state = 'ACT'"
 
-    # get the number of partitions
-    num_partitions = math.ceil(float(max_gid - min_gid) / float(partition_size))
-
-    # load boundaries from Postgres in parallel
-    df = (spark.read.format("jdbc")
-          .option("url", jdbc_url)
-          .option("dbtable", "({}) as sqt".format(sql))
-          .option("properties", pg_settings["USER"])
-          .option("password", pg_settings["PASS"])
-          .option("driver", "org.postgresql.Driver")
-          .option("fetchSize", 1000)
-          .option("partitionColumn", "gid")
-          .option("lowerBound", min_gid)
-          .option("upperBound", max_gid)
-          .option("numPartitions", num_partitions)
-          .load()
-          )
-
+    df = geopandas.GeoDataFrame.from_postgis(sql, sql_engine, geom_col='geometry')
     return df
 
 
 # export a dataframe to gz parquet files
-def export_to_parquet(df, name, output_path):
-    df.write.option("compression", "gzip") \
-        .mode("overwrite") \
-        .parquet(os.path.join(output_path, name))
+def export_to_geoparquet(df, geom_type, name, output_path):
+
+    table = pa.Table.from_pandas(df.to_wkb())
+
+    # add metadata & schema
+    metadata = {
+        "version": "0.3.0",
+        "primary_column": "geometry",
+        "columns": {
+            "geometry": {
+                "encoding": "WKB",
+                "geometry_type": [geom_type.capitalize()],
+                "crs": df.crs.to_wkt(pyproj.enums.WktVersion.WKT2_2019_SIMPLIFIED),
+                "edges": "planar",
+                "bbox": [round(x, 4) for x in df.total_bounds],
+            },
+        },
+    }
+
+    schema = (
+        table.schema
+            .with_metadata({"geo": json.dumps(metadata)})
+    )
+    table = table.cast(schema)
+
+    # export to geoparquet
+    pq.write_table(table, os.path.join(output_path, f"{name}.parquet"), compression="snappy")
+
+    # df.write.option("compression", "gzip") \
+    #     .mode("overwrite") \
+    #     .parquet(os.path.join(output_path, name))
 
 
 # def copy_to_s3(schema_name, name, output_path):

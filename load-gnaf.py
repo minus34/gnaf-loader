@@ -31,7 +31,7 @@ import os
 import psycopg2
 import logging.config
 import geoscape
-import settings  # gets global vars
+import settings  # gets global vars and runtime arguments
 
 from datetime import datetime
 
@@ -214,7 +214,7 @@ def populate_raw_gnaf(pg_cur):
         # load all PSV files using multiprocessing
         geoscape.multiprocess_list("sql", sql_list, logger)
 
-        # fix missing geocodes (added due to missing data in 202202 release)
+        # fix missing geocodes (added due to missing data in 202205 release)
         sql = geoscape.open_sql_file("01-04-raw-gnaf-fix-missing-geocodes.sql")
         pg_cur.execute(sql)
 
