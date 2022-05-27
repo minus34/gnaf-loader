@@ -1,5 +1,9 @@
 
 
+select count(*)
+from gnaf_202205.address_aliases;
+
+
 -- addresses missing bdy tags
 drop view if exists gnaf_202205.vw_address_principal_admin_boundaries;
 create view gnaf_202205.vw_address_principal_admin_boundaries as
