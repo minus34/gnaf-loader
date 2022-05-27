@@ -194,10 +194,53 @@ def main():
 
 # load bdy table from Postgres and create a geospatial dataframe from it
 def import_table(sql_engine, sql):
-    # # debugging
-    # sql += " LIMIT 2000000"
 
-    df = geopandas.GeoDataFrame.from_postgis(sql, sql_engine, geom_col='geometry')
+    # debugging
+    # sql = "select gnaf_pid, geom as geometry from gnaf_202205.address_principals"
+    sql += " LIMIT 1000000"
+    # dtype_dict = {"locality_name": "category", "postcode": "category", "state": "category"}
+
+    df = geopandas.read_postgis(sql, sql_engine, geom_col='geometry')
+    # print(df.info(memory_usage="deep"))
+
+    # <class 'geopandas.geodataframe.GeoDataFrame'>
+    # RangeIndex: 2000000 entries, 0 to 1999999
+    # Data columns (total 29 columns):
+    # #   Column               Dtype
+    # ---  ------               -----
+    # 0   gid                  int64
+    # 1   gnaf_pid             object
+    # 2   street_locality_pid  object
+    # 3   locality_pid         object
+    # 4   alias_principal      object
+    # 5   primary_secondary    object
+    # 6   building_name        object
+    # 7   lot_number           object
+    # 8   flat_number          object
+    # 9   level_number         object
+    # 10  number_first         object
+    # 11  number_last          object
+    # 12  street_name          object
+    # 13  street_type          object
+    # 14  street_suffix        object
+    # 15  address              object
+    # 16  locality_name        object
+    # 17  postcode             object
+    # 18  state                object
+    # 19  locality_postcode    object
+    # 20  confidence           int64
+    # 21  legal_parcel_id      object
+    # 22  mb_2016_code         int64
+    # 23  mb_2021_code         int64
+    # 24  latitude             float64
+    # 25  longitude            float64
+    # 26  geocode_type         object
+    # 27  reliability          int64
+    # 28  geometry             geometry
+    # dtypes: float64(2), geometry(1), int64(5), object(21)
+    # memory usage: 2.2 GB
+    # None
+
     return df
 
 
