@@ -27,7 +27,7 @@ conda config --env --set channel_priority strict
 # reactivate for env vars to take effect
 conda activate gdal
 
-# install packages for sedona only
+# install packages for gdal only
 conda install -y -c conda-forge gdal psycopg2 boto3
 
 conda activate gdal
