@@ -10,11 +10,13 @@ echo "-------------------------------------------------------------------------"
 echo "Creating new Conda Environment 'geo'"
 echo "-------------------------------------------------------------------------"
 
-# update Conda platform
-conda update -y conda
-
 # WARNING - removes existing environment
+conda deactivate
 conda env remove --name geo
+
+# update Conda platform & install Mamba (much faster package installer)
+conda update -y conda
+conda install mamba -n base -c conda-forge
 
 # Create Conda environment
 conda create -y -n geo python=${PYTHON_VERSION}
@@ -27,8 +29,8 @@ conda config --env --set channel_priority strict
 # reactivate for env vars to take effect
 conda activate geo
 
-# install packages for sedona only
-conda install -y -c conda-forge gdal pygeos geopandas psycopg2 geoalchemy2 rasterio boto3
+# install geospatial packages
+mamba install -y -c conda-forge gdal pygeos geopandas psycopg2 geoalchemy2 rasterio boto3
 conda activate geo
 
 # --------------------------

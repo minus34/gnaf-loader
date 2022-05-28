@@ -10,11 +10,13 @@ echo "-------------------------------------------------------------------------"
 echo "Creating new Conda Environment 'gdal'"
 echo "-------------------------------------------------------------------------"
 
-# update Conda platform
-conda update -y conda
-
 # WARNING - removes existing environment
+conda deactivate
 conda env remove --name gdal
+
+# update Conda platform & install Mamba (much faster package installer)
+conda update -y conda
+conda install mamba -n base -c conda-forge
 
 # Create Conda environment
 conda create -y -n gdal python=${PYTHON_VERSION}
@@ -28,7 +30,7 @@ conda config --env --set channel_priority strict
 conda activate gdal
 
 # install packages for gdal only
-conda install -y -c conda-forge gdal psycopg2 boto3
+mamba install -y -c conda-forge gdal psycopg2 boto3
 
 conda activate gdal
 
