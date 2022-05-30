@@ -38,7 +38,7 @@ order by address_count desc
 ;
 
 
-
+-- REINDEX DATABASE geo;
 
 
 select count(*) from gnaf_202205.address_principals; -- 14404238
