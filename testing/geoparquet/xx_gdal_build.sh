@@ -1,38 +1,49 @@
 #!/usr/bin/env bash
 
 # build script for GDAL (with Parquet supported) on MacOS
+# activate Conda so that the latest Python with the same version of GDAL is used (seriously cheating here)
+conda deactivate
+conda activate gdal
 
-INSTALL_DIR="/Users/$(whoami)/gdal"
+BUILD_DIR="/Users/$(whoami)/gdal-3.5.0/build"
 
 echo "-------------------------------------------------------------------------"
-echo "Installing CMake and Apache-Arrow"
+echo "Installing CMake and prerequisites"
 echo "-------------------------------------------------------------------------"
 
-# get Homebrew packages
-brew update
-brew install cmake
-brew install apache-arrow
+## get Homebrew packages
+#brew update
+#brew install openssl cmake apache-arrow protobuf sqlite
 
 echo "-------------------------------------------------------------------------"
 echo "Downloading GDAL source code"
 echo "-------------------------------------------------------------------------"
 
-cd ${INSTALL_DIR}
+#mkdir -p ${INSTALL_DIR}
+cd ${HOME}
 
-curl -O https://github.com/OSGeo/gdal/releases/download/v3.5.0/gdal-3.5.0.tar.gz
-tar xzf gdal-3.5.0.tar.gz
+# WARNING: delete existing source code & build directory
+rm -rf ../${BUILD_DIR}
+
+curl -O -L https://github.com/OSGeo/gdal/releases/download/v3.5.0/gdal-3.5.0.tar.gz
+tar -xzf gdal-3.5.0.tar.gz
 rm gdal-3.5.0.tar.gz
 
 echo "-------------------------------------------------------------------------"
 echo "Building GDAL with Parquet supported"
 echo "-------------------------------------------------------------------------"
 
-mkdir build
-cd build
+mkdir -p ${BUILD_DIR}
+cd ${BUILD_DIR}
 
-cmake -DCMAKE_PREFIX_PATH=/usr/local/Cellar/apache-arrow/8.0.0_1/lib  ..
-cmake --build .
-cmake --build . --target install
+cmake -DCMAKE_PREFIX_PATH="/usr/local/Cellar/apache-arrow/8.0.0_1/lib;/usr/local/Cellar/protobuf/3.19.4;/usr/local/Cellar/openssl@1.1/1.1.1o;/usr/local/Cellar/sqlite/3.38.5" \
+      -DGDAL_USE_OPENCL=ON \
+      -DGDAL_USE_GEOTIFF_INTERNAL=ON \
+      -DCMAKE_BUILD_TYPE=Release \
+      .. | tee /Users/s57405/git/minus34/gnaf-loader/testing/geoparquet/xx_gdal_build_1.log
+cmake --build . | tee /Users/s57405/git/minus34/gnaf-loader/testing/geoparquet/xx_gdal_build_2.log
+cmake --build . --target install | tee /Users/s57405/git/minus34/gnaf-loader/testing/geoparquet/xx_gdal_build_3.log
 
 #/usr/local/Cellar/apache-arrow/8.0.0_1/lib/cmake/arrow
+
 
