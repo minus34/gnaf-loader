@@ -11,9 +11,9 @@ echo "-------------------------------------------------------------------------"
 echo "Installing CMake and prerequisites"
 echo "-------------------------------------------------------------------------"
 
-## get Homebrew packages
-#brew update
-#brew install openssl cmake apache-arrow protobuf sqlite
+# get Homebrew packages
+brew update
+brew install openssl cmake apache-arrow protobuf sqlite
 
 echo "-------------------------------------------------------------------------"
 echo "Downloading GDAL source code"
