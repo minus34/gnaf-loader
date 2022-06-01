@@ -30,7 +30,7 @@ conda config --env --set channel_priority strict
 conda activate gdal
 
 # install packages for gdal only
-mamba install -y -c conda-forge gdal psycopg2 pyarrow boto3
+mamba install -y -c conda-forge gdal psycopg2 pyarrow boto3 importlib_resources
 
 ## install packages for gdal build
 #mamba install -y -c conda-forge curl libiconv icu swig numpy pytest zlib
@@ -41,6 +41,22 @@ mamba install -y -c conda-forge gdal psycopg2 pyarrow boto3
 #                                sqlite tiledb zstd charls cryptopp cgal librttopo libkml openssl xz arrow-cpp gdal
 
 conda activate gdal
+
+echo "-------------------------------------------------------------------------"
+echo "Download Geoparquet GitHub repo"
+echo "-------------------------------------------------------------------------"
+
+mkdir -p ${GIT_HOME}/osgeo
+cd ${GIT_HOME}/osgeo
+git clone https://github.com/opengeospatial/geoparquet.git
+
+cd cd geoparquet/validator/python
+
+# install geoparquet validator
+pip install --no-binary geoparquet_validator .
+
+# sample usage
+#geoparquet_validator /Users/s57405/tmp/geoscape_202205/geoparquet/address_principals.parquet
 
 # --------------------------
 # extra bits
