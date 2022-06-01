@@ -4,9 +4,11 @@
 # NOTE: as of 20220520 - geometry field currently loads as binary type; should be geometry type when supported
 #
 
+import base64
 import json
 import logging
 import os
+import pyarrow as pa
 import pyarrow.parquet as pq
 import sys
 
@@ -34,12 +36,16 @@ def main():
     metadata = parquet_file.metadata.metadata
 
     for key in metadata.keys():
-        if key == b"geo":
+        if key != b"ARROW:schema":
+        #     decoded_schema = base64.b64decode(metadata[b"ARROW:schema"])
+        #     schema2 = pa.ipc.read_schema(pa.BufferReader(decoded_schema))
+        #     print(schema2)
+        # else:
             geo_metadata = json.loads(metadata[key].decode("utf-8"))
             print(json.dumps(geo_metadata, indent=2, sort_keys=False))
 
-    # schema = parquet_file.schema
-    # print(schema)
+    schema = parquet_file.schema
+    print(schema)
 
 
 if __name__ == "__main__":
