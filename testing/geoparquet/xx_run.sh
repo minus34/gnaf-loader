@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 
-# need a Python 3.9+ environment with Psycopg2 and PyArrow
-conda deactivate
-conda activate gdal
+## need a Python 3.9+ environment with Psycopg2 and PyArrow
+#conda deactivate
+#conda activate gdal
 
 # get the directory this script is running from
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
@@ -44,9 +44,10 @@ INPUT_SCHEMA="gnaf_202205"
 #(16 rows)
 
 INPUT_TABLE="address_principals"
-#GEOM_TYPE="POINT"
 
-ogr2ogr -f Parquet "${OUTPUT_FOLDER}/geoparquet/${INPUT_TABLE}.parquet" PG:"host=localhost dbname=geo user=postgres password=password port=5432" "${INPUT_SCHEMA}.${INPUT_TABLE}(geom)"
+/usr/local/bin/ogr2ogr -f Parquet "${OUTPUT_FOLDER}/geoparquet/${INPUT_TABLE}.parquet" \
+    PG:"host=localhost dbname=geo user=postgres password=password port=5432" \
+    "${INPUT_SCHEMA}.${INPUT_TABLE}(geom)"
 
 #ogr2ogr -f "PostgreSQL" -overwrite -nlt ${GEOM_TYPE} -nln "${INPUT_SCHEMA}.${INPUT_TABLE}" PG:"host=localhost port=5432 dbname=geo user=postgres password=password" "${OUTPUT_FOLDER}/geoparquet/${INPUT_TABLE}.parquet"
 
