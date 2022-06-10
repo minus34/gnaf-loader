@@ -21,7 +21,7 @@ conda deactivate
 conda env remove --name gdal
 
 # update Conda platform & install Mamba (much faster package installer)
-conda update -y conda
+conda update -n base conda
 conda install -y -c conda-forge mamba -n base
 
 # Create Conda environment
@@ -36,7 +36,7 @@ conda config --env --set channel_priority strict
 conda activate gdal
 
 mamba install --yes --quiet curl libiconv icu git swig numpy pytest zlib clcache
-mamba install --yes --quiet -c conda-forge compilers
+#mamba install --yes --quiet -c conda-forge compilers
 mamba install --yes --quiet -c conda-forge \
     cmake proj geos protobuf arrow-cpp hdf4 hdf5 \
     libnetcdf openjpeg poppler libtiff libpng xerces-c expat libxml2 kealib json-c \
