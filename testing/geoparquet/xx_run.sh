@@ -65,5 +65,5 @@ INPUT_TABLE="address_principals"
 
 
 
-
+docker run --rm -v /Users/$(whoami)/tmp:/home osgeo/gdal:ubuntu-full-latest ogr2ogr --version
 

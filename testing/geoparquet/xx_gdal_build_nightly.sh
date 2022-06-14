@@ -74,6 +74,6 @@ cd "${INSTALL_DIR}/gdal/build"
 #cmake --build . --target install | tee ${LOG_DIR}/xx_gdal_nightly_build_3.log
 
 
-cmake .. | tee ${LOG_DIR}/xx_gdal_nightly_build_1.log
+cmake .. -DCMAKE_PREFIX_PATH:FILEPATH="%CONDA_PREFIX%" | tee ${LOG_DIR}/xx_gdal_nightly_build_1.log
 cmake --build . | tee ${LOG_DIR}/xx_gdal_nightly_build_2.log
 cmake --build . --target install | tee ${LOG_DIR}/xx_gdal_nightly_build_3.log
