@@ -277,7 +277,7 @@ def create_primary_foreign_keys():
         sql = sql.strip()
         if sql[0:6] == "ALTER ":
             # add schema to tables names, in case raw gnaf schema not the default
-            sql = sql.replace(f"ALTER TABLE ONLY ", "ALTER TABLE ONLY {settings.raw_gnaf_schema}.")
+            sql = sql.replace(f"ALTER TABLE ONLY ", f"ALTER TABLE ONLY {settings.raw_gnaf_schema}.")
             sql_list.append(sql)
 
     # run queries in separate processes
