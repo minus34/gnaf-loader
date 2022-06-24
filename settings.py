@@ -240,10 +240,12 @@ st_subdivide_supported = False
 for lib_string in lib_strings:
     if lib_string[:8] == "POSTGIS=":
         postgis_version = lib_string.replace("POSTGIS=", "")
-        postgis_version_num = float(postgis_version[:3])
+        postgis_version_num = [int(v) for v in postgis_version.split('.') if v.isdigit()]
     if lib_string[:5] == "GEOS=":
         geos_version = lib_string.replace("GEOS=", "")
-        geos_version_num = float(geos_version[:3])
+        # Parse for numeric parts of GEOS version, handling (for eg. '3.10.2-CAPI-1.16.0') well enough to get the major/minor version
+        geos_version_num = [int(v) for v in geos_version.split('.') if v.isdigit()]
 
-if postgis_version_num >= 2.2 and geos_version_num >= 3.5:
+if (postgis_version_num[0] > 2 or (postgis_version_num[0] == 2 and postgis_version_num[1] >= 2)) and \
+   (geos_version_num[0] > 3 or (geos_version_num[0] == 3 and geos_version_num[1] >= 5)):
     st_subdivide_supported = True
