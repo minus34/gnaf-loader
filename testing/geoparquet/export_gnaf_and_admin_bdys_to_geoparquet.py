@@ -176,14 +176,14 @@ def main():
             # TESTING - only run for geom tables - ignore non-geom tables while testing
             if geom_field is not None:
                 # import into Dask GeoPandas
-                ddf = import_table(sql_engine, import_query)
-                num_rows = ddf.shape[0]
-                logger.info(f"\t\t {i}. imported {num_rows} from {table_name} : {datetime.now() - start_time}")
-                start_time = datetime.now()
-
+                df = import_table(sql_engine, import_query)
+                # num_rows = df.shape[0]
+                # logger.info(f"\t\t {i}. imported {num_rows} from {table_name} : {datetime.now() - start_time}")
+                # start_time = datetime.now()
+    
                 # export
-                export_to_geoparquet(ddf, geom_type, table_name, output_path)
-
+                export_to_geoparquet(df, geom_type, table_name, output_path)
+    
                 logger.info(f"\t\t {i}. exported {table_name} : {datetime.now() - start_time}")
                 # else:
                 #     logger.warning("\t\t {}. {} has no records! : {}".format(i, table_name, datetime.now() - start_time))
@@ -205,7 +205,7 @@ def import_table(sql_engine, sql):
     # print(sql)
 
     df = geopandas.read_postgis(sql, sql_engine, geom_col='geometry')
-    ddf = dask_geopandas.from_geopandas(df, npartitions=8)
+    # df = dask_geopandas.from_geopandas(df, npartitions=8)
 
     # print(df.info(memory_usage="deep"))
 
@@ -247,13 +247,13 @@ def import_table(sql_engine, sql):
     # memory usage: 2.2 GB
     # None
 
-    return ddf
+    return df
 
 
 # export a dataframe to gz parquet files
-def export_to_geoparquet(ddf, geom_type, name, output_path):
+def export_to_geoparquet(df, geom_type, name, output_path):
 
-    table = pa.Table.from_pandas(ddf.to_wkb())
+    table = pa.Table.from_pandas(df.to_wkb())
 
     # add metadata & schema
     metadata = {
@@ -263,9 +263,9 @@ def export_to_geoparquet(ddf, geom_type, name, output_path):
             "geometry": {
                 "encoding": "WKB",
                 "geometry_type": [geom_type.capitalize()],
-                "crs": json.loads(ddf.crs.to_json()),
+                "crs": json.loads(df.crs.to_json()),
                 "edges": "planar",
-                "bbox": [round(x, 4) for x in ddf.total_bounds],
+                "bbox": [round(x, 4) for x in df.total_bounds],
             },
         },
     }
