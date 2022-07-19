@@ -6,13 +6,14 @@
 #
 # 1. get list of tables from Postgres
 # 2. for each table:
-#     a. import into GeoPandas dataframe
+#     a. import into Dask GeoPandas dataframe
 #     b. export as gzip geoparquet files to local disk using pyarrow
 #
 # ---------------------------------------------------------------------------------------------------------------------
 
 import argparse
 import geopandas
+import dask_geopandas
 import json
 import logging
 import math
@@ -172,18 +173,20 @@ def main():
 
             import_query = str(pg_cur.fetchone()[0])  # str is just there for intellisense in Pycharm
 
-            # import into GeoPandas
-            df = import_table(sql_engine, import_query)
-            # num_rows = df.shape[0]
-            # logger.info(f"\t\t {i}. imported {num_rows} from {table_name} : {datetime.now() - start_time}")
-            # start_time = datetime.now()
+            # TESTING - only run for geom tables - ignore non-geom tables while testing
+            if geom_field is not None:
+                # import into Dask GeoPandas
+                ddf = import_table(sql_engine, import_query)
+                num_rows = ddf.shape[0]
+                logger.info(f"\t\t {i}. imported {num_rows} from {table_name} : {datetime.now() - start_time}")
+                start_time = datetime.now()
 
-            # export
-            export_to_geoparquet(df, geom_type, table_name, output_path)
+                # export
+                export_to_geoparquet(ddf, geom_type, table_name, output_path)
 
-            logger.info(f"\t\t {i}. exported {table_name} : {datetime.now() - start_time}")
-            # else:
-            #     logger.warning("\t\t {}. {} has no records! : {}".format(i, table_name, datetime.now() - start_time))
+                logger.info(f"\t\t {i}. exported {table_name} : {datetime.now() - start_time}")
+                # else:
+                #     logger.warning("\t\t {}. {} has no records! : {}".format(i, table_name, datetime.now() - start_time))
 
             i += 1
 
@@ -197,10 +200,13 @@ def import_table(sql_engine, sql):
 
     # debugging
     # sql = "select gnaf_pid, geom as geometry from gnaf_202205.address_principals"
-    sql += " LIMIT 1000000"
+    # sql += " LIMIT 1000000"
     # dtype_dict = {"locality_name": "category", "postcode": "category", "state": "category"}
+    # print(sql)
 
     df = geopandas.read_postgis(sql, sql_engine, geom_col='geometry')
+    ddf = dask_geopandas.from_geopandas(df, npartitions=8)
+
     # print(df.info(memory_usage="deep"))
 
     # <class 'geopandas.geodataframe.GeoDataFrame'>
@@ -241,13 +247,13 @@ def import_table(sql_engine, sql):
     # memory usage: 2.2 GB
     # None
 
-    return df
+    return ddf
 
 
 # export a dataframe to gz parquet files
-def export_to_geoparquet(df, geom_type, name, output_path):
+def export_to_geoparquet(ddf, geom_type, name, output_path):
 
-    table = pa.Table.from_pandas(df.to_wkb())
+    table = pa.Table.from_pandas(ddf.to_wkb())
 
     # add metadata & schema
     metadata = {
@@ -257,9 +263,9 @@ def export_to_geoparquet(df, geom_type, name, output_path):
             "geometry": {
                 "encoding": "WKB",
                 "geometry_type": [geom_type.capitalize()],
-                "crs": json.loads(df.crs.to_json()),
+                "crs": json.loads(ddf.crs.to_json()),
                 "edges": "planar",
-                "bbox": [round(x, 4) for x in df.total_bounds],
+                "bbox": [round(x, 4) for x in ddf.total_bounds],
             },
         },
     }
