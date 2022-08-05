@@ -17,7 +17,7 @@ conda env remove --name geo
 # update Conda platform & install Mamba (much faster package installer)
 conda update -y conda
 conda update -n base conda
-conda install mamba -n base -c conda-forge
+conda install -y mamba -n base -c conda-forge
 
 # Create Conda environment
 conda create -y -n geo python=${PYTHON_VERSION}
