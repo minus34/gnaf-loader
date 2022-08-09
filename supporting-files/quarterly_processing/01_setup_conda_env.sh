@@ -24,6 +24,7 @@ conda create -y -n geo python=${PYTHON_VERSION}
 
 # activate and setup env
 conda activate geo
+conda env config vars set JAVA_HOME="/usr/local/opt/openjdk@11"
 conda config --env --add channels conda-forge
 conda config --env --set channel_priority strict
 
