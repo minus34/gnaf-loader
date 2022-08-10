@@ -1,3 +1,4 @@
 * linguist-vendored
 *.py linguist-vendored=false
 *.sh linguist-vendored=false
+*.sql linguist-vendored=false
