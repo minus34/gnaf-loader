@@ -32,7 +32,7 @@ conda config --env --set channel_priority strict
 conda activate geo
 
 # install geospatial packages
-mamba install -y -c conda-forge gdal pygeos pyarrow dask-geopandas psycopg2 geoalchemy2 rasterio boto3
+mamba install -y -c conda-forge gdal pygeos pyarrow dask-geopandas openpyxl psycopg2 geoalchemy2 rasterio boto3
 conda activate geo
 
 # --------------------------
