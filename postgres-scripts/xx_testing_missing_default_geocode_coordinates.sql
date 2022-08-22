@@ -6,7 +6,7 @@
 
 -- find default geocodes with no lat/longs -- 10 records
 select *
-from raw_gnaf_202205.address_default_geocode
+from raw_gnaf_202208.address_default_geocode
 where latitude is null or longitude is null;
 
 --GASA_424662224
@@ -22,7 +22,7 @@ where latitude is null or longitude is null;
 
 
 -- get address_site_pids for gnaf_pids with no coords
-select address_detail_pid, address_site_pid from raw_gnaf_202205.address_detail
+select address_detail_pid, address_site_pid from raw_gnaf_202208.address_detail
 where address_detail_pid in (
 'GASA_424662224',
 'GASA_424664998',
@@ -51,7 +51,7 @@ where address_detail_pid in (
 
 -- check if lat/longs exist in full geocode table using address_site_pids: all 10 have coords & good geocodes
 select *
-from raw_gnaf_202205.address_site_geocode
+from raw_gnaf_202208.address_site_geocode
 where address_site_pid in (
 '424747613',
 '424750387',
@@ -71,22 +71,22 @@ and geocode_type_code = 'PAPS'
 -- workaround for missing default coordinates
 with missing as (
     select address_detail_pid
-    from raw_gnaf_202205.address_default_geocode
+    from raw_gnaf_202208.address_default_geocode
     where latitude is null or longitude is null
 ), site as (
     select gnaf.address_detail_pid,
            gnaf.address_site_pid
-    from raw_gnaf_202205.address_detail as gnaf
+    from raw_gnaf_202208.address_detail as gnaf
     inner join missing on gnaf.address_detail_pid = missing.address_detail_pid
 ), coords as (
     select site.address_detail_pid,
            geo.latitude,
            geo.longitude
-    from raw_gnaf_202205.address_site_geocode as geo
+    from raw_gnaf_202208.address_site_geocode as geo
     inner join site on geo.address_site_pid = site.address_site_pid
     where geocode_type_code = 'PAPS'
 )
-update raw_gnaf_202205.address_default_geocode as def
+update raw_gnaf_202208.address_default_geocode as def
     set latitude = coords.latitude,
         longitude = coords.longitude
 from coords

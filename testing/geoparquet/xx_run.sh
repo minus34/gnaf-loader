@@ -7,9 +7,9 @@
 # get the directory this script is running from
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
-OUTPUT_FOLDER="/Users/$(whoami)/tmp/geoscape_202205"
+OUTPUT_FOLDER="/Users/$(whoami)/tmp/geoscape_202208"
 
-INPUT_SCHEMA="gnaf_202205"
+INPUT_SCHEMA="gnaf_202208"
 
 ## get list of tables
 #QUERY="SELECT table_name
@@ -61,7 +61,7 @@ INPUT_TABLE="address_principals"
 
 
 
-#python ${SCRIPT_DIR}/export_gnaf_and_admin_bdys_to_geoparquet.py --admin-schema="admin_bdys_202205" --gnaf-schema="gnaf_202205" --output-path="${OUTPUT_FOLDER}/geoparquet"
+#python ${SCRIPT_DIR}/export_gnaf_and_admin_bdys_to_geoparquet.py --admin-schema="admin_bdys_202208" --gnaf-schema="gnaf_202208" --output-path="${OUTPUT_FOLDER}/geoparquet"
 
 
 
