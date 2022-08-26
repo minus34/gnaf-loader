@@ -7,7 +7,7 @@ cd ${SCRIPT_DIR}
 
 #. 01_setup_conda_env.sh
 
-#. 02-run-gnaf-loader-locality-clean-and-copy-to-aws-s3.sh
+. 02-run-gnaf-loader-locality-clean-and-copy-to-aws-s3.sh
 
 . 03-run-gnaf-loader-locality-clean-and-copy-to-aws-s3-gda2020.sh
 
