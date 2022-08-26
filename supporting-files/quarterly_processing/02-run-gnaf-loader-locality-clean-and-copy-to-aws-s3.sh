@@ -31,7 +31,7 @@ echo "--------------------------------------------------------------------------
 
 mkdir -p "${OUTPUT_FOLDER}"
 python3 /Users/$(whoami)/git/iag_geo/concord/create_concordance_file.py --pgdb=geo --output-path=${OUTPUT_FOLDER}
-aws --profile=${AWS_PROFILE} s3 sync ${OUTPUT_FOLDER} s3://minus34.com/opendata/geoscape-202205 --exclude "*" --include "*.csv" --acl public-read
+aws --profile=${AWS_PROFILE} s3 sync ${OUTPUT_FOLDER} s3://minus34.com/opendata/geoscape-202208 --exclude "*" --include "*.csv" --acl public-read
 
 # copy concordance score file to GitHub repo local files
 cp ${OUTPUT_FOLDER}/boundary_concordance_score.csv /Users/$(whoami)/git/iag_geo/concord/data/

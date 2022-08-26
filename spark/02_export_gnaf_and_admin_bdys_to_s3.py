@@ -104,7 +104,7 @@ def main():
              .config("spark.executor.cores", 1)
              .config("spark.cores.max", num_processors)
              .config("spark.driver.memory", "8g")
-             .config("spark.driver.maxResultSize", "1g")
+             .config("spark.driver.maxResultSize", "2g")
              .getOrCreate()
              )
 
