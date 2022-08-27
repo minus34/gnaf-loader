@@ -3,11 +3,11 @@
 # get the directory this script is running from
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
-echo "---------------------------------------------------------------------------------------------------------------------"
-echo "build gnaf-loader docker image"
-echo "---------------------------------------------------------------------------------------------------------------------"
-
 cd ${SCRIPT_DIR}/../../docker
+
+echo "---------------------------------------------------------------------------------------------------------------------"
+echo "build gnaf-loader GDA94 docker image"
+echo "---------------------------------------------------------------------------------------------------------------------"
 
 docker build --tag minus34/gnafloader:latest --tag minus34/gnafloader:202208 --no-cache --build-arg BASE_URL="https://minus34.com/opendata/geoscape-202208" .
 
