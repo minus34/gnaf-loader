@@ -57,7 +57,7 @@ cd cd geoparquet/validator/python
 pip install --no-binary geoparquet_validator .
 
 # sample usage
-#geoparquet_validator /Users/s57405/tmp/geoscape_202205/geoparquet/address_principals.parquet
+#geoparquet_validator /Users/s57405/tmp/geoscape_202208/geoparquet/address_principals.parquet
 
 # --------------------------
 # extra bits

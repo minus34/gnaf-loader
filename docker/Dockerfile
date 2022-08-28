@@ -1,6 +1,6 @@
 FROM debian:buster-slim
 
-ARG BASE_URL="https://minus34.com/opendata/geoscape-202205"
+ARG BASE_URL="https://minus34.com/opendata/geoscape-202208"
 ENV BASE_URL ${BASE_URL}
 
 # Postgres user password - WARNING: change this to something a lot more secure
@@ -14,7 +14,7 @@ RUN apt-get update \
     && wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add - \
     && echo "deb http://apt.postgresql.org/pub/repos/apt/ buster-pgdg main" | sudo tee  /etc/apt/sources.list.d/pgdg.list \
     && apt-get update \
-    && apt-get install -y postgresql-13 postgresql-client-13 postgis postgresql-13-postgis-3 \
+    && apt-get install -y postgresql-14 postgresql-client-14 postgis postgresql-14-postgis-3 \
     && apt-get autoremove -y --purge \
     && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
@@ -27,18 +27,18 @@ RUN /etc/init.d/postgresql start \
 # download and restore GNAF & Admin Boundary Postgres dump files
 RUN mkdir -p /data \
     && cd /data \
-    && wget --quiet ${BASE_URL}/gnaf-202205.dmp \
-    && wget --quiet ${BASE_URL}/admin-bdys-202205.dmp \
+    && wget --quiet ${BASE_URL}/gnaf-202208.dmp \
+    && wget --quiet ${BASE_URL}/admin-bdys-202208.dmp \
     && /etc/init.d/postgresql start \
-    && pg_restore -Fc -d postgres -h localhost -p 5432 -U postgres /data/gnaf-202205.dmp \
-    && pg_restore -Fc -d postgres -h localhost -p 5432 -U postgres /data/admin-bdys-202205.dmp \
+    && pg_restore -Fc -d postgres -h localhost -p 5432 -U postgres /data/gnaf-202208.dmp \
+    && pg_restore -Fc -d postgres -h localhost -p 5432 -U postgres /data/admin-bdys-202208.dmp \
     && /etc/init.d/postgresql stop \
-    && rm /data/gnaf-202205.dmp \
-    && rm /data/admin-bdys-202205.dmp
+    && rm /data/gnaf-202208.dmp \
+    && rm /data/admin-bdys-202208.dmp
 
 # enable external access to postgres - WARNING: these are insecure settings! Edit these to restrict access
-RUN echo "host all  all    0.0.0.0/0  md5" >> /etc/postgresql/13/main/pg_hba.conf
-RUN echo "listen_addresses='*'" >> /etc/postgresql/13/main/postgresql.conf
+RUN echo "host all  all    0.0.0.0/0  md5" >> /etc/postgresql/14/main/pg_hba.conf
+RUN echo "listen_addresses='*'" >> /etc/postgresql/14/main/postgresql.conf
 EXPOSE 5432
 
 # set user for postgres startup
@@ -48,4 +48,4 @@ USER postgres
 # VOLUME  ["/etc/postgresql", "/var/log/postgresql", "/var/lib/postgresql"]
 
 # Start postgres when starting the container
-CMD ["/usr/lib/postgresql/13/bin/postgres", "-D", "/var/lib/postgresql/13/main", "-c", "config_file=/etc/postgresql/13/main/postgresql.conf"]
+CMD ["/usr/lib/postgresql/14/bin/postgres", "-D", "/var/lib/postgresql/14/main", "-c", "config_file=/etc/postgresql/14/main/postgresql.conf"]

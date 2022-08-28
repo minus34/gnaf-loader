@@ -67,7 +67,7 @@ pg_connect_string = "dbname={DB} host={HOST} port={PORT} user={USER} password={P
 
 # # aws details
 # s3_bucket = "minus34.com"
-# s3_folder = "opendata/geoscape-202205/parquet"
+# s3_folder = "opendata/geoscape-202208/parquet"
 
 # get runtime arguments
 parser = argparse.ArgumentParser(description="Converts Postgres/PostGIS tables to Parquet files with WKT geometries.")
@@ -104,7 +104,7 @@ def main():
              .config("spark.executor.cores", 1)
              .config("spark.cores.max", num_processors)
              .config("spark.driver.memory", "8g")
-             .config("spark.driver.maxResultSize", "1g")
+             .config("spark.driver.maxResultSize", "2g")
              .getOrCreate()
              )
 
