@@ -832,21 +832,21 @@ def boundary_tag_gnaf(pg_cur):
             gnaf_pids.append("\t\t" + duplicate[0])
 
         if len(gnaf_pids) > 0:
-            logger.warning("\t- Step 5 of 7 : found boundary tag duplicates : {datetime.now() - start_time}")
+            logger.warning(f"\t- Step 5 of 7 : found boundary tag duplicates : {datetime.now() - start_time}")
             logger.warning("\n".join(gnaf_pids))
         else:
-            logger.info("\t- Step 5 of 7 : no boundary tag duplicates : {datetime.now() - start_time}")
+            logger.info(f"\t- Step 5 of 7 : no boundary tag duplicates : {datetime.now() - start_time}")
     else:
-        logger.info("\t- Step 5 of 7 : no boundary tag duplicates : {datetime.now() - start_time}")
+        logger.info(f"\t- Step 5 of 7 : no boundary tag duplicates : {datetime.now() - start_time}")
 
     # Step 6 of 7 : Copy principal boundary tags to alias addresses
     pg_cur.execute(geoscape.open_sql_file("04-06-bdy-tags-for-alias-addresses.sql"))
-    logger.info("\t- Step 6 of 7 : alias addresses boundary tagged : {datetime.now() - start_time}")
+    logger.info(f"\t- Step 6 of 7 : alias addresses boundary tagged : {datetime.now() - start_time}")
     start_time = datetime.now()
 
     # Step 7 of 7 : Create view of all bdy tags
     pg_cur.execute(geoscape.open_sql_file("04-07-create-bdy-tag-view.sql"))
-    logger.info("\t- Step 7 of 7 : boundary tagged address view created : {datetime.now() - start_time}")
+    logger.info(f"\t- Step 7 of 7 : boundary tagged address view created : {datetime.now() - start_time}")
 
 
 def create_qa_tables(pg_cur):
