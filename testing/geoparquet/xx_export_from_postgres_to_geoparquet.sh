@@ -2,12 +2,12 @@
 
 ## need a Python 3.9+ environment with Psycopg2 and PyArrow
 #conda deactivate
-#conda activate gdal
+conda activate geo
 
 # get the directory this script is running from
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
-OUTPUT_FOLDER="/Users/$(whoami)/tmp/geoscape_202208/geoparquet"
+OUTPUT_FOLDER="/Users/$(whoami)/tmp/gdal-testing"
 mkdir -p "${OUTPUT_FOLDER}"
 
 INPUT_SCHEMA="gnaf_202208"
@@ -47,19 +47,17 @@ INPUT_SCHEMA="gnaf_202208"
 INPUT_TABLE="address_principals"
 
 
-rm "${OUTPUT_FOLDER}/${INPUT_TABLE}.json"
+#rm "${OUTPUT_FOLDER}/${INPUT_TABLE}.json"
 
-docker run --rm -it -v $(pwd):/data osgeo/gdal:latest \
+rm ${OUTPUT_FOLDER}/${INPUT_TABLE}.csv
+
+#docker run --rm -it -v $(pwd):/data osgeo/gdal:latest \
   ogr2ogr \
-  -f "GeoJSON" \
-  "${OUTPUT_FOLDER}/${INPUT_TABLE}.json" \
+  -overwrite \
+  "${OUTPUT_FOLDER}/${INPUT_TABLE}.csv" \
+  -lco GEOMETRY=AS_WKT \
   PG:"host='localhost' dbname='geo' user='postgres' password='password' port='5432'" \
-  -sql "SELECT * FROM ${INPUT_SCHEMA}.${INPUT_TABLE} limit 1000"
-
-
-ogr2ogr -f "GeoJSON" /PATH/TO/NEWFILE.json \
-  PG:"host=YOUR_HOST dbname=YOUR_DB user=YOUR_USER password=YOUR_PASS port=5432" "YOUR_POSTGIS_TABLE(the_geom)"
-
+  -sql "SELECT * FROM ${INPUT_SCHEMA}.${INPUT_TABLE}"
 
 
 
