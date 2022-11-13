@@ -2,48 +2,57 @@
 
 # --------------------------------------------------------------------------------------------------------------------
 
+ENV_NAME=geo
 PYTHON_VERSION="3.10"
 
 # --------------------------------------------------------------------------------------------------------------------
 
 echo "-------------------------------------------------------------------------"
-echo "Creating new Conda Environment 'geo'"
+echo "Creating new Conda Environment '${ENV_NAME}'"
 echo "-------------------------------------------------------------------------"
 
-# WARNING - removes existing environment
+# deactivate current environment and start base env (in case you just deactivated it) - lazy method
 conda deactivate
-conda env remove --name geo
+conda activate base
 
-# update Conda platform & install Mamba (much faster package installer)
+# WARNING - removes existing environment
+conda env remove --name ${ENV_NAME}
+
+# update Conda base environment
 conda update -y conda
-conda update -y -n base conda
-conda install -y -n base -c conda-forge mamba
 
 # Create Conda environment
-conda create -y -n geo python=${PYTHON_VERSION}
+conda create -y -n ${ENV_NAME} python=${PYTHON_VERSION}
 
 # activate and setup env
-conda activate geo
+conda activate ${ENV_NAME}
 conda env config vars set JAVA_HOME="/usr/local/opt/openjdk@11"
 conda config --env --add channels conda-forge
 conda config --env --set channel_priority strict
 
 # reactivate for env vars to take effect
-conda activate geo
+conda activate ${ENV_NAME}
+
+## install Mamba (faster package installer)
+#conda install -y -c conda-forge mamba
 
 # install geospatial packages
-mamba install -y -c conda-forge gdal pygeos pyarrow dask-geopandas openpyxl psycopg2 geoalchemy2 rasterio boto3
-conda activate geo
+#pip install open3d==0.15.1
+conda install -y -c conda-forge gdal pygeos pyarrow dask-geopandas openpyxl psycopg geoalchemy2 rasterio jupyter boto3
+conda activate ${ENV_NAME}
+
+# clear cache (builds over time)
+conda clean -y --all
 
 # --------------------------
 # extra bits
 # --------------------------
 
 ## activate env
-#conda activate geo
+#conda activate ${ENV_NAME}
 
 ## shut down env
 #conda deactivate
 
 ## delete env permanently
-#conda env remove --name geo
+#conda env remove --name ${ENV_NAME}

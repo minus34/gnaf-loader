@@ -2,7 +2,7 @@
 
 ## need a Python 3.9+ environment with Psycopg2 and PyArrow
 #conda deactivate
-conda activate geo
+#conda activate geo
 
 # get the directory this script is running from
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
@@ -51,25 +51,29 @@ INPUT_TABLE="address_principals"
 
 rm ${OUTPUT_FOLDER}/${INPUT_TABLE}.csv
 
-#docker run --rm -it -v $(pwd):/data osgeo/gdal:latest \
-  ogr2ogr \
-  -overwrite \
-  "${OUTPUT_FOLDER}/${INPUT_TABLE}.csv" \
-  -lco GEOMETRY=AS_WKT \
-  PG:"host='localhost' dbname='geo' user='postgres' password='password' port='5432'" \
-  -sql "SELECT * FROM ${INPUT_SCHEMA}.${INPUT_TABLE}"
+docker pull osgeo/gdal:ubuntu-full-3.6.0
+
+#docker run --rm -it -v $(pwd):/data osgeo/gdal:ubuntu-full-3.6.0 \
 
 
-
-#docker run --rm -it -v $(pwd):/data osgeo/gdal:latest \
 #  ogr2ogr \
-#  "${OUTPUT_FOLDER}/${INPUT_TABLE}.parquet" \
+#  -overwrite \
+#  "${OUTPUT_FOLDER}/${INPUT_TABLE}.csv" \
+#  -lco GEOMETRY=AS_WKT \
 #  PG:"host='localhost' dbname='geo' user='postgres' password='password' port='5432'" \
-#  "${INPUT_SCHEMA}.${INPUT_TABLE}(geom)" \
-#  -lco COMPRESSION=BROTLI \
-#  -lco GEOMETRY_ENCODING=GEOARROW \
-#  -lco POLYGON_ORIENTATION=COUNTERCLOCKWISE \
-#  -lco ROW_GROUP_SIZE=9999999
+#  -sql "SELECT * FROM ${INPUT_SCHEMA}.${INPUT_TABLE}"
+
+
+
+docker run --rm -it -v $(pwd):/data osgeo/gdal:ubuntu-full-3.6.0 \
+  ogr2ogr \
+  "${OUTPUT_FOLDER}/${INPUT_TABLE}.parquet" \
+  PG:"host='localhost' dbname='geo' user='postgres' password='password' port='5432'" \
+  "${INPUT_SCHEMA}.${INPUT_TABLE}(geom)" \
+  -lco COMPRESSION=BROTLI \
+  -lco GEOMETRY_ENCODING=GEOARROW \
+  -lco POLYGON_ORIENTATION=COUNTERCLOCKWISE \
+  -lco ROW_GROUP_SIZE=9999999
 
 
 
