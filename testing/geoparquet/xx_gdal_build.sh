@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 
-# build script for GDAL (with Parquet supported) on MacOS
+# build script for GDAL (with Parquet supported) on MacOS - doesn't work
 # requires Homebrew: https://brew.sh/
 
 # TODO: edit these
-GDAL_VERSION="3.5.0"
+GDAL_VERSION="3.6.0"
 INSTALL_DIR="/Users/$(whoami)/gdal-${GDAL_VERSION}"
 LOG_DIR="/Users/$(whoami)/git/minus34/gnaf-loader/testing/geoparquet"
 
