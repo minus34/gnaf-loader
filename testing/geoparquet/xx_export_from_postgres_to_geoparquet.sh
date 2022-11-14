@@ -39,9 +39,9 @@ while read p; do
   input_schema=${arrIN[0]}
   input_table=${arrIN[1]}
 
-  echo "Exporting ${input_table}"
+  echo "Exporting ${input_schema}.${input_table}"
 
-  docker run --rm -it -v $(pwd):/data osgeo/gdal:ubuntu-full-3.6.0 \
+  docker run --rm -v $(pwd):/data osgeo/gdal:ubuntu-full-3.6.0 \
     ogr2ogr \
     "/data/${input_table}.parquet" \
     PG:"host='host.docker.internal' dbname='geo' user='postgres' password='password' port='5432'" \
