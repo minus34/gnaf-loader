@@ -346,7 +346,7 @@ SELECT gid,
        abb_name AS name,
        lga_name AS full_name,
        state,
-       st_multi(st_union(st_buffer(geom, 0.0))) AS geom
+       st_multi(st_union(st_buffer(geom, 0.0)))::geometry(Multipolygon, {0}, 2) AS geom
   FROM raw_admin_bdys.aus_lga
   GROUP BY
        gid,
@@ -373,7 +373,7 @@ SELECT bdy.gid,
        bdy.ward_name AS name,
        lga.lga_name AS lga_name,
        bdy.state,
-       st_multi(st_union(st_buffer(bdy.geom, 0.0))) AS geom
+       st_multi(st_union(st_buffer(bdy.geom, 0.0)))::geometry(Multipolygon, {0}, 2) AS geom
   FROM raw_admin_bdys.aus_wards AS bdy
   INNER JOIN raw_admin_bdys.aus_lga AS lga ON bdy.lga_pid = lga.lga_pid
   GROUP BY bdy.gid,
