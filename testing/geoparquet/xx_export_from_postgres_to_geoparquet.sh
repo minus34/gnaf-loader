@@ -65,10 +65,13 @@ docker pull osgeo/gdal:ubuntu-full-3.6.0
 
 
 
+
+# convert Postgres table to GeoParquet
+# - prereqs - add Docker container IP rnage to both Postyres conf and HBA file to allow access to localhost database
 docker run --rm -it -v $(pwd):/data osgeo/gdal:ubuntu-full-3.6.0 \
   ogr2ogr \
-  "${OUTPUT_FOLDER}/${INPUT_TABLE}.parquet" \
-  PG:"host='localhost' dbname='geo' user='postgres' password='password' port='5432'" \
+  "/data/${INPUT_TABLE}.parquet" \
+  PG:"host='host.docker.internal' dbname='geo' user='postgres' password='password' port='5432'" \
   "${INPUT_SCHEMA}.${INPUT_TABLE}(geom)" \
   -lco COMPRESSION=BROTLI \
   -lco GEOMETRY_ENCODING=GEOARROW \
