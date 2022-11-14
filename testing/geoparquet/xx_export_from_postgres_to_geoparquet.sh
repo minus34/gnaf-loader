@@ -9,6 +9,8 @@ SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
 OUTPUT_FOLDER="/Users/$(whoami)/tmp/gdal-testing"
 mkdir -p "${OUTPUT_FOLDER}"
+cd "${OUTPUT_FOLDER}"
+
 
 INPUT_SCHEMA="gnaf_202208"
 
@@ -49,9 +51,8 @@ INPUT_TABLE="address_principals"
 
 #rm "${OUTPUT_FOLDER}/${INPUT_TABLE}.json"
 
-rm ${OUTPUT_FOLDER}/${INPUT_TABLE}.csv
+#rm ${OUTPUT_FOLDER}/${INPUT_TABLE}.csv
 
-docker pull osgeo/gdal:ubuntu-full-3.6.0
 
 #docker run --rm -it -v $(pwd):/data osgeo/gdal:ubuntu-full-3.6.0 \
 
@@ -70,6 +71,7 @@ docker pull osgeo/gdal:ubuntu-full-3.6.0
 # - prereqs - add Docker container IP rnage to both Postyres conf and HBA file to allow access to localhost database
 docker run --rm -it -v $(pwd):/data osgeo/gdal:ubuntu-full-3.6.0 \
   ogr2ogr \
+  -overwrite \
   "/data/${INPUT_TABLE}.parquet" \
   PG:"host='host.docker.internal' dbname='geo' user='postgres' password='password' port='5432'" \
   "${INPUT_SCHEMA}.${INPUT_TABLE}(geom)" \
