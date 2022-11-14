@@ -24,9 +24,9 @@ do
          WHERE table_schema='${input_schema}'
            AND table_type='BASE TABLE'
            AND table_name <> 'qa'
-           AND table_name NOT LIKE '%_2011_%'
-           AND table_name NOT LIKE '%_analysis%'
-           AND table_name NOT LIKE '%_display%';"
+           AND table_name NOT LIKE '%_2011_%';"
+#           AND table_name NOT LIKE '%_analysis%'
+#           AND table_name NOT LIKE '%_display%';"
 
   psql -d geo -p 5432 -U postgres -t -A -c "${QUERY}" >> tables.txt
 done
