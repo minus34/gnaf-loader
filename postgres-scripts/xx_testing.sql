@@ -1,4 +1,7 @@
 
+select *
+from admin_bdys_202208.locality_bdys_display;
+
 
 select count(*)
 from gnaf_202208.address_aliases;

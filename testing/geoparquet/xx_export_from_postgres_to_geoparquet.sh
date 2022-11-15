@@ -9,7 +9,7 @@
 # get the directory this script is running from
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
-OUTPUT_FOLDER="/Users/$(whoami)/tmp/gdal-testing"
+OUTPUT_FOLDER="/Users/$(whoami)/tmp/geoscape_202208/geoparquet"
 mkdir -p "${OUTPUT_FOLDER}"
 cd "${OUTPUT_FOLDER}"
 
@@ -45,10 +45,10 @@ while read p; do
     ogr2ogr \
     "/data/${input_table}.parquet" \
     PG:"host='host.docker.internal' dbname='geo' user='postgres' password='password' port='5432'" \
-    "${input_schema}.${input_table}(geom)" \
-    -lco COMPRESSION=BROTLI \
-    -lco GEOMETRY_ENCODING=GEOARROW \
-    -lco POLYGON_ORIENTATION=COUNTERCLOCKWISE \
-    -lco ROW_GROUP_SIZE=9999999
+    "${input_schema}.${input_table}(geom)"
+#    -lco COMPRESSION=BROTLI \
+#    -lco GEOMETRY_ENCODING=GEOARROW \
+#    -lco POLYGON_ORIENTATION=COUNTERCLOCKWISE \
+#    -lco ROW_GROUP_SIZE=9999999
 
 done < tables.txt
