@@ -4,7 +4,7 @@ import multiprocessing
 import math
 import os
 # import platform
-import psycopg2
+import psycopg
 import settings
 import subprocess
 # import sys
@@ -36,7 +36,7 @@ def multiprocess_list(mp_type, work_list, logger):
 
 
 def run_sql_multiprocessing(the_sql):
-    pg_conn = psycopg2.connect(settings.pg_connect_string)
+    pg_conn = psycopg.connect(settings.pg_connect_string)
     pg_conn.autocommit = True
     pg_cur = pg_conn.cursor()
 
@@ -233,7 +233,7 @@ def import_shapefile_to_postgres(file_path, pg_table, pg_schema, delete_table, s
     sql = sql.replace("DROP TABLE IF EXISTS IF EXISTS ", "DROP TABLE IF EXISTS ")
 
     # import data to Postgres
-    pg_conn = psycopg2.connect(settings.pg_connect_string)
+    pg_conn = psycopg.connect(settings.pg_connect_string)
     pg_conn.autocommit = True
     pg_cur = pg_conn.cursor()
 
