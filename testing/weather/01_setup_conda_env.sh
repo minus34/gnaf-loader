@@ -39,7 +39,7 @@ conda config --env --set channel_priority strict
 conda activate minus34
 
 # install conda packages
-echo "y" | conda install -c conda-forge pyspark=${SPARK_VERSION} pyspark-stubs psycopg2 dask geopandas pygeos geoalchemy2 jupyter lux-api pyarrow matplotlib scipy bs4 requests boto3
+echo "y" | conda install -c conda-forge pyspark=${SPARK_VERSION} pyspark-stubs psycopg dask geopandas pygeos geoalchemy2 jupyter lux-api pyarrow matplotlib scipy bs4 requests boto3
 
 # setup lux widget (for automated viz) for Jupyter notebooks
 jupyter nbextension install --py luxwidget

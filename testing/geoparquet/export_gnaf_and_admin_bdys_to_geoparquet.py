@@ -18,7 +18,7 @@ import json
 import logging
 import math
 import os
-import psycopg2
+import psycopg
 import pyarrow as pa
 import pyarrow.parquet as pq
 import pyproj
@@ -61,11 +61,11 @@ pg_settings = get_password("localhost_super")
 # # create Postgres JDBC url
 # jdbc_url = "jdbc:postgresql://{HOST}:{PORT}/{DB}".format(**pg_settings)
 
-# get connect string for psycopg2
+# get connect string for psycopg
 pg_connect_string = "dbname={DB} host={HOST} port={PORT} user={USER} password={PASS}".format(**pg_settings)
 
 # get connect string for sqlalchemy
-sql_alchemy_engine_string = "postgresql+psycopg2://{USER}:{PASS}@{HOST}:{PORT}/{DB}".format(**pg_settings)
+sql_alchemy_engine_string = "postgresql+psycopg://{USER}:{PASS}@{HOST}:{PORT}/{DB}".format(**pg_settings)
 
 # Set PyGEOS to True to speed up GeoPandas
 geopandas.options.use_pygeos = True
@@ -93,7 +93,7 @@ def main():
     sql_engine = sqlalchemy.create_engine(sql_alchemy_engine_string, isolation_level="AUTOCOMMIT")
 
     # get list of tables to export to S3
-    pg_conn = psycopg2.connect(pg_connect_string)
+    pg_conn = psycopg.connect(pg_connect_string)
     pg_cur = pg_conn.cursor()
 
     # --------------------------------------------------------------

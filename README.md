@@ -19,7 +19,7 @@ To get a good load time you'll need to configure your Postgres server for perfor
 ### Pre-requisites
 - Postgres 10.x and above with PostGIS 2.2+
 - Add the Postgres bin directory to your system PATH
-- Python 3.6+ with Psycopg2 2.6+
+- Python 3.6+ with Psycopg 3.x
 
 ### Process
 1. Download [Geoscape GNAF from data.gov.au](https://data.gov.au/dataset/geocoded-national-address-file-g-naf)

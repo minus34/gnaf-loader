@@ -8,7 +8,7 @@ import multiprocessing
 import numpy
 import os
 import pandas
-import psycopg2
+import psycopg
 import requests
 import scipy.interpolate
 import sqlalchemy

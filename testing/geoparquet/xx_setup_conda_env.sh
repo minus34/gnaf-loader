@@ -31,7 +31,7 @@ conda config --env --set channel_priority strict
 conda activate gdal
 
 # install packages for gdal only
-mamba install -y -c conda-forge gdal psycopg2 pyarrow boto3 importlib_resources
+mamba install -y -c conda-forge gdal psycopg pyarrow boto3 importlib_resources
 
 ## install packages for gdal build
 #mamba install -y -c conda-forge curl libiconv icu swig numpy pytest zlib

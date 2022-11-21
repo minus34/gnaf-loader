@@ -56,7 +56,7 @@
 - A `--no-boundary-tag` flag replaces the incorrectly implemented `--boundary-tag` flag. Including the `--no-boundary-tag` flag will prevent GNAF being tagging with PSMA Admin Boundary IDs and save ~15-45 minutes of processing time.
 
 ### February 2017 Release
-- Refactored the raw admin boundary import process to avoid needing to set PGPASSWORD. This could have failed on some Postgres instances due to security settings. The new process imports the shapefiles into SQL and then runs it using Psycopg2 instead of psql. 
+- Refactored the raw admin boundary import process to avoid needing to set PGPASSWORD. This could have failed on some Postgres instances due to security settings. The new process imports the shapefiles into SQL and then runs it using psycopg instead of psql. 
 
 ### November 2016 Release
 - Logging is now written to load-gnaf.log in your local repo directory as well as to the console 

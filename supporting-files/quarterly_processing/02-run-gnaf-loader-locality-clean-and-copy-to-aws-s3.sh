@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# need a Python 3.6+ environment with Psycopg2 (run 01_setup_conda_env.sh to create Conda environment)
+# need a Python 3.6+ environment with Psycopg (run 01_setup_conda_env.sh to create Conda environment)
 conda deactivate
 conda activate geo
 

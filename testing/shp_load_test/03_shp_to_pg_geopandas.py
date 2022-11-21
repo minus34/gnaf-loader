@@ -13,8 +13,8 @@ file_path = args.path
 
 # -- START EDIT SETTINGS ----------------------------------------------------------------------------------------------
 
-# postgres connect string - format: "postgresql+psycopg2://<username>:<password>@<host>:<port>/<database>"
-sql_alchemy_engine_string = "postgresql+psycopg2://postgres:password@localhost:5432/geo"
+# postgres connect string - format: "postgresql+psycopg://<username>:<password>@<host>:<port>/<database>"
+sql_alchemy_engine_string = "postgresql+psycopg://postgres:password@localhost:5432/geo"
 
 # -- END EDIT SETTINGS ------------------------------------------------------------------------------------------------
 

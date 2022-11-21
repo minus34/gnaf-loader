@@ -19,7 +19,7 @@ import argparse
 import logging
 import math
 import os
-import psycopg2
+import psycopg
 import sys
 
 # from boto3.s3.transfer import TransferConfig  # S3 transfer disabled as AWS CLI sync is much faster
@@ -62,7 +62,7 @@ pg_settings = get_password("localhost_super")
 # create Postgres JDBC url
 jdbc_url = "jdbc:postgresql://{HOST}:{PORT}/{DB}".format(**pg_settings)
 
-# get connect string for psycopg2
+# get connect string for psycopg
 pg_connect_string = "dbname={DB} host={HOST} port={PORT} user={USER} password={PASS}".format(**pg_settings)
 
 # # aws details
@@ -114,7 +114,7 @@ def main():
     logger.info("\t - PySpark {} session initiated: {}".format(spark.sparkContext.version, datetime.now() - start_time))
 
     # get list of tables to export to S3
-    pg_conn = psycopg2.connect(pg_connect_string)
+    pg_conn = psycopg.connect(pg_connect_string)
     pg_cur = pg_conn.cursor()
 
     # --------------------------------------------------------------
