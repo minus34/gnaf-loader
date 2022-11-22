@@ -207,8 +207,9 @@ def import_shapefile_to_postgres(file_path, pg_table, pg_schema, delete_table, s
     else:
         spatial_or_dbf_flags = "-G -n"
 
-    # build shp2pgsql command line
-    shp2pgsql_cmd = f"shp2pgsql {delete_append_flag} {spatial_or_dbf_flags} -i \"{file_path}\" {pg_schema}.{pg_table}"
+    # build shp2pgsql command line (note: forces 2D as some files erroneously have Z values in their geometries)
+    shp2pgsql_cmd = f"shp2pgsql -t 2D {delete_append_flag} {spatial_or_dbf_flags}" \
+                    f" -i \"{file_path}\" {pg_schema}.{pg_table}"
     # print(shp2pgsql_cmd)
 
     # convert the Shapefile to SQL statements
