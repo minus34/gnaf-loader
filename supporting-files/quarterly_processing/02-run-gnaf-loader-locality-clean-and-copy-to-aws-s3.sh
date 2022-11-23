@@ -23,6 +23,9 @@ echo "--------------------------------------------------------------------------
 python3 /Users/$(whoami)/git/minus34/gnaf-loader/load-gnaf.py --pgport=5432 --pgdb=geo --max-processes=6 --gnaf-tables-path="${GNAF_PATH}" --admin-bdys-path="${BDYS_PATH}"
 python3 /Users/$(whoami)/git/iag_geo/psma-admin-bdys/locality-clean.py --pgport=5432 --pgdb=geo --max-processes=6 --output-path=${OUTPUT_FOLDER}
 
+# upload locality bdy files to S3
+aws --profile=${AWS_PROFILE} s3 sync ${OUTPUT_FOLDER} s3://minus34.com/opendata/geoscape-202211 --exclude "*" --include "*.zip" --acl public-read
+
 echo "---------------------------------------------------------------------------------------------------------------------"
 echo "create concordance file"
 echo "---------------------------------------------------------------------------------------------------------------------"
