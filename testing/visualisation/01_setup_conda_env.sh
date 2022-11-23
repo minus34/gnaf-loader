@@ -28,8 +28,8 @@ conda config --env --set channel_priority strict
 conda activate datashader
 
 # install packages
-echo "y" | conda install -c conda-forge dask datashader holoviews pyarrow psycopg2 geoalchemy2 jupyter
-#echo "y" | conda install -c conda-forge geopandas dask pygeos datashader holoviews pyarrow psycopg2 geoalchemy2 jupyter
+echo "y" | conda install -c conda-forge dask datashader holoviews pyarrow psycopg geoalchemy2 jupyter
+#echo "y" | conda install -c conda-forge geopandas dask pygeos datashader holoviews pyarrow psycopg geoalchemy2 jupyter
 #pip install git+git://github.com/geopandas/dask-geopandas.git
 
 # --------------------------

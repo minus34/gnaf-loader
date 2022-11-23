@@ -3,7 +3,7 @@
 import os
 import argparse
 import platform
-import psycopg2
+import psycopg
 import sys
 
 from datetime import datetime
@@ -33,9 +33,9 @@ def get_geoscape_version(date):
     return gs_version, previous_gs_version
 
 
-# get python, psycopg2 and OS versions
+# get python, psycopg and OS versions
 python_version = sys.version.split("(")[0].strip()
-psycopg2_version = psycopg2.__version__.split("(")[0].strip()
+psycopg_version = psycopg.__version__.split("(")[0].strip()
 os_version = platform.system() + " " + platform.version().strip()
 
 # get the command line arguments for the script
@@ -63,7 +63,8 @@ parser.add_argument(
          "WARNING: if you have PostGIS 2.1 or lower - this process can take hours")
 parser.add_argument(
     "--srid", type=int, default=4283,
-    help="Sets the coordinate system (SRID aka EPSG number) of the input data. Valid values are 4283 (GDA94) and 7844 (GDA2020)")
+    help="Sets the coordinate system (SRID aka EPSG number) of the input data. "
+         "Valid values are 4283 (GDA94) and 7844 (GDA2020)")
 
 
 # PG Options
@@ -214,7 +215,7 @@ if "TAS" in states_to_load or "VIC" in states_to_load or "WA" in states_to_load:
 # get Postgres, PostGIS & GEOS versions and flag if ST_Subdivide is supported
 
 # get Postgres connection & cursor
-temp_pg_conn = psycopg2.connect(pg_connect_string)
+temp_pg_conn = psycopg.connect(pg_connect_string)
 temp_pg_cur = temp_pg_conn.cursor()
 
 # get Postgres version
@@ -243,7 +244,8 @@ for lib_string in lib_strings:
         postgis_version_num = [int(v) for v in postgis_version.split('.') if v.isdigit()]
     if lib_string[:5] == "GEOS=":
         geos_version = lib_string.replace("GEOS=", "")
-        # Parse for numeric parts of GEOS version, handling (for eg. '3.10.2-CAPI-1.16.0') well enough to get the major/minor version
+        # Parse for numeric parts of GEOS version,
+        # handling (for eg. '3.10.2-CAPI-1.16.0') well enough to get the major/minor version
         geos_version_num = [int(v) for v in geos_version.split('.') if v.isdigit()]
 
 if (postgis_version_num[0] > 2 or (postgis_version_num[0] == 2 and postgis_version_num[1] >= 2)) and \

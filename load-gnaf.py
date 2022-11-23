@@ -28,7 +28,7 @@
 # *********************************************************************************************************************
 
 import os
-import psycopg2
+import psycopg
 import logging.config
 import geoscape
 import settings  # gets global vars and runtime arguments
@@ -40,18 +40,18 @@ def main():
     full_start_time = datetime.now()
 
     # log Python and OS versions
-    logger.info(f"\t- running Python {settings.python_version} with Psycopg2 {settings.psycopg2_version}")
+    logger.info(f"\t- running Python {settings.python_version} with psycopg {settings.psycopg_version}")
     logger.info(f"\t- on {settings.os_version}")
 
     # get Postgres connection & cursor
-    pg_conn = psycopg2.connect(settings.pg_connect_string)
+    pg_conn = psycopg.connect(settings.pg_connect_string)
     pg_conn.autocommit = True
     pg_cur = pg_conn.cursor()
 
     # add postgis to database (in the public schema) - run this in a try to confirm db user has privileges
     try:
         pg_cur.execute("SET search_path = public, pg_catalog; CREATE EXTENSION IF NOT EXISTS postgis")
-    except psycopg2.Error:
+    except psycopg.Error:
         logger.fatal("Unable to add PostGIS extension\nACTION: Check your Postgres user privileges or PostGIS install")
         return False
 
@@ -96,7 +96,7 @@ def main():
     create_raw_gnaf_tables(pg_cur)
     populate_raw_gnaf(pg_cur)
     clean_authority_files(pg_cur, settings.raw_gnaf_schema, False)
-    index_raw_gnaf(pg_cur)
+    index_raw_gnaf()
     if settings.primary_foreign_keys:
         create_primary_foreign_keys()
     else:
@@ -214,7 +214,7 @@ def populate_raw_gnaf(pg_cur):
         # load all PSV files using multiprocessing
         geoscape.multiprocess_list("sql", sql_list, logger)
 
-        # fix missing geocodes (added due to missing data in 202208 release)
+        # fix missing geocodes (added due to missing data in 202211 release)
         sql = geoscape.open_sql_file("01-04-raw-gnaf-fix-missing-geocodes.sql")
         pg_cur.execute(sql)
 
@@ -247,7 +247,7 @@ def get_raw_gnaf_files(prefix):
 
 
 # index raw gnaf using multiprocessing
-def index_raw_gnaf(pg_cur):
+def index_raw_gnaf():
     # Step 5 of 7 : create indexes
     start_time = datetime.now()
 
@@ -335,7 +335,8 @@ def load_raw_admin_boundaries(pg_cur):
                         if file_name.lower().endswith(".shp"):
                             file_dict["spatial"] = True
                             file_dict["file_path"] = os.path.join(root, file_name)
-                        elif file_name.lower().endswith(".dbf") and not file_name.lower().endswith("_polygon_shp.dbf") and not file_name.lower().endswith("_point_shp.dbf"):
+                        elif file_name.lower().endswith(".dbf") and not file_name.lower().endswith("_polygon_shp.dbf") \
+                                and not file_name.lower().endswith("_point_shp.dbf"):
                             file_dict["spatial"] = False
                             file_dict["file_path"] = os.path.join(root, file_name)
 
@@ -398,7 +399,6 @@ def load_raw_admin_boundaries(pg_cur):
 
 def clean_authority_files(pg_cur, schema_name, create_indexes=False):
     # ensure authority tables have unique values - admin bdys now have duplicates
-    start_time = datetime.now()
 
     error_count = 0
 
@@ -419,27 +419,27 @@ def clean_authority_files(pg_cur, schema_name, create_indexes=False):
         # fix inconsistent field names with brute force method (issue loading Shapefile/DBF data)
         try:
             pg_cur.execute(f"ALTER TABLE {schema_name}.{table_name} RENAME COLUMN code_aut TO code")
-        except psycopg2.Error:
+        except psycopg.Error:
             pass
 
         try:
             pg_cur.execute(f"ALTER TABLE {schema_name}.{table_name} RENAME COLUMN name_aut TO name")
-        except psycopg2.Error:
+        except psycopg.Error:
             pass
 
         try:
             pg_cur.execute(f"ALTER TABLE {schema_name}.{table_name} RENAME COLUMN dscpn_aut TO description")
-        except psycopg2.Error:
+        except psycopg.Error:
             pass
 
         try:
             pg_cur.execute(f"ALTER TABLE {schema_name}.{table_name} RENAME COLUMN desc_aut TO description")
-        except psycopg2.Error:
+        except psycopg.Error:
             pass
 
         try:
             pg_cur.execute(f"ALTER TABLE {schema_name}.{table_name} RENAME COLUMN descriptio TO description")
-        except psycopg2.Error:
+        except psycopg.Error:
             pass
 
         # fix inconsistent descriptions in meshblock authority table by setting them to null
@@ -477,14 +477,14 @@ def clean_authority_files(pg_cur, schema_name, create_indexes=False):
             # drop primary key on gid field
             try:
                 pg_cur.execute(f"ALTER TABLE ONLY {schema_name}.{table_name} DROP CONSTRAINT {table_name}_pkey")
-            except psycopg2.Error as e:
+            except psycopg.Error:
                 pass
 
             # attempt to create a primary key on the authority code - failure will imply a raw data error from Geoscape
             try:
                 pg_cur.execute(f"ALTER TABLE ONLY {schema_name}.{table_name} "
                                f"ADD CONSTRAINT {table_name}_pkey PRIMARY KEY (code)")
-            except psycopg2.Error as ex:
+            except psycopg.Error as ex:
                 error_count += 1
 
                 logger.warning(f"CAN'T CREATE PRIMARY KEY ON {schema_name}.{table_name} "
@@ -901,7 +901,7 @@ def create_qa_tables(pg_cur):
 
             try:
                 pg_cur.execute(sql)
-            except psycopg2.Error:  # triggers when there is no state field in the table
+            except psycopg.Error:  # triggers when there is no state field in the table
                 # change the query for an Australia count only
                 sql = f"INSERT INTO {schema}.qa (table_name, aus) " \
                       f"SELECT '{table_name}', Count(*) FROM {schema}.{table_name}"

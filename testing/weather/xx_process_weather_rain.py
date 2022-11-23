@@ -18,7 +18,7 @@ import multiprocessing
 import numpy
 import os
 import pandas
-import psycopg2
+import psycopg
 import requests
 import scipy.interpolate
 import sqlalchemy
@@ -48,7 +48,7 @@ base_url = "http://www.bom.gov.au/{0}/observations/{0}all.shtml"
 
 # postgres connect strings
 pg_connect_string = "dbname='geo' host='localhost' port='5432' user='postgres' password='password'"
-sql_alchemy_engine_string = "postgresql+psycopg2://postgres:password@localhost/geo"
+sql_alchemy_engine_string = "postgresql+psycopg://postgres:password@localhost/geo"
 
 
 def main():
@@ -56,10 +56,10 @@ def main():
 
     # connect to Postgres
     try:
-        pg_conn = psycopg2.connect(pg_connect_string)
+        pg_conn = psycopg.connect(pg_connect_string)
         pg_conn.autocommit = True
         pg_cur = pg_conn.cursor()
-    except psycopg2.Error:
+    except psycopg.Error:
         logger.fatal("Unable to connect to database\nACTION: Check your Postgres parameters and/or database security")
         return False
 
@@ -128,7 +128,7 @@ def main():
 
     # select GNAF coordinates - group by 3 decimal places to create a ~100m grid of addresses
     # sql = """SELECT latitude::numeric(5,3) as latitude, longitude::numeric(6,3) as longitude, count(*) as address_count
-    #          FROM gnaf_202208.address_principals
+    #          FROM gnaf_202211.address_principals
     #          GROUP BY latitude::numeric(5,3), longitude::numeric(6,3)"""
     # sql = """SELECT * FROM testing.gnaf_points_with_pop_and_height"""
     # gnaf_df = pandas.read_sql_query(sql, pg_conn)

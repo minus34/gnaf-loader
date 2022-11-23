@@ -4,7 +4,7 @@ import multiprocessing
 import math
 import os
 # import platform
-import psycopg2
+import psycopg
 import settings
 import subprocess
 # import sys
@@ -36,7 +36,7 @@ def multiprocess_list(mp_type, work_list, logger):
 
 
 def run_sql_multiprocessing(the_sql):
-    pg_conn = psycopg2.connect(settings.pg_connect_string)
+    pg_conn = psycopg.connect(settings.pg_connect_string)
     pg_conn.autocommit = True
     pg_cur = pg_conn.cursor()
 
@@ -207,8 +207,9 @@ def import_shapefile_to_postgres(file_path, pg_table, pg_schema, delete_table, s
     else:
         spatial_or_dbf_flags = "-G -n"
 
-    # build shp2pgsql command line
-    shp2pgsql_cmd = f"shp2pgsql {delete_append_flag} {spatial_or_dbf_flags} -i \"{file_path}\" {pg_schema}.{pg_table}"
+    # build shp2pgsql command line (note: forces 2D as some files erroneously have Z values in their geometries)
+    shp2pgsql_cmd = f"shp2pgsql -t 2D {delete_append_flag} {spatial_or_dbf_flags}" \
+                    f" -i \"{file_path}\" {pg_schema}.{pg_table}"
     # print(shp2pgsql_cmd)
 
     # convert the Shapefile to SQL statements
@@ -233,7 +234,7 @@ def import_shapefile_to_postgres(file_path, pg_table, pg_schema, delete_table, s
     sql = sql.replace("DROP TABLE IF EXISTS IF EXISTS ", "DROP TABLE IF EXISTS ")
 
     # import data to Postgres
-    pg_conn = psycopg2.connect(settings.pg_connect_string)
+    pg_conn = psycopg.connect(settings.pg_connect_string)
     pg_conn.autocommit = True
     pg_cur = pg_conn.cursor()
 

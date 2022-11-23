@@ -1,7 +1,7 @@
 
 psql -d geo -p 5432 -U postgres -c "CREATE EXTENSION IF NOT EXISTS postgis;"
 
-"C:\Program Files\PostgreSQL\12\bin\pg_restore" -Fc -d geo -p 5432 -U postgres "C:\git\minus34\gnaf-202208.dmp"
-"C:\Program Files\PostgreSQL\12\bin\pg_restore" -Fc -d geo -p 5432 -U postgres "C:\git\minus34\admin-bdys-202208.dmp"
+"C:\Program Files\PostgreSQL\12\bin\pg_restore" -Fc -d geo -p 5432 -U postgres "C:\git\minus34\gnaf-202211.dmp"
+"C:\Program Files\PostgreSQL\12\bin\pg_restore" -Fc -d geo -p 5432 -U postgres "C:\git\minus34\admin-bdys-202211.dmp"
 
 pause
