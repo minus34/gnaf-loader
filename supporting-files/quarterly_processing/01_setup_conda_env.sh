@@ -38,8 +38,9 @@ conda activate ${ENV_NAME}
 
 # install geospatial packages
 #pip install open3d==0.15.1
-conda install -y -c conda-forge gdal pygeos pyarrow dask-geopandas geoplot openpyxl psycopg geoalchemy2 rasterio jupyter boto3 aiohttp requests
+conda install -y -c conda-forge gdal libgdal-arrow-parquet pygeos dask-geopandas geoplot openpyxl psycopg geoalchemy2 rasterio jupyter boto3 aiohttp requests
 conda activate ${ENV_NAME}
+
 
 # additional package requiring pip
 pip install psycopg_pool
