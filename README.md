@@ -13,6 +13,8 @@ Have a look at [these intro slides](https://minus34.com/opendata/intro-to-gnaf.p
 ## Option 1 - Run load.gnaf.py
 Running the Python script takes 30-120 minutes on a Postgres server configured to take advantage of the RAM available.
 
+You can process the GDA94 or GDA2020 version of the data - just ensure that you download the same version for both GNAF and the Administrative Boundaries. If you don't know what GDA94 or GDA2020 is, download the GDA94 versions (FYI - they're different coordinate systems) 
+
 ### Performance
 To get a good load time you'll need to configure your Postgres server for performance. There's a good guide [here](https://postgis.net/workshops/postgis-intro/tuning.html), noting it's a few years old and some of the memory parameters can be beefed up if you have the RAM.
 
@@ -22,8 +24,8 @@ To get a good load time you'll need to configure your Postgres server for perfor
 - Python 3.6+ with Psycopg 3.x
 
 ### Process
-1. Download [Geoscape GNAF from data.gov.au](https://data.gov.au/dataset/geocoded-national-address-file-g-naf)
-2. Download [Geoscape Administrative Boundaries from data.gov.au](https://data.gov.au/dataset/geoscape-administrative-boundaries) (**download the ESRI Shapefile GDA94 version**)
+1. Download [Geoscape GNAF from data.gov.au](https://data.gov.au/dataset/geocoded-national-address-file-g-naf) (GDA94 or GDA2020)
+2. Download [Geoscape Administrative Boundaries from data.gov.au](https://data.gov.au/dataset/geoscape-administrative-boundaries) (**download the ESRI Shapefile (GDA94 or GDA2020) version**)
 3. Unzip GNAF to a directory on your Postgres server
 4. Unzip Admin Bdys to a local directory
 5. Alter security on those directories to grant Postgres read access
