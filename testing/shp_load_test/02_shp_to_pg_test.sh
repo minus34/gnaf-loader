@@ -7,9 +7,9 @@ conda activate geo
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
 # Path of postgres executables
-POSTGRES_PATH="/Applications/Postgres.app/Contents/Versions/13/bin"
+POSTGRES_PATH="/Applications/Postgres.app/Contents/Versions/14/bin"
 if [ ! -d "${POSTGRES_PATH}" ]; then
-  POSTGRES_PATH="/Applications/Postgres.app/Contents/Versions/13/bin"
+  POSTGRES_PATH="/Applications/Postgres.app/Contents/Versions/14/bin"
 fi
 
 # create an array of state names
