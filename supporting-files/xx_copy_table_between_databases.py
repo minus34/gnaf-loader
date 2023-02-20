@@ -123,12 +123,7 @@ def copy_table(source_pg_connect_string, target_pg_connect_string):
     source_pg_conn = psycopg.connect(source_pg_connect_string)
     source_pg_cur = source_pg_conn.cursor()
 
-    # connect to target Postgres database -- need long timeout due to EDH unreliability
-    target_pg_conn = psycopg.connect(target_pg_connect_string, options='-c statement_timeout=14400000')  # 2hr timeout
-    target_pg_conn.autocommit = True
-    target_pg_cur = target_pg_conn.cursor()
-
-    # connect to target Postgres database -- need long timeout due to EDH unreliability
+    # connect to target Postgres database -- need long timeout for large table
     target_pg_conn = psycopg.connect(target_pg_connect_string, options='-c statement_timeout=14400000')  # 2hr timeout
     target_pg_conn.autocommit = True
     target_pg_cur = target_pg_conn.cursor()
