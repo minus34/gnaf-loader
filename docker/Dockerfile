@@ -1,6 +1,6 @@
 FROM debian:buster-slim
 
-ARG BASE_URL="https://minus34.com/opendata/geoscape-202211"
+ARG BASE_URL="https://minus34.com/opendata/geoscape-202302"
 ENV BASE_URL ${BASE_URL}
 
 # Postgres user password - WARNING: change this to something a lot more secure
@@ -27,14 +27,14 @@ RUN /etc/init.d/postgresql start \
 # download and restore GNAF & Admin Boundary Postgres dump files
 RUN mkdir -p /data \
     && cd /data \
-    && wget --quiet ${BASE_URL}/gnaf-202211.dmp \
-    && wget --quiet ${BASE_URL}/admin-bdys-202211.dmp \
+    && wget --quiet ${BASE_URL}/gnaf-202302.dmp \
+    && wget --quiet ${BASE_URL}/admin-bdys-202302.dmp \
     && /etc/init.d/postgresql start \
-    && pg_restore -Fc -d postgres -h localhost -p 5432 -U postgres /data/gnaf-202211.dmp \
-    && pg_restore -Fc -d postgres -h localhost -p 5432 -U postgres /data/admin-bdys-202211.dmp \
+    && pg_restore -Fc -d postgres -h localhost -p 5432 -U postgres /data/gnaf-202302.dmp \
+    && pg_restore -Fc -d postgres -h localhost -p 5432 -U postgres /data/admin-bdys-202302.dmp \
     && /etc/init.d/postgresql stop \
-    && rm /data/gnaf-202211.dmp \
-    && rm /data/admin-bdys-202211.dmp
+    && rm /data/gnaf-202302.dmp \
+    && rm /data/admin-bdys-202302.dmp
 
 # enable external access to postgres - WARNING: these are insecure settings! Edit these to restrict access
 RUN echo "host all  all    0.0.0.0/0  md5" >> /etc/postgresql/14/main/pg_hba.conf
