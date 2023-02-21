@@ -26,27 +26,27 @@ BDYS_PATH="/Users/$(whoami)/Downloads/FEB23_AdminBounds_GDA94_SHP"
 ## upload locality bdy files to S3
 #aws --profile=${AWS_PROFILE} s3 sync ${OUTPUT_FOLDER} s3://minus34.com/opendata/geoscape-202302 --exclude "*" --include "*.zip" --acl public-read
 
-echo "---------------------------------------------------------------------------------------------------------------------"
-echo "create concordance file"
-echo "---------------------------------------------------------------------------------------------------------------------"
-
-# create concordance file and upload to S3
-
-mkdir -p "${OUTPUT_FOLDER}"
-python3 /Users/$(whoami)/git/iag_geo/concord/create_concordance_file.py --pgdb=geo --output-path=${OUTPUT_FOLDER}
-aws --profile=${AWS_PROFILE} s3 sync ${OUTPUT_FOLDER} s3://minus34.com/opendata/geoscape-202302 --exclude "*" --include "*.csv" --acl public-read
-
-# copy concordance score file to GitHub repo local files
-cp ${OUTPUT_FOLDER}/boundary_concordance_score.csv /Users/$(whoami)/git/iag_geo/concord/data/
-
-echo "---------------------------------------------------------------------------------------------------------------------"
-echo "dump postgres schemas to a local folder"
-echo "---------------------------------------------------------------------------------------------------------------------"
-
-/Applications/Postgres.app/Contents/Versions/14/bin/pg_dump -Fc -d geo -n gnaf_202302 -p 5432 -U postgres -f "${OUTPUT_FOLDER}/gnaf-202302.dmp" --no-owner
-echo "GNAF schema exported to dump file"
-/Applications/Postgres.app/Contents/Versions/14/bin/pg_dump -Fc -d geo -n admin_bdys_202302 -p 5432 -U postgres -f "${OUTPUT_FOLDER}/admin-bdys-202302.dmp" --no-owner
-echo "Admin Bdys schema exported to dump file"
+#echo "---------------------------------------------------------------------------------------------------------------------"
+#echo "create concordance file"
+#echo "---------------------------------------------------------------------------------------------------------------------"
+#
+## create concordance file and upload to S3
+#
+#mkdir -p "${OUTPUT_FOLDER}"
+#python3 /Users/$(whoami)/git/iag_geo/concord/create_concordance_file.py --pgdb=geo --output-path=${OUTPUT_FOLDER}
+#aws --profile=${AWS_PROFILE} s3 sync ${OUTPUT_FOLDER} s3://minus34.com/opendata/geoscape-202302 --exclude "*" --include "*.csv" --acl public-read
+#
+## copy concordance score file to GitHub repo local files
+#cp ${OUTPUT_FOLDER}/boundary_concordance_score.csv /Users/$(whoami)/git/iag_geo/concord/data/
+#
+#echo "---------------------------------------------------------------------------------------------------------------------"
+#echo "dump postgres schemas to a local folder"
+#echo "---------------------------------------------------------------------------------------------------------------------"
+#
+#/Applications/Postgres.app/Contents/Versions/14/bin/pg_dump -Fc -d geo -n gnaf_202302 -p 5432 -U postgres -f "${OUTPUT_FOLDER}/gnaf-202302.dmp" --no-owner
+#echo "GNAF schema exported to dump file"
+#/Applications/Postgres.app/Contents/Versions/14/bin/pg_dump -Fc -d geo -n admin_bdys_202302 -p 5432 -U postgres -f "${OUTPUT_FOLDER}/admin-bdys-202302.dmp" --no-owner
+#echo "Admin Bdys schema exported to dump file"
 
 echo "---------------------------------------------------------------------------------------------------------------------"
 echo "copy Postgres dump files to AWS S3 and allow public read access (requires AWSCLI installed & AWS credentials setup)"
