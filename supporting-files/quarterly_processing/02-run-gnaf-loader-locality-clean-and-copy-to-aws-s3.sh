@@ -16,15 +16,15 @@ OUTPUT_FOLDER="/Users/$(whoami)/tmp/geoscape_202302"
 GNAF_PATH="/Users/$(whoami)/Downloads/g-naf_feb23_allstates_gda94_psv_1010"
 BDYS_PATH="/Users/$(whoami)/Downloads/FEB23_AdminBounds_GDA94_SHP"
 
-echo "---------------------------------------------------------------------------------------------------------------------"
-echo "Run gnaf-loader and locality boundary clean"
-echo "---------------------------------------------------------------------------------------------------------------------"
-
-python3 /Users/$(whoami)/git/minus34/gnaf-loader/load-gnaf.py --pgport=5432 --pgdb=geo --max-processes=6 --gnaf-tables-path="${GNAF_PATH}" --admin-bdys-path="${BDYS_PATH}"
-python3 /Users/$(whoami)/git/iag_geo/psma-admin-bdys/locality-clean.py --pgport=5432 --pgdb=geo --max-processes=6 --output-path=${OUTPUT_FOLDER}
-
-# upload locality bdy files to S3
-aws --profile=${AWS_PROFILE} s3 sync ${OUTPUT_FOLDER} s3://minus34.com/opendata/geoscape-202302 --exclude "*" --include "*.zip" --acl public-read
+#echo "---------------------------------------------------------------------------------------------------------------------"
+#echo "Run gnaf-loader and locality boundary clean"
+#echo "---------------------------------------------------------------------------------------------------------------------"
+#
+#python3 /Users/$(whoami)/git/minus34/gnaf-loader/load-gnaf.py --pgport=5432 --pgdb=geo --max-processes=6 --gnaf-tables-path="${GNAF_PATH}" --admin-bdys-path="${BDYS_PATH}"
+#python3 /Users/$(whoami)/git/iag_geo/psma-admin-bdys/locality-clean.py --pgport=5432 --pgdb=geo --max-processes=6 --output-path=${OUTPUT_FOLDER}
+#
+## upload locality bdy files to S3
+#aws --profile=${AWS_PROFILE} s3 sync ${OUTPUT_FOLDER} s3://minus34.com/opendata/geoscape-202302 --exclude "*" --include "*.zip" --acl public-read
 
 echo "---------------------------------------------------------------------------------------------------------------------"
 echo "create concordance file"

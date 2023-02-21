@@ -7,7 +7,7 @@ Have a look at [these intro slides](https://minus34.com/opendata/intro-to-gnaf.p
 ### There are 4 options for loading the data
 1. [Run](https://github.com/minus34/gnaf-loader#option-1---run-loadgnafpy) the load-gnaf Python script and build the database yourself in a single step
 2. [Pull](https://github.com/minus34/gnaf-loader#option-2---run-the-database-in-a-docker-container) the database from Docker Hub and run it in a container
-3. [Download](https://github.com/minus34/gnaf-loader#option-3---load-pg_dump-files) the GNAF and/or Admin Bdys Postgres dump files & restore them in your Postgres 13+ database
+3. [Download](https://github.com/minus34/gnaf-loader#option-3---load-pg_dump-files) the GNAF and/or Admin Bdys Postgres dump files & restore them in your Postgres 14+ database
 4. [Use or download](https://github.com/minus34/gnaf-loader#option-4---parquet-files-in-s3) Parquet Files in S3 for your data & analytics workflows; either in AWS or your own platform.
 
 ## Option 1 - Run load.gnaf.py
@@ -110,8 +110,8 @@ Download Postgres dump files and restore them in your database.
 Should take 15-60 minutes.
 
 ### Pre-requisites
-- Postgres 13+ with PostGIS 3.0+
-- A knowledge of [Postgres pg_restore parameters](https://www.postgresql.org/docs/13/app-pgrestore.html)
+- Postgres 14+ with PostGIS 3.0+
+- A knowledge of [Postgres pg_restore parameters](https://www.postgresql.org/docs/14/app-pgrestore.html)
 
 ### Process
 1. Download the [GNAF dump file](https://minus34.com/opendata/geoscape-202302/gnaf-202302.dmp) or [GNAF GDA2020 dump file](https://minus34.com/opendata/geoscape-202302-gda2020/gnaf-202302.dmp) (~2.0Gb)

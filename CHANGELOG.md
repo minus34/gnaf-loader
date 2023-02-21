@@ -1,3 +1,6 @@
+### February 2023 Release
+- Postgres dump files are now built on Postgres 14. Requiring Postgres 14+ to use them
+
 ### August 2022 Release
 - Docker images have been upgraded to Postgres 14
 
