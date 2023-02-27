@@ -28,13 +28,16 @@ RUN /etc/init.d/postgresql start \
 RUN mkdir -p /data \
     && cd /data \
     && wget --quiet ${BASE_URL}/gnaf-202302.dmp \
-    && wget --quiet ${BASE_URL}/admin-bdys-202302.dmp \
-    && /etc/init.d/postgresql start \
-    && pg_restore -Fc -d postgres -h localhost -p 5432 -U postgres /data/gnaf-202302.dmp \
-    && pg_restore -Fc -d postgres -h localhost -p 5432 -U postgres /data/admin-bdys-202302.dmp \
-    && /etc/init.d/postgresql stop \
-    && rm /data/gnaf-202302.dmp \
+    && wget --quiet ${BASE_URL}/admin-bdys-202302.dmp
+
+RUN /etc/init.d/postgresql start
+
+RUN pg_restore -Fc -d postgres -h localhost -p 5432 -U postgres /data/gnaf-202302.dmp \
+    && rm /data/gnaf-202302.dmp
+RUN pg_restore -Fc -d postgres -h localhost -p 5432 -U postgres /data/admin-bdys-202302.dmp \
     && rm /data/admin-bdys-202302.dmp
+
+RUN /etc/init.d/postgresql stop
 
 # enable external access to postgres - WARNING: these are insecure settings! Edit these to restrict access
 RUN echo "host all  all    0.0.0.0/0  md5" >> /etc/postgresql/15/main/pg_hba.conf

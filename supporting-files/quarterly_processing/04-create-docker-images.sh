@@ -10,7 +10,7 @@ echo "setup Podman machine"
 echo "---------------------------------------------------------------------------------------------------------------------"
 
 podman machine stop
-podman machine set --cpus=8 --memory=12288 --disk-size 200
+podman machine set --cpus=8 --memory=12288 --disk-size 100
 podman machine start
 
 #echo 'y' | podman machine rm gnaf-vm
