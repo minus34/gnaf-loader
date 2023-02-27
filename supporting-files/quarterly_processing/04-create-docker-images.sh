@@ -20,7 +20,7 @@ echo "--------------------------------------------------------------------------
 echo "build gnaf-loader GDA94 docker image"
 echo "---------------------------------------------------------------------------------------------------------------------"
 
-podman build --no-cache --squash-all --tag docker.io/minus34/gnafloader:latest --tag docker.io/minus34/gnafloader:202302 --build-arg BASE_URL="https://minus34.com/opendata/geoscape-202302" .
+podman build --squash-all --tag docker.io/minus34/gnafloader:latest --tag docker.io/minus34/gnafloader:202302 --build-arg BASE_URL="https://minus34.com/opendata/geoscape-202302" .
 
 #echo "---------------------------------------------------------------------------------------------------------------------"
 #echo "push image (with 2 tags) to Docker Hub"
