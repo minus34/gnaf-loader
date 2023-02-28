@@ -1,6 +1,6 @@
 FROM debian:buster-slim
 
-ARG BASE_URL="https://minus34.com/opendata/geoscape-202211"
+ARG BASE_URL="https://minus34.com/opendata/geoscape-202302"
 ENV BASE_URL ${BASE_URL}
 
 # Postgres user password - WARNING: change this to something a lot more secure
@@ -14,7 +14,7 @@ RUN apt-get update \
     && wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add - \
     && echo "deb http://apt.postgresql.org/pub/repos/apt/ buster-pgdg main" | sudo tee  /etc/apt/sources.list.d/pgdg.list \
     && apt-get update \
-    && apt-get install -y postgresql-14 postgresql-client-14 postgis postgresql-14-postgis-3 \
+    && apt-get install -y postgresql-15 postgresql-client-15 postgis postgresql-15-postgis-3 \
     && apt-get autoremove -y --purge \
     && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
@@ -24,21 +24,26 @@ RUN /etc/init.d/postgresql start \
     && sudo -u postgres psql -c "CREATE EXTENSION postgis;" \
     && /etc/init.d/postgresql stop
 
+# enable external access to postgres - WARNING: these are insecure settings! Edit these to restrict access
+RUN echo "host all  all    0.0.0.0/0  md5" >> /etc/postgresql/15/main/pg_hba.conf
+RUN echo "listen_addresses='*'" >> /etc/postgresql/15/main/postgresql.conf
+
 # download and restore GNAF & Admin Boundary Postgres dump files
 RUN mkdir -p /data \
     && cd /data \
-    && wget --quiet ${BASE_URL}/gnaf-202211.dmp \
-    && wget --quiet ${BASE_URL}/admin-bdys-202211.dmp \
-    && /etc/init.d/postgresql start \
-    && pg_restore -Fc -d postgres -h localhost -p 5432 -U postgres /data/gnaf-202211.dmp \
-    && pg_restore -Fc -d postgres -h localhost -p 5432 -U postgres /data/admin-bdys-202211.dmp \
-    && /etc/init.d/postgresql stop \
-    && rm /data/gnaf-202211.dmp \
-    && rm /data/admin-bdys-202211.dmp
+    && wget --quiet ${BASE_URL}/gnaf-202302.dmp \
+    && wget --quiet ${BASE_URL}/admin-bdys-202302.dmp
 
-# enable external access to postgres - WARNING: these are insecure settings! Edit these to restrict access
-RUN echo "host all  all    0.0.0.0/0  md5" >> /etc/postgresql/14/main/pg_hba.conf
-RUN echo "listen_addresses='*'" >> /etc/postgresql/14/main/postgresql.conf
+RUN /etc/init.d/postgresql start \
+    && pg_restore -Fc -d postgres -h localhost -p 5432 -U postgres /data/gnaf-202302.dmp \
+    && /etc/init.d/postgresql stop \
+    && rm /data/gnaf-202302.dmp
+
+RUN /etc/init.d/postgresql start \
+    && pg_restore -Fc -d postgres -h localhost -p 5432 -U postgres /data/admin-bdys-202302.dmp \
+    && /etc/init.d/postgresql stop \
+    && rm /data/admin-bdys-202302.dmp
+
 EXPOSE 5432
 
 # set user for postgres startup
@@ -48,4 +53,4 @@ USER postgres
 # VOLUME  ["/etc/postgresql", "/var/log/postgresql", "/var/lib/postgresql"]
 
 # Start postgres when starting the container
-CMD ["/usr/lib/postgresql/14/bin/postgres", "-D", "/var/lib/postgresql/14/main", "-c", "config_file=/etc/postgresql/14/main/postgresql.conf"]
+CMD ["/usr/lib/postgresql/15/bin/postgres", "-D", "/var/lib/postgresql/15/main", "-c", "config_file=/etc/postgresql/15/main/postgresql.conf"]

@@ -23,7 +23,7 @@ conda create -y -n gdal python=${PYTHON_VERSION}
 
 # activate and setup env
 conda activate gdal
-conda env config vars set JAVA_HOME="/usr/local/opt/openjdk@11"
+#conda env config vars set JAVA_HOME="/opt/homebrew/opt/openjdk@11"
 conda config --env --add channels conda-forge
 conda config --env --set channel_priority strict
 
@@ -57,7 +57,7 @@ cd cd geoparquet/validator/python
 pip install --no-binary geoparquet_validator .
 
 # sample usage
-#geoparquet_validator /Users/s57405/tmp/geoscape_202211/geoparquet/address_principals.parquet
+#geoparquet_validator /Users/s57405/tmp/geoscape_202302/geoparquet/address_principals.parquet
 
 # --------------------------
 # extra bits
