@@ -1,7 +1,8 @@
 FROM debian:buster-slim
 
-ARG BASE_URL="https://minus34.com/opendata/geoscape-202302"
-ENV BASE_URL ${BASE_URL}
+# replaced the downloading of the Potgres dump files to use local files instead (for performance)
+# ARG BASE_URL="https://minus34.com/opendata/geoscape-202302"
+# ENV BASE_URL ${BASE_URL}
 
 # Postgres user password - WARNING: change this to something a lot more secure
 ARG pg_password="password"
@@ -29,10 +30,16 @@ RUN echo "host all  all    0.0.0.0/0  md5" >> /etc/postgresql/15/main/pg_hba.con
 RUN echo "listen_addresses='*'" >> /etc/postgresql/15/main/postgresql.conf
 
 # download and restore GNAF & Admin Boundary Postgres dump files
-RUN mkdir -p /data \
-    && cd /data \
-    && wget --quiet ${BASE_URL}/gnaf-202302.dmp \
-    && wget --quiet ${BASE_URL}/admin-bdys-202302.dmp
+RUN mkdir -p /data
+WORKDIR /data
+
+ADD gnaf-202302.dmp .
+ADD admin-bdys-202302.dmp .
+
+# replace the add statements above if wanting to download Postgres dump files
+# RUN /data \
+#     && wget --quiet ${BASE_URL}/gnaf-202302.dmp \
+#     && wget --quiet ${BASE_URL}/admin-bdys-202302.dmp
 
 RUN /etc/init.d/postgresql start \
     && pg_restore -Fc -d postgres -h localhost -p 5432 -U postgres /data/gnaf-202302.dmp \
