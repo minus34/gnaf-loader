@@ -3,7 +3,7 @@
 # --------------------------------------------------------------------------------------------------------------------
 
 ENV_NAME=geo
-PYTHON_VERSION="3.10"
+PYTHON_VERSION="3.11"
 
 # --------------------------------------------------------------------------------------------------------------------
 
@@ -46,16 +46,3 @@ pip install psycopg_pool
 
 # clear cache (builds over time)
 conda clean -y --all
-
-# --------------------------
-# extra bits
-# --------------------------
-
-## activate env
-#conda activate ${ENV_NAME}
-
-## shut down env
-#conda deactivate
-
-## delete env permanently
-#conda env remove --name ${ENV_NAME}
