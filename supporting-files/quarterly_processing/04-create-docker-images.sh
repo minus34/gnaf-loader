@@ -24,7 +24,7 @@ echo "--------------------------------------------------------------------------
 docker build --no-cache --squash --tag docker.io/minus34/gnafloader:latest-gda2020 --tag docker.io/minus34/gnafloader:202302-gda2020 --build-arg BASE_URL="https://minus34.com/opendata/geoscape-202302-gda2020" .
 
 echo "---------------------------------------------------------------------------------------------------------------------"
-echo "push images (with 4 tags) to Docker Hub"
+echo "push images (with 2 new tags) to Docker Hub"
 echo "---------------------------------------------------------------------------------------------------------------------"
 
 docker push minus34/gnafloader --all-tags
