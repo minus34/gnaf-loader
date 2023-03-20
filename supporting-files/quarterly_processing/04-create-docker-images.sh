@@ -16,13 +16,13 @@ open -a Docker
 sleep 90
 
 echo "---------------------------------------------------------------------------------------------------------------------"
-echo "build gnaf-loader GDA94 docker image"
+echo "build gnaf-loader GDA94 docker image "
 echo "---------------------------------------------------------------------------------------------------------------------"
 
+# force platform to avoid Apple Silicon only images
 cd ${OUTPUT_FOLDER}
-docker build --no-cache --squash --tag docker.io/minus34/gnafloader:latest --tag docker.io/minus34/gnafloader:202302 \
+docker build --platform linux/amd64 --no-cache --squash --tag docker.io/minus34/gnafloader:latest --tag docker.io/minus34/gnafloader:202302 \
   -f /Users/$(whoami)/git/minus34/gnaf-loader/docker/Dockerfile .
-#  --build-arg BASE_URL="https://minus34.com/opendata/geoscape-202302" .
 
 echo "---------------------------------------------------------------------------------------------------------------------"
 echo "push image (with 2 tags) to Docker Hub"
@@ -42,9 +42,8 @@ echo "build gnaf-loader GDA2020 docker image"
 echo "---------------------------------------------------------------------------------------------------------------------"
 
 cd ${OUTPUT_FOLDER_2020}
-docker build --no-cache --squash --tag docker.io/minus34/gnafloader:latest-gda2020 --tag docker.io/minus34/gnafloader:202302-gda2020 \
+docker build --platform linux/amd64 --no-cache --squash --tag docker.io/minus34/gnafloader:latest-gda2020 --tag docker.io/minus34/gnafloader:202302-gda2020 \
   -f /Users/$(whoami)/git/minus34/gnaf-loader/docker/Dockerfile .
-#  --build-arg BASE_URL="https://minus34.com/opendata/geoscape-202302-gda2020" .
 
 echo "---------------------------------------------------------------------------------------------------------------------"
 echo "push images (with 2 new tags) to Docker Hub"
