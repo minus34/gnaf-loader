@@ -52,10 +52,13 @@ The behaviour of gnaf-loader can be controlled by specifying various command lin
 #### Optional Arguments
 * `--srid` Sets the coordinate system of the input data. Valid values are `4283` (the default: GDA94 lat/long) and `7844` (GDA2020 lat/long).
 * `--geoscape-version` Geoscape version number in YYYYMM format. Defaults to current year and last release month. e.g. `202302`.
+* `--previous-geoscape-version` Previous Geoscape release version number as YYYYMM; used for QA comparison. e.g. `202211`.
 * `--raw-gnaf-schema` schema name to store raw GNAF tables in. Defaults to `raw_gnaf_<geoscape_version>`.
 * `--raw-admin-schema` schema name to store raw admin boundary tables in. Defaults to `raw_admin_bdys_<geoscape_version>`.
 * `--gnaf-schema` destination schema name to store final GNAF tables in. Defaults to `gnaf_<geoscape_version>`.
 * `--admin-schema` destination schema name to store final admin boundary tables in. Defaults to `admin_bdys_<geoscape_version>`.
+* `--previous-gnaf-schema` Schema with previous version of GNAF tables in. Defaults to `gnaf_<previous_geoscape_version>`.
+* `--previous-admin-schema` Schema with previous version of admin boundary tables in. Defaults to `admin_bdys_<previous_geoscape_version>`.
 * `--states` space separated list of states to load, eg `--states VIC TAS`. Defaults to loading all states.
 * `--prevacuum` forces the database to be vacuumed after dropping tables. Defaults to off, and specifying this option will slow the import process.
 * `--raw-fk` creates both primary & foreign keys for the raw GNAF tables. Defaults to off, and will slow the import process if specified. Use this option
