@@ -21,7 +21,7 @@ echo "--------------------------------------------------------------------------
 
 # force platform to avoid Apple Silicon only images
 cd ${OUTPUT_FOLDER}
-docker build --platform linux/amd64 --no-cache --squash --tag docker.io/minus34/gnafloader:latest --tag docker.io/minus34/gnafloader:202305 \
+docker build --platform linux/amd64 --no-cache --tag docker.io/minus34/gnafloader:latest --tag docker.io/minus34/gnafloader:202305 \
   -f /Users/$(whoami)/git/minus34/gnaf-loader/docker/Dockerfile .
 
 echo "---------------------------------------------------------------------------------------------------------------------"
@@ -42,7 +42,7 @@ echo "build gnaf-loader GDA2020 docker image"
 echo "---------------------------------------------------------------------------------------------------------------------"
 
 cd ${OUTPUT_FOLDER_2020}
-docker build --platform linux/amd64 --no-cache --squash --tag docker.io/minus34/gnafloader:latest-gda2020 --tag docker.io/minus34/gnafloader:202305-gda2020 \
+docker build --platform linux/amd64 --no-cache --tag docker.io/minus34/gnafloader:latest-gda2020 --tag docker.io/minus34/gnafloader:202305-gda2020 \
   -f /Users/$(whoami)/git/minus34/gnaf-loader/docker/Dockerfile .
 
 echo "---------------------------------------------------------------------------------------------------------------------"
