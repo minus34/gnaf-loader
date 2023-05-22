@@ -11,7 +11,7 @@ SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 # ---------------------------------------------------------------------------------------------------------------------
 
 AWS_PROFILE="minus34"
-OUTPUT_FOLDER="/Users/$(whoami)/tmp/geoscape_202302"
+OUTPUT_FOLDER="/Users/$(whoami)/tmp/geoscape_202305"
 GNAF_PATH="/Users/$(whoami)/Downloads/g-naf_feb22_allstates_gda94_psv_105"
 BDYS_PATH="/Users/$(whoami)/Downloads/FEB22_AdminBounds_GDA94_SHP"
 GNAF_2020_PATH="/Users/$(whoami)/Downloads/g-naf_feb22_allstates_gda2020_psv_105"
@@ -21,12 +21,12 @@ echo "--------------------------------------------------------------------------
 echo "Run gnaf-loader and locality boundary clean"
 echo "---------------------------------------------------------------------------------------------------------------------"
 
-python3 /Users/$(whoami)/git/minus34/gnaf-loader/load-gnaf.py --pgport=5432 --pgdb=geo --max-processes=6 --gnaf-tables-path="${GNAF_PATH}" --admin-bdys-path="${BDYS_PATH}" --gnaf-schema gnaf_202302 --admin-schema admin_bdys_202302 --previous-gnaf-schema gnaf_202211 --previous-admin-schema admin_bdys_202211
-python3 /Users/$(whoami)/git/iag_geo/psma-admin-bdys/locality-clean.py --pgport=5432 --pgdb=geo --max-processes=6 --output-path=${OUTPUT_FOLDER} --admin-schema admin_bdys_202302
+python3 /Users/$(whoami)/git/minus34/gnaf-loader/load-gnaf.py --pgport=5432 --pgdb=geo --max-processes=6 --gnaf-tables-path="${GNAF_PATH}" --admin-bdys-path="${BDYS_PATH}" --gnaf-schema gnaf_202305 --admin-schema admin_bdys_202305 --previous-gnaf-schema gnaf_202302 --previous-admin-schema admin_bdys_202302
+python3 /Users/$(whoami)/git/iag_geo/psma-admin-bdys/locality-clean.py --pgport=5432 --pgdb=geo --max-processes=6 --output-path=${OUTPUT_FOLDER} --admin-schema admin_bdys_202305
 
 echo "---------------------------------------------------------------------------------------------------------------------"
 echo "Run gnaf-loader and locality boundary clean - GDA2020"
 echo "---------------------------------------------------------------------------------------------------------------------"
 
-python3 /Users/$(whoami)/git/minus34/gnaf-loader/load-gnaf.py --pgport=5432 --pgdb=geo --max-processes=6 --gnaf-tables-path="${GNAF_2020_PATH}" --admin-bdys-path="${BDYS_2020_PATH}" --srid=7844 --gnaf-schema gnaf_202302_gda2020 --admin-schema admin_bdys_202302_gda2020 --previous-gnaf-schema gnaf_202302 --previous-admin-schema admin_bdys_202302
-python3 /Users/$(whoami)/git/iag_geo/psma-admin-bdys/locality-clean.py --pgport=5432 --pgdb=geo --max-processes=6 --output-path=${OUTPUT_FOLDER} --admin-schema admin_bdys_202302_gda2020
+python3 /Users/$(whoami)/git/minus34/gnaf-loader/load-gnaf.py --pgport=5432 --pgdb=geo --max-processes=6 --gnaf-tables-path="${GNAF_2020_PATH}" --admin-bdys-path="${BDYS_2020_PATH}" --srid=7844 --gnaf-schema gnaf_202305_gda2020 --admin-schema admin_bdys_202305_gda2020 --previous-gnaf-schema gnaf_202305 --previous-admin-schema admin_bdys_202305
+python3 /Users/$(whoami)/git/iag_geo/psma-admin-bdys/locality-clean.py --pgport=5432 --pgdb=geo --max-processes=6 --output-path=${OUTPUT_FOLDER} --admin-schema admin_bdys_202305_gda2020
