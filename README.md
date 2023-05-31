@@ -38,9 +38,9 @@ To get a good load time you'll need to configure your Postgres server for perfor
 The behaviour of gnaf-loader can be controlled by specifying various command line options to the script. Supported arguments are:
 
 #### Required Arguments
-* `--gnaf-tables-path` specifies the path to the extracted source GNAF tables (eg *.psv files). This should match the extracted directory which contains the subfolders `Authority Code` and `Standard`. __This directory must be accessible by the Postgres server__, and the corresponding local path for the server to this directory may need to be set via the `local-server-dir` argument
+* `--gnaf-tables-path` specifies the path to the extracted GNAF PSV files. __This directory must be accessible by the Postgres server__, and the corresponding local path for the server to this directory may need to be set via the `local-server-dir` argument
 * `--local-server-dir` specifies the local path on the Postgres server corresponding to `gnaf-tables-path`. If the server is running locally this argument can be omitted.
-* `--admin-bdys-path` specifies the path to the extracted source admin boundary files. This path should contain a subfolder named `Administrative Boundaries`. Unlike `gnaf-tables-path`, this path does not necessarily have to be accessible to the remote Postgres server.
+* `--admin-bdys-path` specifies the path to the extracted Shapefile admin boundary files. Unlike `gnaf-tables-path`, this path does not necessarily have to be accessible to the remote Postgres server.
 
 #### Postgres Parameters
 * `--pghost` the host name for the Postgres server. This defaults to the `PGHOST` environment variable if set, otherwise defaults to `localhost`.
