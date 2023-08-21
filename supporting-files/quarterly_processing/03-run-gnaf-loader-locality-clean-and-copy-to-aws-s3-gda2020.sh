@@ -13,7 +13,7 @@ SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
 AWS_PROFILE="minus34"
 OUTPUT_FOLDER_2020="/Users/$(whoami)/tmp/geoscape_202308_gda2020"
-GNAF_2020_PATH="/Users/$(whoami)/Downloads/g-naf_may23_allstates_gda2020_psv_1011"
+GNAF_2020_PATH="/Users/$(whoami)/Downloads/g-naf_aug23_allstates_gda2020_psv_1012"
 BDYS_2020_PATH="/Users/$(whoami)/Downloads/may23_adminbounds_gda_2020_shp"
 
 echo "---------------------------------------------------------------------------------------------------------------------"
