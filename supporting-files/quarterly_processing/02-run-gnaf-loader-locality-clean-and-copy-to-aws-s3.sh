@@ -57,15 +57,15 @@ aws --profile=${AWS_PROFILE} s3 sync ${OUTPUT_FOLDER} s3://minus34.com/opendata/
 
 # TODO: replace below with a GeoParquet export
 
-#echo "---------------------------------------------------------------------------------------------------------------------"
-#echo "create parquet versions of GNAF and Admin Bdys and upload to AWS S3"
-#echo "---------------------------------------------------------------------------------------------------------------------"
-#
-## first - activate or create Conda environment with Apache Spark + Sedona
-##. /Users/$(whoami)/git/iag_geo/spark_testing/apache_sedona/01_setup_sedona.sh
-#
-#conda activate sedona
-#
-#python ${SCRIPT_DIR}/../../spark/02_export_gnaf_and_admin_bdys_to_s3.py --admin-schema="admin_bdys_202308" --gnaf-schema="gnaf_202308" --output-path="${OUTPUT_FOLDER}/parquet"
-#
-#aws --profile=${AWS_PROFILE} s3 sync ${OUTPUT_FOLDER}/parquet s3://minus34.com/opendata/geoscape-202308/parquet --acl public-read
+echo "---------------------------------------------------------------------------------------------------------------------"
+echo "create geoparquet versions of GNAF and Admin Bdys and upload to AWS S3"
+echo "---------------------------------------------------------------------------------------------------------------------"
+
+# first - activate or create Conda environment with Apache Spark + Sedona
+#. /Users/$(whoami)/git/iag_geo/spark_testing/apache_sedona/01_setup_sedona.sh
+
+conda activate sedona
+
+python ${SCRIPT_DIR}/../../spark/02_export_gnaf_and_admin_bdys_to_s3.py --admin-schema="admin_bdys_202308" --gnaf-schema="gnaf_202308" --output-path="${OUTPUT_FOLDER}/parquet"
+
+aws --profile=${AWS_PROFILE} s3 sync ${OUTPUT_FOLDER}/parquet s3://minus34.com/opendata/geoscape-202308/parquet --acl public-read

@@ -27,9 +27,8 @@ from datetime import datetime
 from multiprocessing import cpu_count
 from pathlib import Path
 
-from pyspark.sql import SparkSession, functions as f
-from sedona.register import SedonaRegistrator
-from sedona.utils import SedonaKryoRegistrator, KryoSerializer
+from pyspark.sql import functions as f
+from sedona.spark import *
 
 # setup logging - code is here to prevent conflict with logging.basicConfig() from one of the imports below
 log_file = os.path.abspath(__file__).replace(".py", ".log")
@@ -92,24 +91,25 @@ def main():
     # create Spark session and context
     # ----------------------------------------------------------
 
-    spark = (SparkSession
-             .builder
-             .master("local[*]")
-             .appName("gnaf-loader export")
-             .config("spark.sql.session.timeZone", "UTC")
-             .config("spark.sql.debug.maxToStringFields", 100)
-             .config("spark.serializer", KryoSerializer.getName)
-             .config("spark.kryo.registrator", SedonaKryoRegistrator.getName)
-             .config("spark.sql.adaptive.enabled", "true")
-             .config("spark.executor.cores", 1)
-             .config("spark.cores.max", num_processors)
-             .config("spark.driver.memory", "24g")
-             .config("spark.driver.maxResultSize", "2g")
-             .getOrCreate()
-             )
+    # create spark session object
+    config = (SedonaContext
+              .builder()
+              .master("local[*]")
+              .appName("gnaf-loader export")
+              .config("spark.sql.session.timeZone", "UTC")
+              .config("spark.sql.debug.maxToStringFields", 100)
+              .config("spark.sql.adaptive.enabled", "true")
+              .config("spark.serializer", KryoSerializer.getName)
+              .config("spark.kryo.registrator", SedonaKryoRegistrator.getName)
+              .config("spark.executor.cores", 1)
+              .config("spark.cores.max", num_processors)
+              .config("spark.driver.memory", "24g")
+              .config("spark.driver.maxResultSize", "2g")
+              .getOrCreate()
+              )
 
     # Add Sedona functions and types to Spark
-    SedonaRegistrator.registerAll(spark)
+    spark = SedonaContext.create(config)
 
     logger.info("\t - PySpark {} session initiated: {}".format(spark.sparkContext.version, datetime.now() - start_time))
 
@@ -208,24 +208,21 @@ def main():
                 # add gid field to query
                 query = query.replace("SELECT ", "SELECT row_number() OVER () AS gid,")
 
+            # whether there's a geometry field determines how the table will be exported (as geoparquet or parquet)
+            if geom_field is None:
+                is_spatial = False
+            else:
+                is_spatial = True
+
             # check table has records
             if max_gid is not None and max_gid > min_gid:
-                bdy_df = import_table(spark, query, min_gid, max_gid, 100000)
-                # bdy_df.printSchema()
+                df = import_table(spark, query, min_gid, max_gid, 100000, is_spatial)
+                # df.printSchema()
 
-                # # add geometry column if required
-                # if geom_sql != "":
-                #     export_df = bdy_df.withColumn("geom", f.expr("ST_GeomFromWKT(wkt_geom)")) \
-                #         .drop("wkt_geom")
-                # else:
-                #     export_df = bdy_df
-                #
-                # export_to_parquet(export_df, table_name)
-
-                export_to_parquet(bdy_df, table_name, output_path)
+                export_to_parquet(df, table_name, output_path, is_spatial)
                 # copy_to_s3(schema_name, table_name, output_path)
 
-                bdy_df.unpersist()
+                df.unpersist()
 
                 logger.info("\t\t {}. exported {} : {}".format(i, table_name, datetime.now() - start_time))
             else:
@@ -240,34 +237,47 @@ def main():
 
 
 # load bdy table from Postgres and create a geospatial dataframe from it
-def import_table(spark, sql, min_gid, max_gid, partition_size):
+def import_table(spark, sql, min_gid, max_gid, partition_size, is_spatial):
 
     # get the number of partitions
     num_partitions = math.ceil(float(max_gid - min_gid) / float(partition_size))
 
     # load boundaries from Postgres in parallel
-    df = (spark.read.format("jdbc")
-          .option("url", jdbc_url)
-          .option("dbtable", "({}) as sqt".format(sql))
-          .option("properties", pg_settings["USER"])
-          .option("password", pg_settings["PASS"])
-          .option("driver", "org.postgresql.Driver")
-          .option("fetchSize", 1000)
-          .option("partitionColumn", "gid")
-          .option("lowerBound", min_gid)
-          .option("upperBound", max_gid)
-          .option("numPartitions", num_partitions)
-          .load()
-          )
+    raw_df = (spark.read.format("jdbc")
+              .option("url", jdbc_url)
+              .option("dbtable", "({}) as sqt".format(sql))
+              .option("properties", pg_settings["USER"])
+              .option("password", pg_settings["PASS"])
+              .option("driver", "org.postgresql.Driver")
+              .option("fetchSize", 1000)
+              .option("partitionColumn", "gid")
+              .option("lowerBound", min_gid)
+              .option("upperBound", max_gid)
+              .option("numPartitions", num_partitions)
+              .load()
+              )
 
-    return df
+    # create view for SparkSQL to use
+    raw_df.createOrReplaceTempView("geo_table")
+
+    # add geometry column and order by geohash for faster querying is table is spatial
+    if is_spatial:
+        df = spark.sql("select *, ST_GeomFromWKT(wkt_geom) as geom from geo_table order by ST_GeoHash(ST_GeomFromWKT(wkt_geom), 5)")
+        return df.drop("wkt_geom")
+    else:
+        return raw_df
 
 
 # export a dataframe to gz parquet files
-def export_to_parquet(df, name, output_path):
-    df.write.option("compression", "gzip") \
-        .mode("overwrite") \
-        .parquet(os.path.join(output_path, name))
+def export_to_parquet(df, name, output_path, is_spatial):
+    if is_spatial:
+        df.write.mode("overwrite") \
+            .format("geoparquet") \
+            .save(os.path.join(output_path, name))
+    else:
+        df.write.option("compression", "snappy") \
+            .mode("overwrite") \
+            .parquet(os.path.join(output_path, name))
 
 
 # def copy_to_s3(schema_name, name, output_path):
