@@ -13,14 +13,14 @@ from pyspark.sql import functions as f
 from sedona.spark import *
 
 #######################################################################################################################
-# Set your parameters here
+# Set your AWS profile name here
 #######################################################################################################################
 
 aws_profile = "minus34"
 
-s3_path = "s3a://minus34.com/opendata/geoscape-202308/parquet/"
-
 #######################################################################################################################
+
+s3_path = "s3a://minus34.com/opendata/geoscape-202308/parquet/"
 
 # number of CPUs to use in processing (defaults to number of local CPUs)
 num_processors = cpu_count()
@@ -76,7 +76,6 @@ def main():
     start_time = datetime.now()
 
     # load boundaries (geometries are Well Known Text strings)
-    # bdy_wkt_df = spark.read.parquet(os.path.join(input_path, "boundaries"))
     bdy_df = spark.read.format("geoparquet").load(os.path.join(s3_path, "local_government_areas"))
     bdy_df = bdy_df.repartition(512, "state")
     # bdy_df.printSchema()
@@ -161,8 +160,7 @@ if __name__ == "__main__":
     # add the handler to the root logger
     logging.getLogger("").addHandler(console)
 
-    task_name = "Apache Sedona testing"
-    system_name = "mobility.ai"
+    task_name = "Geoparquet Testiong"
 
     logger.info("{} started".format(task_name))
     logger.info("Running on Python {}".format(sys.version.replace("\n", " ")))
