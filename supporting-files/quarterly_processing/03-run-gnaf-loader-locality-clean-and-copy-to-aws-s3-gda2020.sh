@@ -60,6 +60,6 @@ echo "--------------------------------------------------------------------------
 
 conda activate sedona
 
-python ${SCRIPT_DIR}/../../spark/02_export_gnaf_and_admin_bdys_to_s3.py --admin-schema="admin_bdys_202308_gda2020" --gnaf-schema="gnaf_202308_gda2020" --output-path="${OUTPUT_FOLDER_2020}/parquet"
+python ${SCRIPT_DIR}/../../spark/xx_export_gnaf_and_admin_bdys_to_geoparquet.py --admin-schema="admin_bdys_202308_gda2020" --gnaf-schema="gnaf_202308_gda2020" --output-path="${OUTPUT_FOLDER_2020}/parquet"
 
 aws --profile=${AWS_PROFILE} s3 sync ${OUTPUT_FOLDER_2020}/parquet s3://minus34.com/opendata/geoscape-202308-gda2020/parquet --acl public-read
