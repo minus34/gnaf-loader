@@ -111,7 +111,7 @@ def main():
     # Add Sedona functions and types to Spark
     spark = SedonaContext.create(config)
 
-    logger.info("\t - PySpark {spark.sparkContext.version} session initiated: {datetime.now() - start_time}")
+    logger.info(f"\t - PySpark {spark.sparkContext.version} session initiated: {datetime.now() - start_time}")
 
     # get list of tables to export to S3
     pg_conn = psycopg.connect(pg_connect_string)
@@ -138,7 +138,7 @@ def main():
 
         tables = pg_cur.fetchall()
 
-        logger.info("\t - {schema_name} schema : {len(tables)} tables to export : {datetime.now() - start_time}")
+        logger.info(f"\t - {schema_name} schema : {len(tables)} tables to export : {datetime.now() - start_time}")
 
         for table in tables:
             start_time = datetime.now()
@@ -331,7 +331,7 @@ if __name__ == "__main__":
     task_name = "Geoscape Admin Boundary Export to S3"
 
     logger.info(f"{task_name} started")
-    logger.info(f"Running on Python {sys.version.replace("\n", " ")}")
+    logger.info("Running on Python {}".format(sys.version.replace("\n", " ")))
 
     main()
 

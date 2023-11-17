@@ -54,9 +54,6 @@ echo "--------------------------------------------------------------------------
 
 aws --profile=${AWS_PROFILE} s3 sync ${OUTPUT_FOLDER} s3://minus34.com/opendata/geoscape-202308 --exclude "*" --include "*.dmp" --acl public-read
 
-
-# TODO: replace below with a GeoParquet export
-
 echo "---------------------------------------------------------------------------------------------------------------------"
 echo "create geoparquet versions of GNAF and Admin Bdys and upload to AWS S3"
 echo "---------------------------------------------------------------------------------------------------------------------"
