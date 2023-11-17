@@ -123,9 +123,9 @@ Should take 15-60 minutes.
 5. Run the script, come back in 15-60 minutes and enjoy!
 
 ## Option 4 - Geoparquet Files in S3
-Geoparquet versions of the spatial tables, as well as parquet versions of the non-spatial tables, are in a public S3 bucket for use directly in an AWS application or service. They can also be downloaded using the AWS CLI.
+Geoparquet versions of the spatial tables, as well as parquet versions of the non-spatial tables, are in a public S3 bucket for use directly in an application or service. They can also be downloaded using the AWS CLI.
 
-Geometries have WGS84 lat/long coordinates (SRID/EPSG:4326). A sample query for analysing the data using [Apache Sedona](https://sedona.apache.org/), the spaital extension to [Apache Spark](https://spark.apache.org/) is in the `spark` folder.
+Geometries have WGS84 lat/long coordinates (SRID/EPSG:4326). A sample query for analysing the data using [Apache Sedona](https://sedona.apache.org/), the spatial extension to [Apache Spark](https://spark.apache.org/) is in the `spark` folder.
 
 The files are here: `s3://minus34.com/opendata/geoscape-202308/parquet/` or `s3://minus34.com/opendata/geoscape-202308-gda2020/parquet/`
 
