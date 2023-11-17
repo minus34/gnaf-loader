@@ -8,7 +8,7 @@ Have a look at [these intro slides](https://minus34.com/opendata/intro-to-gnaf.p
 1. [Run](https://github.com/minus34/gnaf-loader#option-1---run-loadgnafpy) the load-gnaf Python script and build the database yourself in a single step
 2. [Pull](https://github.com/minus34/gnaf-loader#option-2---run-the-database-in-a-docker-container) the database from Docker Hub and run it in a container
 3. [Download](https://github.com/minus34/gnaf-loader#option-3---load-pg_dump-files) the GNAF and/or Admin Bdys Postgres dump files & restore them in your Postgres 14+ database
-4. [Use or download](https://github.com/minus34/gnaf-loader#option-4---parquet-files-in-s3) Parquet Files in S3 for your data & analytics workflows; either in AWS or your own platform.
+4. [Use or download](https://github.com/minus34/gnaf-loader#option-4---parquet-files-in-s3) Geoparquet and Parquet Files in S3 for your data & analytics workflows; either in AWS or your own platform.
 
 ## Option 1 - Run load.gnaf.py
 Running the Python script takes 30-120 minutes on a Postgres server configured to take advantage of the RAM available.
@@ -122,10 +122,10 @@ Should take 15-60 minutes.
 3. Edit the _restore-gnaf-admin-bdys.bat_ or _.sh_ script in the supporting-files folder for your dump file names, database parameters and for the location of pg_restore
 5. Run the script, come back in 15-60 minutes and enjoy!
 
-## Option 4 - Parquet Files in S3
-Parquet versions of all the tables are in a public S3 bucket for use directly in an AWS application or service. They can also be downloaded using the AWS CLI.
+## Option 4 - Geoparquet Files in S3
+Geoparquet versions of the spatial tables, as well as parquet versions of the non-spatial tables, are in a public S3 bucket for use directly in an AWS application or service. They can also be downloaded using the AWS CLI.
 
-Geometries are stored as Well Known Text (WKT) strings with WGS84 lat/long coordinates (SRID/EPSG:4326). They can be queried using spatial extensions to analytical platforms, such as [Apache Sedona](https://sedona.apache.org/) running on [Apache Spark](https://spark.apache.org/).
+Geometries have WGS84 lat/long coordinates (SRID/EPSG:4326). A sample query for analysing the data using [Apache Sedona](https://sedona.apache.org/), the spaital extension to [Apache Spark](https://spark.apache.org/) is in the `spark` folder.
 
 The files are here: `s3://minus34.com/opendata/geoscape-202308/parquet/` or `s3://minus34.com/opendata/geoscape-202308-gda2020/parquet/`
 

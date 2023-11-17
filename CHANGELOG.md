@@ -1,3 +1,6 @@
+### August 2023 Release
+- Tables are now exported to AWS S3 in Geoparquet format (plus Parquet format for the non-spatial tables)
+
 ### February 2023 Release
 - Postgres dump files are now built on Postgres 14. Requiring Postgres 14+ to use them
 - Docker images have been upgraded to Postgres 15
