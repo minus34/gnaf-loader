@@ -80,7 +80,7 @@ def main():
     bdy_df = bdy_df.repartition(512, "state")
     # bdy_df.printSchema()
     # bdy_df.show(5)
-    # print(bdy_df.count())
+    print(f"Boundary dataframe has {bdy_df.count()} rows")
 
     # create view to enable SQL queries
     bdy_df.createOrReplaceTempView("bdy")
@@ -95,7 +95,7 @@ def main():
     point_df = point_df.repartition(512, "state")
     # point_df.printSchema()
     # point_df.show(5)
-    # print(bdy_df.count())
+    print(f"Point dataframe has {point_df.count()} rows")
 
     # create view to enable SQL queries
     point_df.createOrReplaceTempView("pnt")

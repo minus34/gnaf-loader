@@ -27,7 +27,7 @@ from datetime import datetime
 from multiprocessing import cpu_count
 from pathlib import Path
 
-from pyspark.sql import functions as f
+# from pyspark.sql import functions as f
 from sedona.spark import *
 
 # setup logging - code is here to prevent conflict with logging.basicConfig() from one of the imports below
@@ -111,7 +111,7 @@ def main():
     # Add Sedona functions and types to Spark
     spark = SedonaContext.create(config)
 
-    logger.info("\t - PySpark {} session initiated: {}".format(spark.sparkContext.version, datetime.now() - start_time))
+    logger.info("\t - PySpark {spark.sparkContext.version} session initiated: {datetime.now() - start_time}")
 
     # get list of tables to export to S3
     pg_conn = psycopg.connect(pg_connect_string)
@@ -126,20 +126,19 @@ def main():
         i = 1
 
         # get table list for schema
-        sql = """SELECT table_name
+        sql = f"""SELECT table_name
                  FROM information_schema.tables
-                 WHERE table_schema='{}'
+                 WHERE table_schema='{schema_name}'
                    AND table_type='BASE TABLE'
                    AND table_name <> 'qa'
                    AND table_name NOT LIKE '%_2011_%'
                    AND table_name NOT LIKE '%_analysis%'
-                   AND table_name NOT LIKE '%_display%'""".format(schema_name)
+                   AND table_name NOT LIKE '%_display%'"""
         pg_cur.execute(sql)
 
         tables = pg_cur.fetchall()
 
-        logger.info("\t - {} schema : {} tables to export : {}"
-                    .format(schema_name, len(tables), datetime.now() - start_time))
+        logger.info("\t - {schema_name} schema : {len(tables)} tables to export : {datetime.now() - start_time}")
 
         for table in tables:
             start_time = datetime.now()
@@ -147,9 +146,9 @@ def main():
             table_name = table[0]
 
             # check what type of geometry field the table has and what it's coordinate system is
-            sql = """SELECT f_geometry_column, type, srid FROM public.geometry_columns
-                     WHERE f_table_schema = '{}'
-                         AND f_table_name = '{}'""".format(schema_name, table_name)
+            sql = f"""SELECT f_geometry_column, type, srid FROM public.geometry_columns
+                     WHERE f_table_schema = '{schema_name}'
+                         AND f_table_name = '{table_name}'"""
             pg_cur.execute(sql)
             result = pg_cur.fetchone()
 
@@ -178,29 +177,28 @@ def main():
                 geom_sql = ""
 
             # build query to select all columns and the WKB geom if exists
-            sql = """SELECT 'SELECT ' || array_to_string(ARRAY(
+            sql = f"""SELECT 'SELECT ' || array_to_string(ARRAY(
                          SELECT column_name
                          FROM information_schema.columns
-                         WHERE table_name = '{1}'
-                             AND table_schema = '{0}'
+                         WHERE table_name = '{table_name}'
+                             AND table_schema = '{schema_name}'
                              AND column_name NOT IN('geom')
-                     ), ',') || '{2} ' ||
-                            'FROM {0}.{1}' AS sqlstmt"""\
-                .format(schema_name, table_name, geom_sql)
+                      ), ',') || '{geom_sql} ' ||
+                            'FROM {schema_name}.{table_name}' AS sqlstmt"""
             pg_cur.execute(sql)
             query = str(pg_cur.fetchone()[0])  # str is just there for intellisense in Pycharm
 
             # get min and max gid values to enable parallel import from Postgres to Spark
             # add gid field based on row number if missing
             if "gid," in query:
-                sql = """SELECT min(gid), max(gid) FROM {}.{}""".format(schema_name, table_name)
+                sql = f"SELECT min(gid), max(gid) FROM {schema_name}.{table_name}"
                 pg_cur.execute(sql)
                 gid_range = pg_cur.fetchone()
                 min_gid = gid_range[0]
                 max_gid = gid_range[1]
             else:
                 # get row count as the max gid value
-                sql = """SELECT count(*) FROM {}.{}""".format(schema_name, table_name)
+                sql = f"SELECT count(*) FROM {schema_name}.{table_name}"
                 pg_cur.execute(sql)
                 min_gid = 1
                 max_gid = pg_cur.fetchone()[0]
@@ -224,9 +222,9 @@ def main():
 
                 df.unpersist()
 
-                logger.info("\t\t {}. exported {} : {}".format(i, table_name, datetime.now() - start_time))
+                logger.info(f"\t\t {i}. exported {table_name} : {datetime.now() - start_time}")
             else:
-                logger.warning("\t\t {}. {} has no records! : {}".format(i, table_name, datetime.now() - start_time))
+                logger.warning(f"\t\t {i}. {table_name} has no records! : {datetime.now() - start_time}")
 
             i += 1
 
@@ -262,7 +260,10 @@ def import_table(spark, sql, min_gid, max_gid, partition_size, is_spatial):
 
     # add geometry column and order by geohash for faster querying is table is spatial
     if is_spatial:
-        df = spark.sql("select *, ST_GeomFromWKT(wkt_geom) as geom from geo_table order by ST_GeoHash(ST_GeomFromWKT(wkt_geom), 5)")
+        df = spark.sql("""select *,
+                                 ST_GeomFromWKT(wkt_geom) as geom 
+                          from geo_table 
+                          order by ST_GeoHash(ST_GeomFromWKT(wkt_geom), 5)""")
         return df.drop("wkt_geom")
     else:
         return raw_df
@@ -302,7 +303,7 @@ def export_to_parquet(df, name, output_path, is_spatial):
 #                              Config=config, ExtraArgs={'ACL': 'public-read'})
 #
 #             if response is not None:
-#                 logger.warning("\t\t\t - {} copy to S3 problem : {}".format(name, response))
+#                 logger.warning(f"\t\t\t - {name} copy to S3 problem : {response}")
 
 
 if __name__ == "__main__":
@@ -329,11 +330,11 @@ if __name__ == "__main__":
 
     task_name = "Geoscape Admin Boundary Export to S3"
 
-    logger.info("{} started".format(task_name))
-    logger.info("Running on Python {}".format(sys.version.replace("\n", " ")))
+    logger.info(f"{task_name} started")
+    logger.info(f"Running on Python {sys.version.replace("\n", " ")}")
 
     main()
 
     time_taken = datetime.now() - full_start_time
-    logger.info("{} finished : {}".format(task_name, time_taken))
+    logger.info(f"{task_name} finished : {time_taken}")
     print()
