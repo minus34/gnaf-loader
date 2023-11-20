@@ -13,6 +13,7 @@ SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
 AWS_PROFILE="minus34"
 OUTPUT_FOLDER="/Users/$(whoami)/tmp/geoscape_202311"
+OUTPUT_FOLDER_2020="/Users/$(whoami)/tmp/geoscape_202311_gda2020"
 GNAF_PATH="/Users/$(whoami)/Downloads/g-naf_nov23_allstates_gda94_psv_1013"
 BDYS_PATH="/Users/$(whoami)/Downloads/nov2023_adminbounds_gda94_shp"
 
@@ -38,6 +39,12 @@ aws --profile=${AWS_PROFILE} s3 sync ${OUTPUT_FOLDER} s3://minus34.com/opendata/
 
 # copy concordance score file to GitHub repo local files
 cp ${OUTPUT_FOLDER}/boundary_concordance_score.csv /Users/$(whoami)/git/iag_geo/concord/data/
+
+# copy files for GDA2020 schema, S3 folder
+mkdir -p "${OUTPUT_FOLDER_2020}"
+cp ${OUTPUT_FOLDER}/boundary_concordance.csv ${OUTPUT_FOLDER_2020}/boundary_concordance.csv
+cp ${OUTPUT_FOLDER}/boundary_concordance_score.csv ${OUTPUT_FOLDER_2020}/boundary_concordance_score.csv
+aws --profile=${AWS_PROFILE} s3 sync ${OUTPUT_FOLDER_2020} s3://minus34.com/opendata/geoscape-202311-gda2020 --exclude "*" --include "*.csv" --acl public-read
 
 echo "---------------------------------------------------------------------------------------------------------------------"
 echo "dump postgres schemas to a local folder"

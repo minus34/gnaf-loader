@@ -26,14 +26,15 @@ python3 /Users/$(whoami)/git/iag_geo/psma-admin-bdys/locality-clean.py --pgport=
 # upload locality bdy files to S3
 aws --profile=${AWS_PROFILE} s3 sync ${OUTPUT_FOLDER_2020} s3://minus34.com/opendata/geoscape-202311-gda2020 --exclude "*" --include "*.zip" --acl public-read
 
-echo "---------------------------------------------------------------------------------------------------------------------"
-echo "create concordance file"
-echo "---------------------------------------------------------------------------------------------------------------------"
-
-# create concordance file and upload to S3
-mkdir -p "${OUTPUT_FOLDER_2020}"
-python3 /Users/$(whoami)/git/iag_geo/concord/create_concordance_file.py --pgdb=geo --admin-schema="admin_bdys_202311_gda2020" --gnaf-schema="gnaf_202311_gda2020" --output-path=${OUTPUT_FOLDER_2020}
-aws --profile=${AWS_PROFILE} s3 sync ${OUTPUT_FOLDER_2020} s3://minus34.com/opendata/geoscape-202311-gda2020 --exclude "*" --include "*.csv" --acl public-read
+# done in other script
+#echo "---------------------------------------------------------------------------------------------------------------------"
+#echo "create concordance file"
+#echo "---------------------------------------------------------------------------------------------------------------------"
+#
+## create concordance file and upload to S3
+#mkdir -p "${OUTPUT_FOLDER_2020}"
+#python3 /Users/$(whoami)/git/iag_geo/concord/create_concordance_file.py --pgdb=geo --admin-schema="admin_bdys_202311_gda2020" --gnaf-schema="gnaf_202311_gda2020" --output-path=${OUTPUT_FOLDER_2020}
+#aws --profile=${AWS_PROFILE} s3 sync ${OUTPUT_FOLDER_2020} s3://minus34.com/opendata/geoscape-202311-gda2020 --exclude "*" --include "*.csv" --acl public-read
 
 echo "---------------------------------------------------------------------------------------------------------------------"
 echo "dump postgres schemas to a local folder"
