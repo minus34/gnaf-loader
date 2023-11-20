@@ -50,15 +50,18 @@ echo "--------------------------------------------------------------------------
 
 aws --profile=${AWS_PROFILE} s3 sync ${OUTPUT_FOLDER_2020} s3://minus34.com/opendata/geoscape-202308-gda2020 --exclude "*" --include "*.dmp" --acl public-read
 
-echo "---------------------------------------------------------------------------------------------------------------------"
-echo "create geoparquet versions of GNAF and Admin Bdys and upload to AWS S3"
-echo "---------------------------------------------------------------------------------------------------------------------"
 
-# first - activate or create Conda environment with Apache Spark + Sedona
-#. /Users/$(whoami)/git/iag_geo/spark_testing/apache_sedona/01_setup_sedona.sh
+# disabled as currently only exporting the GDA94 version in WGS84
 
-conda activate sedona
-
-python ${SCRIPT_DIR}/../../spark/xx_export_gnaf_and_admin_bdys_to_geoparquet.py --admin-schema="admin_bdys_202308_gda2020" --gnaf-schema="gnaf_202308_gda2020" --output-path="${OUTPUT_FOLDER_2020}/parquet"
-
-aws --profile=${AWS_PROFILE} s3 sync ${OUTPUT_FOLDER_2020}/parquet s3://minus34.com/opendata/geoscape-202308-gda2020/parquet --acl public-read
+#echo "---------------------------------------------------------------------------------------------------------------------"
+#echo "create geoparquet versions of GNAF and Admin Bdys and upload to AWS S3"
+#echo "---------------------------------------------------------------------------------------------------------------------"
+#
+## first - activate or create Conda environment with Apache Spark + Sedona
+##. /Users/$(whoami)/git/iag_geo/spark_testing/apache_sedona/01_setup_sedona.sh
+#
+#conda activate sedona
+#
+#python ${SCRIPT_DIR}/../../spark/xx_export_gnaf_and_admin_bdys_to_geoparquet.py --admin-schema="admin_bdys_202308_gda2020" --gnaf-schema="gnaf_202308_gda2020" --output-path="${OUTPUT_FOLDER_2020}/parquet"
+#
+#aws --profile=${AWS_PROFILE} s3 sync ${OUTPUT_FOLDER_2020}/parquet s3://minus34.com/opendata/geoscape-202308-gda2020/parquet --acl public-read
