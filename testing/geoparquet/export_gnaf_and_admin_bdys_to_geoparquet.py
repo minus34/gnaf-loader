@@ -199,7 +199,7 @@ def main():
 def import_table(sql_engine, sql):
 
     # debugging
-    # sql = "select gnaf_pid, geom as geometry from gnaf_202308.address_principals"
+    # sql = "select gnaf_pid, geom as geometry from gnaf_202311.address_principals"
     # sql += " LIMIT 1000000"
     # dtype_dict = {"locality_name": "category", "postcode": "category", "state": "category"}
     # print(sql)

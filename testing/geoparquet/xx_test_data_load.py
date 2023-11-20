@@ -1,7 +1,7 @@
 
 # script to download and load a remote GeoParquet file for when Apache Sedona supports the emerging GeoParquet format
 #
-# NOTE: as of 20230820 - geometry field currently loads as binary type; should be geometry type when supported
+# NOTE: as of 20231120 - geometry field currently loads as binary type; should be geometry type when supported
 #
 
 import base64
@@ -18,7 +18,7 @@ from multiprocessing import cpu_count
 # input path for parquet file
 # input_url = "https://storage.googleapis.com/open-geodata/linz-examples/nz-buildings-outlines.parquet"
 # input_path = "/Users/s57405/tmp/nz-building-outlines.parquet"
-input_path = "/Users/s57405/tmp/geoscape_202308/geoparquet/address_principals.parquet"
+input_path = "/Users/s57405/tmp/geoscape_202311/geoparquet/address_principals.parquet"
 
 # number of CPUs to use in processing (defaults to number of local CPUs)
 num_processors = cpu_count()
