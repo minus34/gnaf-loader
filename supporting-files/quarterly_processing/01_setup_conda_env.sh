@@ -42,8 +42,8 @@ conda install -y -c conda-forge gdal pygeos geopandas openpyxl psycopg geoalchem
 #conda install -y -c conda-forge plotly python-kaleido libgdal-arrow-parquet dask-geopandas
 conda activate ${ENV_NAME}
 
-# additional package requiring pip
-pip install psycopg_pool
+## additional package requiring pip
+#pip install psycopg_pool
 
 # clear cache (builds over time)
 conda clean -y --all
