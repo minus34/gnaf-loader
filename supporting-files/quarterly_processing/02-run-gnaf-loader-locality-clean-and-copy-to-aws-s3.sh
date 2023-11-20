@@ -40,7 +40,7 @@ aws --profile=${AWS_PROFILE} s3 sync ${OUTPUT_FOLDER} s3://minus34.com/opendata/
 # copy concordance score file to GitHub repo local files
 cp ${OUTPUT_FOLDER}/boundary_concordance_score.csv /Users/$(whoami)/git/iag_geo/concord/data/
 
-# copy files for GDA2020 schema, S3 folder
+# copy files to GDA2020 local and S3 folders (files not processed for GDA2020 data as the result is 99.99999.....% the same)
 mkdir -p "${OUTPUT_FOLDER_2020}"
 cp ${OUTPUT_FOLDER}/boundary_concordance.csv ${OUTPUT_FOLDER_2020}/boundary_concordance.csv
 cp ${OUTPUT_FOLDER}/boundary_concordance_score.csv ${OUTPUT_FOLDER_2020}/boundary_concordance_score.csv
@@ -75,4 +75,5 @@ rm -rf ${OUTPUT_FOLDER}/geoparquet
 
 python ${SCRIPT_DIR}/../../spark/xx_export_gnaf_and_admin_bdys_to_geoparquet.py --admin-schema="admin_bdys_202311" --gnaf-schema="gnaf_202311" --output-path="${OUTPUT_FOLDER}/geoparquet"
 
+aws --profile=${AWS_PROFILE} s3 rm s3://minus34.com/opendata/geoscape-202311/geoparquet/ --recursive
 aws --profile=${AWS_PROFILE} s3 sync ${OUTPUT_FOLDER}/geoparquet s3://minus34.com/opendata/geoscape-202311/geoparquet --acl public-read

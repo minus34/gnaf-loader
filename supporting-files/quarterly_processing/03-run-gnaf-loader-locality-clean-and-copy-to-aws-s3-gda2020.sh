@@ -26,7 +26,7 @@ python3 /Users/$(whoami)/git/iag_geo/psma-admin-bdys/locality-clean.py --pgport=
 # upload locality bdy files to S3
 aws --profile=${AWS_PROFILE} s3 sync ${OUTPUT_FOLDER_2020} s3://minus34.com/opendata/geoscape-202311-gda2020 --exclude "*" --include "*.zip" --acl public-read
 
-# done in other script
+# done in GDA94 script (files not processed for GDA2020 data as the result is 99.99999.....% the same)
 #echo "---------------------------------------------------------------------------------------------------------------------"
 #echo "create concordance file"
 #echo "---------------------------------------------------------------------------------------------------------------------"
@@ -51,9 +51,7 @@ echo "--------------------------------------------------------------------------
 
 aws --profile=${AWS_PROFILE} s3 sync ${OUTPUT_FOLDER_2020} s3://minus34.com/opendata/geoscape-202311-gda2020 --exclude "*" --include "*.dmp" --acl public-read
 
-
-# disabled as currently only exporting the GDA94 version in WGS84
-
+# disabled as currently only exporting the GDA94 version in WGS84 coordinates
 #echo "---------------------------------------------------------------------------------------------------------------------"
 #echo "create geoparquet versions of GNAF and Admin Bdys and upload to AWS S3"
 #echo "---------------------------------------------------------------------------------------------------------------------"
@@ -68,4 +66,5 @@ aws --profile=${AWS_PROFILE} s3 sync ${OUTPUT_FOLDER_2020} s3://minus34.com/open
 #
 #python ${SCRIPT_DIR}/../../spark/xx_export_gnaf_and_admin_bdys_to_geoparquet.py --admin-schema="admin_bdys_202311_gda2020" --gnaf-schema="gnaf_202311_gda2020" --output-path="${OUTPUT_FOLDER_2020}/geoparquet"
 #
+#aws --profile=${AWS_PROFILE} s3 rm s3://minus34.com/opendata/geoscape-202311-gda2020/geoparquet/ --recursive
 #aws --profile=${AWS_PROFILE} s3 sync ${OUTPUT_FOLDER_2020}/geoparquet s3://minus34.com/opendata/geoscape-202311-gda2020/geoparquet --acl public-read
