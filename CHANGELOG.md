@@ -1,4 +1,4 @@
-### August 2023 Release
+### November 2023 Release
 - Tables are now exported to AWS S3 in Geoparquet format (plus Parquet format for the non-spatial tables). Geometries are WGS84 lat/long
 
 ### February 2023 Release
