@@ -62,6 +62,6 @@ aws --profile=${AWS_PROFILE} s3 sync ${OUTPUT_FOLDER_2020} s3://minus34.com/open
 #
 #conda activate sedona
 #
-#python ${SCRIPT_DIR}/../../spark/xx_export_gnaf_and_admin_bdys_to_geoparquet.py --admin-schema="admin_bdys_202311_gda2020" --gnaf-schema="gnaf_202311_gda2020" --output-path="${OUTPUT_FOLDER_2020}/parquet"
+#python ${SCRIPT_DIR}/../../spark/xx_export_gnaf_and_admin_bdys_to_geoparquet.py --admin-schema="admin_bdys_202311_gda2020" --gnaf-schema="gnaf_202311_gda2020" --output-path="${OUTPUT_FOLDER_2020}/geoparquet"
 #
-#aws --profile=${AWS_PROFILE} s3 sync ${OUTPUT_FOLDER_2020}/parquet s3://minus34.com/opendata/geoscape-202311-gda2020/parquet --acl public-read
+#aws --profile=${AWS_PROFILE} s3 sync ${OUTPUT_FOLDER_2020}/geoparquet s3://minus34.com/opendata/geoscape-202311-gda2020/geoparquet --acl public-read

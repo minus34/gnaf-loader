@@ -127,11 +127,11 @@ Geoparquet versions of the spatial tables, as well as parquet versions of the no
 
 Geometries have WGS84 lat/long coordinates (SRID/EPSG:4326). A sample query for analysing the data using [Apache Sedona](https://sedona.apache.org/), the spatial extension to [Apache Spark](https://spark.apache.org/) is in the `spark` folder.
 
-The files are here: `s3://minus34.com/opendata/geoscape-202311/parquet/`
+The files are here: `s3://minus34.com/opendata/geoscape-202311/geoparquet/`
 
 ### AWS CLI Examples:
-- List all datasets: `aws s3 ls s3://minus34.com/opendata/geoscape-202311/parquet/`
-- Copy all datasets: `aws s3 sync s3://minus34.com/opendata/geoscape-202311/parquet/ <my-local-folder>`
+- List all datasets: `aws s3 ls s3://minus34.com/opendata/geoscape-202311/geoparquet/`
+- Copy all datasets: `aws s3 sync s3://minus34.com/opendata/geoscape-202311/geoparquet/ <my-local-folder>`
 
 ## DATA LICENSES
 
