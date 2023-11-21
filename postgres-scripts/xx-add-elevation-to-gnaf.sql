@@ -43,7 +43,7 @@ DROP TABLE IF EXISTS temp_gnaf_100m_points;
 --
 -- SELECT ST_Value(dem.rast, gnaf.geom) as elevation,
 --        *
--- FROM gnaf_202308.address_principals as gnaf
--- INNER JOIN gnaf_202308.srtm_3s_dem as dem on ST_Intersects(gnaf.geom, dem.rast) limit 100;
+-- FROM gnaf_202311.address_principals as gnaf
+-- INNER JOIN gnaf_202311.srtm_3s_dem as dem on ST_Intersects(gnaf.geom, dem.rast) limit 100;
 
 
