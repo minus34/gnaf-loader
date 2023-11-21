@@ -15,6 +15,10 @@ echo "--------------------------------------------------------------------------
 open -a Docker
 sleep 90
 
+# required or Docker VM will run out of space
+echo 'y' | docker builder prune --all
+echo 'y' | docker system prune --all
+
 echo "---------------------------------------------------------------------------------------------------------------------"
 echo "build gnaf-loader GDA94 docker image "
 echo "---------------------------------------------------------------------------------------------------------------------"
@@ -35,7 +39,8 @@ echo "clean up Docker locally - warning: this could accidentally destroy other D
 echo "---------------------------------------------------------------------------------------------------------------------"
 
 # required or Docker VM will run out of space
-echo 'y' | docker system prune
+echo 'y' | docker builder prune --all
+echo 'y' | docker system prune --all
 
 echo "---------------------------------------------------------------------------------------------------------------------"
 echo "build gnaf-loader GDA2020 docker image"
@@ -56,4 +61,5 @@ echo "clean up Docker locally - warning: this could accidentally destroy other D
 echo "---------------------------------------------------------------------------------------------------------------------"
 
 # required or Docker VM will run out of space
-echo 'y' | docker system prune
+echo 'y' | docker builder prune --all
+echo 'y' | docker system prune --all
