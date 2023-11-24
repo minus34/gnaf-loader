@@ -1,13 +1,13 @@
 # ---------------------------------------------------------------------------------------------------------------------
 #
-# script to import each GNAF & administrative boundary table from Postgres & export as GZIPped Parquet files to AWS S3
+# script to import each GNAF & admin boundary table from Postgres & export as GepParquet or Parquet files to AWS S3
 #
 # PROCESS
 #
 # 1. get list of tables from Postgres
 # 2. for each table:
 #     a. import into Spark dataframe
-#     b. export as gzip parquet files to local disk
+#     b. export as geoparquet/parquet files to local disk
 #     c. copy files to S3
 #
 # note: direct export from Spark to S3 isn't used to avoid Hadoop install and config
