@@ -119,7 +119,7 @@ def main():
 
     # --------------------------------------------------------------
     # import each table from each schema in Postgres &
-    # export to GZIPped Parquet files in AWS S3
+    # export to Parquet files in AWS S3
     # --------------------------------------------------------------
 
     for schema_name in schema_names:
