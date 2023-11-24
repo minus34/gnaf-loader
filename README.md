@@ -19,7 +19,7 @@ You can process the GDA94 or GDA2020 version of the data - just ensure that you 
 To get a good load time you'll need to configure your Postgres server for performance. There's a good guide [here](https://postgis.net/workshops/postgis-intro/tuning.html), noting it's a few years old and some of the memory parameters can be beefed up if you have the RAM.
 
 ### Pre-requisites
-- Postgres 10.x and above with PostGIS 2.2+
+- Postgres 14.x and above with PostGIS 3.2+
 - Add the Postgres bin directory to your system PATH
 - Python 3.6+ with Psycopg 3.x
 
