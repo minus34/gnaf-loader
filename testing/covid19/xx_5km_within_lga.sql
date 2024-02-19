@@ -13,12 +13,12 @@ DROP TABLE IF EXISTS testing.five_km_radius;
 CREATE TABLE testing.five_km_radius AS
 WITH pnt AS (
     SELECT st_setsrid(st_makepoint(longitude, latitude), 4283) AS geom
-	FROM gnaf_202311.address_principals
+	FROM gnaf_202402.address_principals
 	WHERE address = '<your address in upper case with full street type e.g. 123 GEORGE STREET'
 	AND locality_name = '<your suburb in upper case e.g. NORTH SYDNEY'
 	-- AND state = 'NSW'
 )
 SELECT st_union(st_setsrid(st_buffer(pnt.geom::geography, 5000.0, 128)::geometry, 4283), bdy.geom) AS geom
-FROM admin_bdys_202311.local_government_areas as bdy
+FROM admin_bdys_202402.local_government_areas as bdy
 INNER JOIN pnt ON st_intersects(pnt.geom, bdy.geom)
 ;
