@@ -13,8 +13,8 @@ SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
 AWS_PROFILE="minus34"
 OUTPUT_FOLDER_2020="/Users/$(whoami)/tmp/geoscape_202402_gda2020"
-GNAF_2020_PATH="/Users/$(whoami)/Downloads/g-naf_nov23_allstates_gda2020_psv_1013"
-BDYS_2020_PATH="/Users/$(whoami)/Downloads/nov2023_adminbounds_gda_2020_shp"
+GNAF_2020_PATH="/Users/$(whoami)/Downloads/g-naf_feb24_allstates_gda2020_psv_1014"
+BDYS_2020_PATH="/Users/$(whoami)/Downloads/FEB24_AdminBounds_GDA_2020_SHP"
 
 echo "---------------------------------------------------------------------------------------------------------------------"
 echo "Run gnaf-loader and locality boundary clean"
