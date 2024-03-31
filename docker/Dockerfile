@@ -1,4 +1,4 @@
-FROM debian:buster-slim
+FROM debian:bookworm-slim
 
 # replaced the downloading of the Potgres dump files to use local files instead (for performance)
 # ARG BASE_URL="https://minus34.com/opendata/geoscape-202402"
