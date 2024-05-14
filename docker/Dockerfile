@@ -1,7 +1,7 @@
 FROM debian:bookworm-slim
 
 # replaced the downloading of the Potgres dump files to use local files instead (for performance)
-# ARG BASE_URL="https://minus34.com/opendata/geoscape-202402"
+# ARG BASE_URL="https://minus34.com/opendata/geoscape-202405"
 # ENV BASE_URL ${BASE_URL}
 
 # Postgres user password - WARNING: change this to something a lot more secure
@@ -33,23 +33,23 @@ RUN echo "listen_addresses='*'" >> /etc/postgresql/15/main/postgresql.conf
 RUN mkdir -p /data
 WORKDIR /data
 
-ADD gnaf-202402.dmp .
-ADD admin-bdys-202402.dmp .
+ADD gnaf-202405.dmp .
+ADD admin-bdys-202405.dmp .
 
 # replace the add statements above if wanting to download Postgres dump files
 # RUN /data \
-#     && wget --quiet ${BASE_URL}/gnaf-202402.dmp \
-#     && wget --quiet ${BASE_URL}/admin-bdys-202402.dmp
+#     && wget --quiet ${BASE_URL}/gnaf-202405.dmp \
+#     && wget --quiet ${BASE_URL}/admin-bdys-202405.dmp
 
 RUN /etc/init.d/postgresql start \
-    && pg_restore -Fc -d postgres -h localhost -p 5432 -U postgres /data/gnaf-202402.dmp \
+    && pg_restore -Fc -d postgres -h localhost -p 5432 -U postgres /data/gnaf-202405.dmp \
     && /etc/init.d/postgresql stop \
-    && rm /data/gnaf-202402.dmp
+    && rm /data/gnaf-202405.dmp
 
 RUN /etc/init.d/postgresql start \
-    && pg_restore -Fc -d postgres -h localhost -p 5432 -U postgres /data/admin-bdys-202402.dmp \
+    && pg_restore -Fc -d postgres -h localhost -p 5432 -U postgres /data/admin-bdys-202405.dmp \
     && /etc/init.d/postgresql stop \
-    && rm /data/admin-bdys-202402.dmp
+    && rm /data/admin-bdys-202405.dmp
 
 EXPOSE 5432
 

@@ -13,7 +13,7 @@ from datetime import datetime
 
 source_platform = "postgres"
 source_credentials = "localhost_super"
-source_schema = "gnaf_202402"
+source_schema = "gnaf_202405"
 source_table = "boundary_concordance"
 
 target_platform = "postgres"
