@@ -15,51 +15,55 @@ echo "--------------------------------------------------------------------------
 open -a Docker
 sleep 90
 
-# required or Docker VM will run out of space
+# required or Docker VM could run out of space
 echo 'y' | docker builder prune --all
 echo 'y' | docker system prune --all
 
 echo "---------------------------------------------------------------------------------------------------------------------"
-echo "build gnaf-loader GDA94 docker image "
+echo "setup buildx"
 echo "---------------------------------------------------------------------------------------------------------------------"
 
-# force platform to avoid Apple Silicon only images
+docker buildx create --name gnaf_builder --use
+docker buildx inspect --bootstrap
+
+echo "---------------------------------------------------------------------------------------------------------------------"
+echo "build and push gnaf-loader GDA94 docker image"
+echo "---------------------------------------------------------------------------------------------------------------------"
+
 cd ${OUTPUT_FOLDER}
-docker build --platform linux/amd64 --no-cache --tag docker.io/minus34/gnafloader:latest --tag docker.io/minus34/gnafloader:202405 \
-  -f /Users/$(whoami)/git/minus34/gnaf-loader/docker/Dockerfile .
 
-echo "---------------------------------------------------------------------------------------------------------------------"
-echo "push image (with 2 tags) to Docker Hub"
-echo "---------------------------------------------------------------------------------------------------------------------"
-
-docker push minus34/gnafloader --all-tags
+# build and push images
+docker buildx build --platform linux/amd64,linux/arm64 \
+  --tag docker.io/minus34/gnafloader:latest \
+  --tag docker.io/minus34/gnafloader:202405 \
+  --file /Users/$(whoami)/git/minus34/gnaf-loader/docker/Dockerfile . \
+  --push
 
 echo "---------------------------------------------------------------------------------------------------------------------"
 echo "clean up Docker locally - warning: this could accidentally destroy other Docker images"
 echo "---------------------------------------------------------------------------------------------------------------------"
 
-# required or Docker VM will run out of space
+# required or Docker VM could run out of space
 echo 'y' | docker builder prune --all
 echo 'y' | docker system prune --all
 
 echo "---------------------------------------------------------------------------------------------------------------------"
-echo "build gnaf-loader GDA2020 docker image"
+echo "build and push gnaf-loader GDA2020 docker image"
 echo "---------------------------------------------------------------------------------------------------------------------"
 
 cd ${OUTPUT_FOLDER_2020}
-docker build --platform linux/amd64 --no-cache --tag docker.io/minus34/gnafloader:latest-gda2020 --tag docker.io/minus34/gnafloader:202405-gda2020 \
-  -f /Users/$(whoami)/git/minus34/gnaf-loader/docker/Dockerfile .
 
-echo "---------------------------------------------------------------------------------------------------------------------"
-echo "push images (with 2 new tags) to Docker Hub"
-echo "---------------------------------------------------------------------------------------------------------------------"
-
-docker push minus34/gnafloader --all-tags
+# build and push images
+docker buildx build --platform linux/amd64,linux/arm64 \
+  --tag docker.io/minus34/gnafloader:latest-gda2020 \
+  --tag docker.io/minus34/gnafloader:202405-gda2020 \
+  --file /Users/$(whoami)/git/minus34/gnaf-loader/docker/Dockerfile . \
+  --push
 
 echo "---------------------------------------------------------------------------------------------------------------------"
 echo "clean up Docker locally - warning: this could accidentally destroy other Docker images"
 echo "---------------------------------------------------------------------------------------------------------------------"
 
-# required or Docker VM will run out of space
+# required or Docker VM could run out of space
 echo 'y' | docker builder prune --all
 echo 'y' | docker system prune --all
