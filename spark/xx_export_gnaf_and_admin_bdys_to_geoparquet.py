@@ -328,7 +328,7 @@ if __name__ == "__main__":
     # add the handler to the root logger
     logging.getLogger().addHandler(console)
 
-    task_name = "Geoscape Admin Boundary Export to S3"
+    task_name = "Geoscape GNAF & Admin Boundary Export to S3"
 
     logger.info(f"{task_name} started")
     logger.info("Running on Python {}".format(sys.version.replace("\n", " ")))
