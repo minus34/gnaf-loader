@@ -13,9 +13,9 @@ ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update \
     && apt-get install -y sudo wget gnupg2 \
     && wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add - \
-    && echo "deb http://apt.postgresql.org/pub/repos/apt/ buster-pgdg main" | sudo tee  /etc/apt/sources.list.d/pgdg.list \
+    && echo "deb http://apt.postgresql.org/pub/repos/apt/ bookworm-pgdg main" | sudo tee  /etc/apt/sources.list.d/pgdg.list \
     && apt-get update \
-    && apt-get install -y postgresql-15 postgresql-client-15 postgis postgresql-15-postgis-3 \
+    && apt-get install -y postgresql-16 postgresql-client-16 postgis postgresql-16-postgis-3 \
     && apt-get autoremove -y --purge \
     && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
@@ -26,8 +26,8 @@ RUN /etc/init.d/postgresql start \
     && /etc/init.d/postgresql stop
 
 # enable external access to postgres - WARNING: these are insecure settings! Edit these to restrict access
-RUN echo "host all  all    0.0.0.0/0  md5" >> /etc/postgresql/15/main/pg_hba.conf
-RUN echo "listen_addresses='*'" >> /etc/postgresql/15/main/postgresql.conf
+RUN echo "host all  all    0.0.0.0/0  md5" >> /etc/postgresql/16/main/pg_hba.conf
+RUN echo "listen_addresses='*'" >> /etc/postgresql/16/main/postgresql.conf
 
 # download and restore GNAF & Admin Boundary Postgres dump files
 RUN mkdir -p /data
@@ -60,4 +60,4 @@ USER postgres
 # VOLUME  ["/etc/postgresql", "/var/log/postgresql", "/var/lib/postgresql"]
 
 # Start postgres when starting the container
-CMD ["/usr/lib/postgresql/15/bin/postgres", "-D", "/var/lib/postgresql/15/main", "-c", "config_file=/etc/postgresql/15/main/postgresql.conf"]
+CMD ["/usr/lib/postgresql/16/bin/postgres", "-D", "/var/lib/postgresql/16/main", "-c", "config_file=/etc/postgresql/16/main/postgresql.conf"]
