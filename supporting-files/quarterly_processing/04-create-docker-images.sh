@@ -33,8 +33,7 @@ echo "--------------------------------------------------------------------------
 cd ${OUTPUT_FOLDER}
 
 # build and push images
-#docker buildx build --platform linux/amd64,linux/arm64 \
-docker buildx build --platform linux/amd64 \
+docker buildx build --platform linux/amd64,linux/arm64 \
   --tag docker.io/minus34/gnafloader:latest \
   --tag docker.io/minus34/gnafloader:202405 \
   --file /Users/$(whoami)/git/minus34/gnaf-loader/docker/Dockerfile . \
@@ -55,8 +54,7 @@ echo "--------------------------------------------------------------------------
 cd ${OUTPUT_FOLDER_2020}
 
 # build and push images
-#docker buildx build --platform linux/amd64,linux/arm64 \
-docker buildx build --platform linux/amd64 \
+docker buildx build --platform linux/amd64,linux/arm64 \
   --tag docker.io/minus34/gnafloader:latest-gda2020 \
   --tag docker.io/minus34/gnafloader:202405-gda2020 \
   --file /Users/$(whoami)/git/minus34/gnaf-loader/docker/Dockerfile . \
