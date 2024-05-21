@@ -4,7 +4,7 @@
 
 
 -- fix 35 boatsheds
-update gnaf_202402.address_principal_admin_boundaries
+update gnaf_202405.address_principal_admin_boundaries
     set lga_pid = 'lgacbffb11990f2',
         lga_name = 'Hobart City'
 where locality_pid = 'loc0f7a581b85b7'

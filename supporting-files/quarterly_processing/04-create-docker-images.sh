@@ -3,8 +3,8 @@
 # get the directory this script is running from
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
-OUTPUT_FOLDER="/Users/$(whoami)/tmp/geoscape_202402"
-OUTPUT_FOLDER_2020="/Users/$(whoami)/tmp/geoscape_202402_gda2020"
+OUTPUT_FOLDER="/Users/$(whoami)/tmp/geoscape_202405"
+OUTPUT_FOLDER_2020="/Users/$(whoami)/tmp/geoscape_202405_gda2020"
 
 cd ${SCRIPT_DIR}/../../docker
 
@@ -25,7 +25,7 @@ echo "--------------------------------------------------------------------------
 
 # force platform to avoid Apple Silicon only images
 cd ${OUTPUT_FOLDER}
-docker build --platform linux/amd64 --no-cache --tag docker.io/minus34/gnafloader:latest --tag docker.io/minus34/gnafloader:202402 \
+docker build --platform linux/amd64 --no-cache --tag docker.io/minus34/gnafloader:latest --tag docker.io/minus34/gnafloader:202405 \
   -f /Users/$(whoami)/git/minus34/gnaf-loader/docker/Dockerfile .
 
 echo "---------------------------------------------------------------------------------------------------------------------"
@@ -47,7 +47,7 @@ echo "build gnaf-loader GDA2020 docker image"
 echo "---------------------------------------------------------------------------------------------------------------------"
 
 cd ${OUTPUT_FOLDER_2020}
-docker build --platform linux/amd64 --no-cache --tag docker.io/minus34/gnafloader:latest-gda2020 --tag docker.io/minus34/gnafloader:202402-gda2020 \
+docker build --platform linux/amd64 --no-cache --tag docker.io/minus34/gnafloader:latest-gda2020 --tag docker.io/minus34/gnafloader:202405-gda2020 \
   -f /Users/$(whoami)/git/minus34/gnaf-loader/docker/Dockerfile .
 
 echo "---------------------------------------------------------------------------------------------------------------------"

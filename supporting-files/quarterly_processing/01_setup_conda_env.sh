@@ -16,7 +16,7 @@ conda deactivate
 conda activate base
 
 # WARNING - removes existing environment
-conda env remove --name ${ENV_NAME}
+conda env remove -y --name ${ENV_NAME}
 
 # update Conda base environment
 conda update -y conda

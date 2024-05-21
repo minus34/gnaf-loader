@@ -214,7 +214,7 @@ def populate_raw_gnaf(pg_cur):
         # load all PSV files using multiprocessing
         geoscape.multiprocess_list("sql", sql_list, logger)
 
-        # fix missing geocodes (added due to missing data in 202402 release)
+        # fix missing geocodes (added due to missing data in 202405 release)
         sql = geoscape.open_sql_file("01-04-raw-gnaf-fix-missing-geocodes.sql")
         pg_cur.execute(sql)
 
@@ -382,6 +382,8 @@ def load_raw_admin_boundaries(pg_cur):
     # are there any files to load?
     if len(create_list) == 0:
         logger.fatal("No admin boundary files found\nACTION: Check your 'admin-bdys-path' argument")
+        pg_cur.close()
+        quit()
     else:
         # load files in separate processes
         geoscape.multiprocess_shapefile_load(create_list, logger)

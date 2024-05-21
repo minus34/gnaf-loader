@@ -3,18 +3,18 @@
 # set this to taste - NOTE: you can't use "~" for your home folder
 output_folder="/Users/$(whoami)/tmp"
 
-/Applications/Postgres.app/Contents/Versions/14/bin/pg_dump -Fc -d geo -n gnaf_202402 -p 5432 -U postgres -f ${output_folder}/gnaf-202402.dmp --no-owner
+/Applications/Postgres.app/Contents/Versions/14/bin/pg_dump -Fc -d geo -n gnaf_202405 -p 5432 -U postgres -f ${output_folder}/gnaf-202405.dmp --no-owner
 echo "GNAF schema exported to dump file"
 
-/Applications/Postgres.app/Contents/Versions/14/bin/pg_dump -Fc -d geo -n admin_bdys_202402 -p 5432 -U postgres -f ${output_folder}/admin-bdys-202402.dmp --no-owner
+/Applications/Postgres.app/Contents/Versions/14/bin/pg_dump -Fc -d geo -n admin_bdys_202405 -p 5432 -U postgres -f ${output_folder}/admin-bdys-202405.dmp --no-owner
 echo "Admin Bdys schema exported to dump file"
 
 # OPTIONAL - copy files to AWS S3 and allow public read access (requires AWSCLI installed and your AWS credentials setup)
 cd ${output_folder}
 
-for f in *-202402.dmp;
+for f in *-202405.dmp;
   do
-    aws --profile=default s3 cp --storage-class REDUCED_REDUNDANCY ./${f} s3://minus34.com/opendata/geoscape-202402/${f};
-    aws --profile=default s3api put-object-acl --acl public-read --bucket minus34.com --key opendata/geoscape-202402/${f}
+    aws --profile=default s3 cp --storage-class REDUCED_REDUNDANCY ./${f} s3://minus34.com/opendata/geoscape-202405/${f};
+    aws --profile=default s3api put-object-acl --acl public-read --bucket minus34.com --key opendata/geoscape-202405/${f}
     echo "${f} uploaded to AWS S3"
   done
