@@ -23,6 +23,10 @@ from gnaf_202405.address_principal_admin_boundaries
 ;
 
 
+select * from gnaf_202405.streets
+where street_locality_pid = 'QLD121981';
+
+
 
 -- addresses missing bdy tags
 select count(*) as address_count,
