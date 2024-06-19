@@ -121,23 +121,18 @@ where dw.poa_code_2021 = abs.poa_code_2021
 ;
 
 -- add projections based on increase in residential address counts
-select poa_name_2021,
-       current_residential_address_count,
-       residential_address_count_202111,
-       current_residential_address_count::float / residential_address_count_202111::float as percent_change,
-       dwelling_count_2021,
-       ceil(dwelling_count_2021 * (current_residential_address_count::float / residential_address_count_202111::float)) as current_dwelling_count
-from testing.census_dwelling_projections
-order by percent_change desc
+update testing.census_dwelling_projections
+    set current_dwelling_count = ceil(dwelling_count_2021 * (current_residential_address_count::float / residential_address_count_202111::float)),
+        current_population_count = ceil(population_count_2021 * (current_residential_address_count::float / residential_address_count_202111::float)),
+        current_vehicle_count = ceil(vehicle_count_2021 * (current_residential_address_count::float / residential_address_count_202111::float))
 ;
-
 
 
 
 
 select *
 from testing.census_dwelling_projections
-where poa_name_2021 = '3052'
+-- where poa_name_2021 = '3052'
 ;
 
 
