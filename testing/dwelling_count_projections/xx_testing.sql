@@ -123,6 +123,7 @@ where dw.poa_code_2021 = abs.poa_code_2021
 -- add projections based on increase in residential address counts
 update testing.census_dwelling_projections
     set current_dwelling_count = ceil(dwelling_count_2021 * (current_residential_address_count::float / residential_address_count_202111::float)),
+        current_dwelling_with_vehicle_count = ceil(dwelling_with_vehicle_count_2021 * (current_residential_address_count::float / residential_address_count_202111::float)),
         current_population_count = ceil(population_count_2021 * (current_residential_address_count::float / residential_address_count_202111::float)),
         current_vehicle_count = ceil(vehicle_count_2021 * (current_residential_address_count::float / residential_address_count_202111::float))
 ;
