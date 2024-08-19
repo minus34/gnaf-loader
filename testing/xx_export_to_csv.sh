@@ -13,7 +13,7 @@ cd "${OUTPUT_FOLDER}"
 
 
 # convert Postgres table to CSV with CSVT field types file
-input_schema="gnaf_202405"
+input_schema="gnaf_202408"
 input_table="address_principals"
 
 echo "Exporting ${input_schema}.${input_table}"
