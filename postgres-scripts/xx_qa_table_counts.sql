@@ -3,7 +3,7 @@ SELECT new.table_name,
        new.aus - old.aus as difference,
 	   new.aus as new_aus,
        old.aus as old_aus
-	FROM gnaf_202405.qa as new
+	FROM gnaf_202408.qa as new
 	INNER JOIN gnaf_202102.qa as old ON new.table_name = old.table_name
 ;
 
@@ -11,6 +11,6 @@ SELECT new.table_name,
        new.aus - old.aus as difference,
 	   new.aus as new_aus,
        old.aus as old_aus
-	FROM admin_bdys_202405.qa as new
+	FROM admin_bdys_202408.qa as new
 	INNER JOIN admin_bdys_202102.qa as old ON new.table_name = old.table_name
 ;
