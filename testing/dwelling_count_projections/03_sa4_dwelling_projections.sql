@@ -129,17 +129,6 @@ update testing.census_dwelling_projections_sa4
 ;
 
 
-
-
 select *
 from testing.census_dwelling_projections_sa4
--- where poa_name_2021 = '3052'
 ;
-
-
-
--- select *
--- from census_2021_data.metadata_stats
--- where table_number = 'G04B'
--- order by sequential_id
--- ;
