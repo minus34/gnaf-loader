@@ -1,6 +1,6 @@
 
-drop table if exists testing.census_census_dwelling_projections_poa;
-create table testing.census_census_dwelling_projections_poa
+drop table if exists testing.census_dwelling_projections_poa;
+create table testing.census_dwelling_projections_poa
 (
     poa_name_2021   text,
     poa_code_2021   text,
@@ -20,10 +20,10 @@ create table testing.census_census_dwelling_projections_poa
     current_population_count integer,
     current_vehicle_count integer
 );
-alter table testing.census_census_dwelling_projections_poa owner to postgres;
+alter table testing.census_dwelling_projections_poa owner to postgres;
 
 -- add current residential address counts
-insert into testing.census_census_dwelling_projections_poa (poa_name_2021, poa_code_2021, current_residential_address_count)
+insert into testing.census_dwelling_projections_poa (poa_name_2021, poa_code_2021, current_residential_address_count)
 select poa_name_2021,
        poa_code_2021,
        count(*) as address_count
@@ -42,7 +42,7 @@ with gnaf as (
     where poa_code_2021 is not null
     group by poa_code_2021
 )
-update testing.census_census_dwelling_projections_poa as dw
+update testing.census_dwelling_projections_poa as dw
     set current_address_count = gnaf.address_count
 from gnaf
 where dw.poa_code_2021 = gnaf.poa_code_2021
@@ -57,7 +57,7 @@ with gnaf as (
       and mb_category_2021 in ('Residential', 'Primary Production', 'Other')
     group by poa_code_2021
 )
-update testing.census_census_dwelling_projections_poa as dw
+update testing.census_dwelling_projections_poa as dw
 set residential_address_count_202111 = gnaf.address_count,
     residential_address_diff = current_residential_address_count - gnaf.address_count
 from gnaf
@@ -72,7 +72,7 @@ with gnaf as (
     where poa_code_2021 is not null
     group by poa_code_2021
 )
-update testing.census_census_dwelling_projections_poa as dw
+update testing.census_dwelling_projections_poa as dw
 set address_count_202111 = gnaf.address_count,
     address_diff = current_address_count - gnaf.address_count
 from gnaf
@@ -88,7 +88,7 @@ with abs as (
            (g9345 + g9346 * 2 + g9347 * 3 + g9348 * 4.5)::integer as vehicle_count_2021
     from census_2021_data.poa_g34
 )
-update testing.census_census_dwelling_projections_poa as dw
+update testing.census_dwelling_projections_poa as dw
 set dwelling_count_2021 = abs.dwelling_count_2021,
     dwelling_with_vehicle_count_2021 = abs.dwelling_with_vehicle_count_2021,
     vehicle_count_2021 = abs.vehicle_count_2021
@@ -102,7 +102,7 @@ with abs as (
            g116 as average_household_size_2021
     from census_2021_data.poa_g02
 )
-update testing.census_census_dwelling_projections_poa as dw
+update testing.census_dwelling_projections_poa as dw
 set average_household_size_2021 = abs.average_household_size_2021
 from abs
 where dw.poa_code_2021 = abs.poa_code_2021
@@ -114,14 +114,14 @@ with abs as (
            g562 as population_count_2021
     from census_2021_data.poa_g04b
 )
-update testing.census_census_dwelling_projections_poa as dw
+update testing.census_dwelling_projections_poa as dw
 set population_count_2021 = abs.population_count_2021
 from abs
 where dw.poa_code_2021 = abs.poa_code_2021
 ;
 
 -- add projections based on increase in residential address counts
-update testing.census_census_dwelling_projections_poa
+update testing.census_dwelling_projections_poa
     set current_dwelling_count = ceil(dwelling_count_2021 * (current_residential_address_count::float / residential_address_count_202111::float)),
         current_dwelling_with_vehicle_count = ceil(dwelling_with_vehicle_count_2021 * (current_residential_address_count::float / residential_address_count_202111::float)),
         current_population_count = ceil(population_count_2021 * (current_residential_address_count::float / residential_address_count_202111::float)),
@@ -132,7 +132,7 @@ update testing.census_census_dwelling_projections_poa
 
 
 select *
-from testing.census_census_dwelling_projections_poa
+from testing.census_dwelling_projections_poa
 -- where poa_name_2021 = '3052'
 ;
 
