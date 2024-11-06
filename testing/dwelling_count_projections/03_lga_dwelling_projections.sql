@@ -1,9 +1,9 @@
 
-drop table if exists testing.census_dwelling_projections_sa4;
-create table testing.census_dwelling_projections_sa4
+drop table if exists testing.census_dwelling_projections_lga;
+create table testing.census_dwelling_projections_lga
 (
-    sa4_name_2021                       text,
-    sa4_code_2021                       text,
+    lga_name_2021                       text,
+    lga_code_2021                       text,
     address_count_202111                integer,
     residential_address_count_202111    integer,
     dwelling_count_2021                 integer,
@@ -20,108 +20,108 @@ create table testing.census_dwelling_projections_sa4
     current_population_count            integer,
     current_vehicle_count               integer
 );
-alter table testing.census_dwelling_projections_sa4 owner to postgres;
+alter table testing.census_dwelling_projections_lga owner to postgres;
 
 -- add current residential address counts
-insert into testing.census_dwelling_projections_sa4 (sa4_name_2021, sa4_code_2021, current_residential_address_count)
-select sa4_name_2021,
-       sa4_code_2021,
+insert into testing.census_dwelling_projections_lga (lga_name_2021, lga_code_2021, current_residential_address_count)
+select lga_name_2021,
+       lga_code_2021,
        count(*) as address_count
 from gnaf_202408.address_principal_census_2021_boundaries
-where sa4_code_2021 is not null
+where lga_code_2021 is not null
   and mb_category_2021 in ('Residential', 'Primary Production', 'Other')
-group by sa4_name_2021,
-         sa4_code_2021
+group by lga_name_2021,
+         lga_code_2021
 ;
 
 -- current address counts
 with gnaf as (
-    select sa4_code_2021,
+    select lga_code_2021,
            count(*) as address_count
     from gnaf_202408.address_principal_census_2021_boundaries
-    where sa4_code_2021 is not null
-    group by sa4_code_2021
+    where lga_code_2021 is not null
+    group by lga_code_2021
 )
-update testing.census_dwelling_projections_sa4 as dw
+update testing.census_dwelling_projections_lga as dw
     set current_address_count = gnaf.address_count
 from gnaf
-where dw.sa4_code_2021 = gnaf.sa4_code_2021
+where dw.lga_code_2021 = gnaf.lga_code_2021
 ;
 
 -- Nov 2021 residential address counts
 with gnaf as (
-    select sa4_code_2021,
+    select lga_code_2021,
            count(*) as address_count
     from gnaf_202111.address_principal_census_2021_boundaries
-    where sa4_code_2021 is not null
+    where lga_code_2021 is not null
       and mb_category_2021 in ('Residential', 'Primary Production', 'Other')
-    group by sa4_code_2021
+    group by lga_code_2021
 )
-update testing.census_dwelling_projections_sa4 as dw
+update testing.census_dwelling_projections_lga as dw
 set residential_address_count_202111 = gnaf.address_count,
     residential_address_diff = current_residential_address_count - gnaf.address_count
 from gnaf
-where dw.sa4_code_2021 = gnaf.sa4_code_2021
+where dw.lga_code_2021 = gnaf.lga_code_2021
 ;
 
 -- Nov 2021 address counts
 with gnaf as (
-    select sa4_code_2021,
+    select lga_code_2021,
            count(*) as address_count
     from gnaf_202111.address_principal_census_2021_boundaries
-    where sa4_code_2021 is not null
-    group by sa4_code_2021
+    where lga_code_2021 is not null
+    group by lga_code_2021
 )
-update testing.census_dwelling_projections_sa4 as dw
+update testing.census_dwelling_projections_lga as dw
 set address_count_202111 = gnaf.address_count,
     address_diff = current_address_count - gnaf.address_count
 from gnaf
-where dw.sa4_code_2021 = gnaf.sa4_code_2021
+where dw.lga_code_2021 = gnaf.lga_code_2021
 ;
 
 
 -- add census dwelling & vehicle counts
 with abs as (
-    select region_id as sa4_code_2021,
+    select region_id as lga_code_2021,
            g9351 as dwelling_count_2021,
            g9351 - g9344 as dwelling_with_vehicle_count_2021,
            (g9345 + g9346 * 2 + g9347 * 3 + g9348 * 4.5)::integer as vehicle_count_2021
-    from census_2021_data.sa4_g34
+    from census_2021_data.lga_g34
 )
-update testing.census_dwelling_projections_sa4 as dw
+update testing.census_dwelling_projections_lga as dw
 set dwelling_count_2021 = abs.dwelling_count_2021,
     dwelling_with_vehicle_count_2021 = abs.dwelling_with_vehicle_count_2021,
     vehicle_count_2021 = abs.vehicle_count_2021
 from abs
-where dw.sa4_code_2021 = abs.sa4_code_2021
+where dw.lga_code_2021 = abs.lga_code_2021
 ;
 
 -- add avg household size
 with abs as (
-    select region_id as sa4_code_2021,
+    select region_id as lga_code_2021,
            g116 as average_household_size_2021
-    from census_2021_data.sa4_g02
+    from census_2021_data.lga_g02
 )
-update testing.census_dwelling_projections_sa4 as dw
+update testing.census_dwelling_projections_lga as dw
 set average_household_size_2021 = abs.average_household_size_2021
 from abs
-where dw.sa4_code_2021 = abs.sa4_code_2021
+where dw.lga_code_2021 = abs.lga_code_2021
 ;
 
 -- add population
 with abs as (
-    select region_id as sa4_code_2021,
+    select region_id as lga_code_2021,
            g562 as population_count_2021
-    from census_2021_data.sa4_g04b
+    from census_2021_data.lga_g04b
 )
-update testing.census_dwelling_projections_sa4 as dw
+update testing.census_dwelling_projections_lga as dw
 set population_count_2021 = abs.population_count_2021
 from abs
-where dw.sa4_code_2021 = abs.sa4_code_2021
+where dw.lga_code_2021 = abs.lga_code_2021
 ;
 
 -- add projections based on increase in residential address counts
-update testing.census_dwelling_projections_sa4
+update testing.census_dwelling_projections_lga
     set current_dwelling_count = ceil(dwelling_count_2021 * (current_residential_address_count::float / residential_address_count_202111::float)),
         current_dwelling_with_vehicle_count = ceil(dwelling_with_vehicle_count_2021 * (current_residential_address_count::float / residential_address_count_202111::float)),
         current_population_count = ceil(population_count_2021 * (current_residential_address_count::float / residential_address_count_202111::float)),
@@ -130,18 +130,18 @@ update testing.census_dwelling_projections_sa4
 
 
 select *
-from testing.census_dwelling_projections_sa4
+from testing.census_dwelling_projections_lga
 ;
 
 
 
 -- -- create view
--- drop view if exists testing.vw_census_dwelling_projections_sa4;
--- create view testing.vw_census_dwelling_projections_sa4 as
+-- drop view if exists testing.vw_census_dwelling_projections_lga;
+-- create view testing.vw_census_dwelling_projections_lga as
 -- select stats.*,
 --     bdy.geom
--- from testing.census_dwelling_projections_sa4 as stats
--- inner join census_2021_bdys_gda94.sa4_2021_aust_gda94 as bdy on stats.sa4_code_2021 = bdy.sa4_code_2021
+-- from testing.census_dwelling_projections_lga as stats
+-- inner join census_2021_bdys_gda94.lga_2021_aust_gda94 as bdy on stats.lga_code_2021 = bdy.lga_code_2021
 --
 --
 --
