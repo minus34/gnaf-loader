@@ -132,3 +132,23 @@ update testing.census_dwelling_projections_sa4
 select *
 from testing.census_dwelling_projections_sa4
 ;
+
+
+select distinct mb_category_2021
+from census_2021_bdys_gda94.mb_2021_aust_gda94
+where mb_category_2021 not in (
+'ANTARCTICA',
+'MIGRATORY',
+'NOUSUALRESIDENCE',
+'OFFSHORE',
+'Outside Australia',
+'SHIPPING'
+)
+
+-- QGIS filter
+-- mb_category_2021 in (
+-- 'Parkland',
+-- 'Primary Production',
+-- 'Other',
+-- 'Residential'
+-- )
