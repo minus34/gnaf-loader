@@ -27,7 +27,7 @@ insert into testing.census_dwelling_projections_poa (poa_name_2021, poa_code_202
 select poa_name_2021,
        poa_code_2021,
        count(*) as address_count
-from gnaf_202408.address_principal_census_2021_boundaries
+from gnaf_202411.address_principal_census_2021_boundaries
 where poa_code_2021 is not null
   and mb_category_2021 in ('Residential', 'Primary Production', 'Other')
 group by poa_name_2021,
@@ -38,7 +38,7 @@ group by poa_name_2021,
 with gnaf as (
     select poa_code_2021,
            count(*) as address_count
-    from gnaf_202408.address_principal_census_2021_boundaries
+    from gnaf_202411.address_principal_census_2021_boundaries
     where poa_code_2021 is not null
     group by poa_code_2021
 )

@@ -27,7 +27,7 @@ insert into testing.census_dwelling_projections_sa4 (sa4_name_2021, sa4_code_202
 select sa4_name_2021,
        sa4_code_2021,
        count(*) as address_count
-from gnaf_202408.address_principal_census_2021_boundaries
+from gnaf_202411.address_principal_census_2021_boundaries
 where sa4_code_2021 is not null
   and mb_category_2021 in ('Residential', 'Primary Production', 'Other')
 group by sa4_name_2021,
@@ -38,7 +38,7 @@ group by sa4_name_2021,
 with gnaf as (
     select sa4_code_2021,
            count(*) as address_count
-    from gnaf_202408.address_principal_census_2021_boundaries
+    from gnaf_202411.address_principal_census_2021_boundaries
     where sa4_code_2021 is not null
     group by sa4_code_2021
 )
