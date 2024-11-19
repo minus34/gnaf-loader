@@ -35,13 +35,13 @@ echo "Start time : $(date)"
 ENV_NAME=sedona
 
 PYTHON_VERSION="3.12"
-SPARK_VERSION="3.5.1"  # uncomment to install specific version of Spark
+SPARK_VERSION="3.5.3"  # uncomment to install specific version of Spark
 SPARK_MINOR_VERSION="3.5"  # required to get the correct Sedona Spark shaded JAR (must match latest version here: https://repo1.maven.org/maven2/org/apache/sedona/)
-SEDONA_VERSION="1.6.0"
+SEDONA_VERSION="1.6.1"
 SCALA_VERSION="2.12"  # leave at 2.12 until PySpark in Pypi moves to 2.13
 #TEMP_WRAPPER_VERSION="1.5.0"  # required when GeoTools Wrapper points to an old version of Sedona
 GEOTOOLS_VERSION="28.2"
-POSTGRES_JDBC_VERSION="42.7.3"
+POSTGRES_JDBC_VERSION="42.7.4"
 
 # --------------------------------------------------------------------------------------------------------------------
 
