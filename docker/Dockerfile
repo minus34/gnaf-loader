@@ -15,7 +15,7 @@ RUN apt-get update \
     && wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add - \
     && echo "deb http://apt.postgresql.org/pub/repos/apt/ bookworm-pgdg main" | sudo tee  /etc/apt/sources.list.d/pgdg.list \
     && apt-get update \
-    && apt-get install -y postgresql-15 postgresql-client-15 postgis postgresql-15-postgis-3 \
+    && apt-get install -y postgresql-15 postgresql-client-15 postgresql-15-postgis-3 \
     && apt-get autoremove -y --purge \
     && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
