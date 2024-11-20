@@ -1,7 +1,7 @@
 FROM debian:bookworm-slim
 
 # replaced the downloading of the Potgres dump files to use local files instead (for performance)
-# ARG BASE_URL="https://minus34.com/opendata/geoscape-202408"
+# ARG BASE_URL="https://minus34.com/opendata/geoscape-202411"
 # ENV BASE_URL ${BASE_URL}
 
 # Postgres user password - WARNING: change this to something a lot more secure
@@ -15,7 +15,7 @@ RUN apt-get update \
     && wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add - \
     && echo "deb http://apt.postgresql.org/pub/repos/apt/ bookworm-pgdg main" | sudo tee  /etc/apt/sources.list.d/pgdg.list \
     && apt-get update \
-    && apt-get install -y postgresql-15 postgresql-client-15 postgis postgresql-15-postgis-3 \
+    && apt-get install -y postgresql-15 postgresql-client-15 postgresql-15-postgis-3 \
     && apt-get autoremove -y --purge \
     && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
@@ -33,23 +33,23 @@ RUN echo "listen_addresses='*'" >> /etc/postgresql/15/main/postgresql.conf
 RUN mkdir -p /data
 WORKDIR /data
 
-ADD gnaf-202408.dmp .
-ADD admin-bdys-202408.dmp .
+ADD gnaf-202411.dmp .
+ADD admin-bdys-202411.dmp .
 
 # replace the add statements above if wanting to download Postgres dump files
 # RUN /data \
-#     && wget --quiet ${BASE_URL}/gnaf-202408.dmp \
-#     && wget --quiet ${BASE_URL}/admin-bdys-202408.dmp
+#     && wget --quiet ${BASE_URL}/gnaf-202411.dmp \
+#     && wget --quiet ${BASE_URL}/admin-bdys-202411.dmp
 
 RUN /etc/init.d/postgresql start \
-    && pg_restore -Fc -d postgres -h localhost -p 5432 -U postgres /data/gnaf-202408.dmp \
+    && pg_restore -Fc -d postgres -h localhost -p 5432 -U postgres /data/gnaf-202411.dmp \
     && /etc/init.d/postgresql stop \
-    && rm /data/gnaf-202408.dmp
+    && rm /data/gnaf-202411.dmp
 
 RUN /etc/init.d/postgresql start \
-    && pg_restore -Fc -d postgres -h localhost -p 5432 -U postgres /data/admin-bdys-202408.dmp \
+    && pg_restore -Fc -d postgres -h localhost -p 5432 -U postgres /data/admin-bdys-202411.dmp \
     && /etc/init.d/postgresql stop \
-    && rm /data/admin-bdys-202408.dmp
+    && rm /data/admin-bdys-202411.dmp
 
 EXPOSE 5432
 

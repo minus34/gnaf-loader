@@ -20,7 +20,7 @@ aws_profile = "minus34"
 
 #######################################################################################################################
 
-s3_path = "s3a://minus34.com/opendata/geoscape-202408/geoparquet/"
+s3_path = "s3a://minus34.com/opendata/geoscape-202411/geoparquet/"
 
 # number of CPUs to use in processing (defaults to number of local CPUs)
 num_processors = cpu_count()
