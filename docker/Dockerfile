@@ -4,8 +4,8 @@ LABEL maintainer="PostGIS Project - https://postgis.net" \
       org.opencontainers.image.description="PostGIS 3.5.0+dfsg-1.pgdg110+1 spatial database extension with PostgreSQL 17 bullseye" \
       org.opencontainers.image.source="https://github.com/postgis/docker-postgis"
 
-ENV POSTGIS_MAJOR 3
-ENV POSTGIS_VERSION 3.5.0+dfsg-1.pgdg110+1
+ENV POSTGIS_MAJOR=3
+ENV POSTGIS_VERSION=3.5.0+dfsg-1.pgdg110+1
 ENV DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update \
@@ -19,26 +19,34 @@ RUN apt-get update \
            postgresql-$PG_MAJOR-postgis-$POSTGIS_MAJOR-scripts \
       && rm -rf /var/lib/apt/lists/*
 
-# download and restore GNAF & Admin Boundary Postgres dump files
-RUN mkdir -p /data
-WORKDIR /data
-
-ADD gnaf-202411.dmp .
-ADD admin-bdys-202411.dmp .
-
-RUN pg_restore -Fc -d postgres -h localhost -p 5432 -U postgres /data/gnaf-202411.dmp \
-    && rm /data/gnaf-202411.dmp
-
-RUN pg_restore -Fc -d postgres -h localhost -p 5432 -U postgres /data/admin-bdys-202411.dmp \
-    && rm /data/admin-bdys-202411.dmp
-
-EXPOSE 5432
-
-# set user for postgres startup
-USER postgres
-
-# Start postgres when starting the container
-CMD ["/usr/lib/postgresql/17/bin/postgres", "-D", "/var/lib/postgresql/17/main", "-c", "config_file=/etc/postgresql/17/main/postgresql.conf"]
+## enable external access to postgres - WARNING: these are insecure settings! Edit these to restrict access
+#RUN echo "host all  all    0.0.0.0/0  md5" >> /etc/postgresql/17/main/pg_hba.conf
+#RUN echo "listen_addresses='*'" >> /etc/postgresql/17/main/postgresql.conf
+#
+## download and restore GNAF & Admin Boundary Postgres dump files
+#RUN mkdir -p /data
+#WORKDIR /data
+#
+#ADD gnaf-202411.dmp .
+#ADD admin-bdys-202411.dmp .
+#
+#RUN /etc/init.d/postgresql start \
+#    && pg_restore -Fc -d postgres -h localhost -p 5432 -U postgres /data/gnaf-202411.dmp \
+#    && /etc/init.d/postgresql stop \
+#    && rm /data/gnaf-202411.dmp
+#
+#RUN /etc/init.d/postgresql start \
+#    && pg_restore -Fc -d postgres -h localhost -p 5432 -U postgres /data/admin-bdys-202411.dmp \
+#    && /etc/init.d/postgresql stop \
+#    && rm /data/admin-bdys-202411.dmp
+#
+#EXPOSE 5432
+#
+## set user for postgres startup
+#USER postgres
+#
+## Start postgres when starting the container
+#CMD ["/usr/lib/postgresql/17/bin/postgres", "-D", "/var/lib/postgresql/17/main", "-c", "config_file=/etc/postgresql/17/main/postgresql.conf"]
 
 
 ##RUN mkdir -p /docker-entrypoint-initdb.d
