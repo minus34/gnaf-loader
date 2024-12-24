@@ -20,7 +20,7 @@ echo 'y' | docker builder prune --all
 echo 'y' | docker system prune --all
 
 echo "---------------------------------------------------------------------------------------------------------------------"
-echo "build gnaf-loader GDA94 docker image "
+echo "build gnaf-loader GDA94 docker image"
 echo "---------------------------------------------------------------------------------------------------------------------"
 
 # 1. go to Dockerfile directory
