@@ -6,7 +6,7 @@ SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 OUTPUT_FOLDER="/Users/$(whoami)/tmp/geoscape_202411"
 OUTPUT_FOLDER_2020="/Users/$(whoami)/tmp/geoscape_202411_gda2020"
 
-DOCKER_FOLDER=${SCRIPT_DIR}/../../docker
+DOCKER_FOLDER=${SCRIPT_DIR}/../../docker_new
 
 echo "---------------------------------------------------------------------------------------------------------------------"
 echo "copy postgres dump files to Dockerfile folder"

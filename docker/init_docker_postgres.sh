@@ -5,6 +5,9 @@ set -e
 # Perform all actions as $POSTGRES_USER
 export PGUSER="$POSTGRES_USER"
 
+# start Postgres
+pg_ctl -D /var/lib/postgresql/data -l logfile start
+
 # Load PostGIS into $POSTGRES_DB
 #for DB in template_postgis "$POSTGRES_DB"; do
 echo "Loading PostGIS extensions into $POSTGRES_DB"

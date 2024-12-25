@@ -38,6 +38,9 @@ USER postgres
 
 EXPOSE 5432
 
+#RUN pg_ctl -D /var/lib/postgresql/data -l logfile start
+#RUN pg_restore -Fc -d postgres -h localhost -p 5432 -U postgres /data/gnaf-202411.dmp
+#RUN pg_restore -Fc -d postgres -h localhost -p 5432 -U postgres /data/admin-bdys-202411.dmp
 
 #
 ## Perform all actions as $POSTGRES_USER
