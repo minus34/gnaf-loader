@@ -1,7 +1,5 @@
 FROM postgres:17-bullseye
 
-ARG DATA_DIR
-
 ENV POSTGRES_PASSWORD=password
 ENV POSTGRES_USER=postgres
 ENV POSTGRES_DB=geo
@@ -31,8 +29,9 @@ COPY ./init_docker_postgres.sh /docker-entrypoint-initdb.d/
 RUN mkdir -p /data
 WORKDIR /data
 
-ADD $DATA_DIR/gnaf-202411.dmp .
-ADD $DATA_DIR/admin-bdys-202411.dmp .
+ADD gnaf-202411.dmp .
+ADD admin-bdys-202411.dmp .
+
 
 # set user for postgres startup
 USER postgres
@@ -40,7 +39,7 @@ USER postgres
 EXPOSE 5432
 
 
-
+#
 ## Perform all actions as $POSTGRES_USER
 #RUN export PGUSER="$POSTGRES_USER"
 #RUN #groupadd -g 2000 gp-postgres
