@@ -23,6 +23,8 @@ RUN apt-get update \
            postgresql-$PG_MAJOR-postgis-$POSTGIS_MAJOR-scripts \
       && rm -rf /var/lib/apt/lists/*
 
+COPY ./init_docker_postgres.sh /docker-entrypoint-initdb.d/
+
 # download and restore GNAF & Admin Boundary Postgres dump files
 RUN mkdir -p /data
 WORKDIR /data
@@ -30,7 +32,6 @@ WORKDIR /data
 ADD gnaf-202411.dmp .
 ADD admin-bdys-202411.dmp .
 
-COPY scripts/init_docker_postgres.sh /docker-entrypoint-initdb.d/
 
 # set user for postgres startup
 USER postgres
