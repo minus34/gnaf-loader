@@ -13,9 +13,4 @@ echo "Loading PostGIS extensions into $POSTGRES_DB"
 EOSQL
 
 pg_restore -Fc -d postgres -h localhost -p 5432 -U postgres /data/gnaf-202411.dmp
-
-
 pg_restore -Fc -d postgres -h localhost -p 5432 -U postgres /data/admin-bdys-202411.dmp
-
-
-echo
