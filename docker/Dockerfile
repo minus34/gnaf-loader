@@ -1,5 +1,9 @@
 FROM postgres:17-bullseye
 
+ENV POSTGRES_PASSWORD=password
+ENV POSTGRES_USER=postgres
+ENV POSTGRES_DB=geo
+
 LABEL maintainer="PostGIS Project - https://postgis.net" \
       org.opencontainers.image.description="PostGIS 3.5.0+dfsg-1.pgdg110+1 spatial database extension with PostgreSQL 17 bullseye" \
       org.opencontainers.image.source="https://github.com/postgis/docker-postgis"
@@ -19,17 +23,31 @@ RUN apt-get update \
            postgresql-$PG_MAJOR-postgis-$POSTGIS_MAJOR-scripts \
       && rm -rf /var/lib/apt/lists/*
 
+# set user for postgres startup
+USER postgres
+
+# Perform all actions as $POSTGRES_USER
+RUN export PGUSER="$POSTGRES_USER"
+RUN #groupadd -g 2000 gp-postgres
+RUN #chown -R postgres ./pgdata;
+
+# Load PostGIS into $POSTGRES_DB
+#for DB in template_postgis "$POSTGRES_DB"; do
+RUN echo "Loading PostGIS extensions into $POSTGRES_DB"
+RUN service postgresql start
+RUN psql -U=$POSTGRES_USER --dbname=$POSTGRES_DB -c "CREATE EXTENSION IF NOT EXISTS postgis;"
+
 ## enable external access to postgres - WARNING: these are insecure settings! Edit these to restrict access
 #RUN echo "host all  all    0.0.0.0/0  md5" >> /etc/postgresql/17/main/pg_hba.conf
 #RUN echo "listen_addresses='*'" >> /etc/postgresql/17/main/postgresql.conf
-#
+
 ## download and restore GNAF & Admin Boundary Postgres dump files
 #RUN mkdir -p /data
 #WORKDIR /data
 #
 #ADD gnaf-202411.dmp .
 #ADD admin-bdys-202411.dmp .
-#
+
 #RUN /etc/init.d/postgresql start \
 #    && pg_restore -Fc -d postgres -h localhost -p 5432 -U postgres /data/gnaf-202411.dmp \
 #    && /etc/init.d/postgresql stop \
@@ -42,8 +60,7 @@ RUN apt-get update \
 #
 #EXPOSE 5432
 #
-## set user for postgres startup
-#USER postgres
+
 #
 ## Start postgres when starting the container
 #CMD ["/usr/lib/postgresql/17/bin/postgres", "-D", "/var/lib/postgresql/17/main", "-c", "config_file=/etc/postgresql/17/main/postgresql.conf"]
