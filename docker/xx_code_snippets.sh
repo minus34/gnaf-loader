@@ -9,6 +9,5 @@ docker run --name=gnafloader --publish=5433:5432 minus34/gnafloader:latest
 
 
 
-
 # get gnafloader image pull count
 curl -s https://hub.docker.com/v2/repositories/minus34/gnafloader/ | jq -r ".pull_count"
