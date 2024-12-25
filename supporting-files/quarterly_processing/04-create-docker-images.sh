@@ -3,8 +3,8 @@
 # get the directory this script is running from
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
-OUTPUT_FOLDER="/Users/$(whoami)/tmp/geoscape_202411"
-OUTPUT_FOLDER_2020="/Users/$(whoami)/tmp/geoscape_202411_gda2020"
+DATA_FOLDER="/Users/$(whoami)/tmp/geoscape_202411"
+DATA_FOLDER_2020="/Users/$(whoami)/tmp/geoscape_202411_gda2020"
 
 cd ${SCRIPT_DIR}/../../docker
 
@@ -24,14 +24,14 @@ echo "build gnaf-loader GDA94 docker image"
 echo "---------------------------------------------------------------------------------------------------------------------"
 
 # 1. go to Dockerfile directory
-cd ${OUTPUT_FOLDER}
+#cd ${DATA_FOLDER}
 
 # 2. launch buildx
 docker buildx create --name gnafloader_test_builder --use
 docker buildx inspect --bootstrap
 
 # 3. build and push images
-docker buildx build --platform linux/amd64,linux/arm64 --tag minus34/gnafloader_test:latest  --tag minus34/gnafloader_test:202411 -f /Users/$(whoami)/git/minus34/gnaf-loader/docker/Dockerfile . --load # --push
+docker buildx build --platform linux/amd64,linux/arm64 --tag minus34/gnafloader_test:latest --tag minus34/gnafloader_test:202411 --build-arg DATA_DIR=${DATA_FOLDER} . --load # --push
 
 echo "---------------------------------------------------------------------------------------------------------------------"
 echo "clean up Docker locally - warning: this could accidentally destroy other Docker images"
