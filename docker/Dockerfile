@@ -30,11 +30,12 @@ USER postgres
 RUN export PGUSER="$POSTGRES_USER"
 RUN #groupadd -g 2000 gp-postgres
 RUN #chown -R postgres ./pgdata;
+RUN #chown -R postgres /docker-entrypoint-initdb.d/
 
 # Load PostGIS into $POSTGRES_DB
 #for DB in template_postgis "$POSTGRES_DB"; do
 RUN echo "Loading PostGIS extensions into $POSTGRES_DB"
-RUN service postgresql start
+RUN /docker-entrypoint-initdb.d start
 RUN psql -U=$POSTGRES_USER --dbname=$POSTGRES_DB -c "CREATE EXTENSION IF NOT EXISTS postgis;"
 
 ## enable external access to postgres - WARNING: these are insecure settings! Edit these to restrict access
