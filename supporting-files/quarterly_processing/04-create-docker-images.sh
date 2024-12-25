@@ -18,6 +18,7 @@ cp ${OUTPUT_FOLDER}/*.dmp ${DOCKER_FOLDER}/
 #echo "start Docker desktop and wait 90 seconds for startup"
 #echo "---------------------------------------------------------------------------------------------------------------------"
 
+# go to Dockerfile directory
 cd ${DOCKER_FOLDER}
 
 #open -a Docker
@@ -32,15 +33,13 @@ echo "--------------------------------------------------------------------------
 echo "build gnaf-loader GDA94 docker image"
 echo "---------------------------------------------------------------------------------------------------------------------"
 
-# 1. go to Dockerfile directory
-cd ${OUTPUT_FOLDER}
-
-# 2. launch buildx
+# 1. launch buildx
 docker buildx create --name gnafloader_test_builder --use
 docker buildx inspect --bootstrap
 
-# 3. build and push images
-docker buildx build --platform linux/amd64,linux/arm64 --tag minus34/gnafloader_test:latest --tag minus34/gnafloader_test:202411 -f ${DOCKER_FOLDER}/Dockerfile . --load # --push
+# 2. build and push images
+docker buildx build --platform linux/amd64,linux/arm64 --tag minus34/gnafloader_test:latest --tag minus34/gnafloader_test:202411 . --load # --push
+#-f ${DOCKER_FOLDER}/Dockerfile
 
 #echo "---------------------------------------------------------------------------------------------------------------------"
 #echo "clean up Docker locally - warning: this could accidentally destroy other Docker images"

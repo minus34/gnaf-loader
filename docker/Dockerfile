@@ -23,7 +23,7 @@ RUN apt-get update \
            postgresql-$PG_MAJOR-postgis-$POSTGIS_MAJOR-scripts \
       && rm -rf /var/lib/apt/lists/*
 
-COPY ./init_docker_postgres.sh /docker-entrypoint-initdb.d/
+COPY init_docker_postgres.sh /docker-entrypoint-initdb.d/init_docker_postgres.sh
 
 # download and restore GNAF & Admin Boundary Postgres dump files
 RUN mkdir -p /data
