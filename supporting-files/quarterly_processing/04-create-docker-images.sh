@@ -41,9 +41,8 @@ docker buildx create --name gnafloader_test_builder --use
 docker buildx inspect --bootstrap
 
 # 2. build and push images
-#docker buildx build --platform linux/amd64,linux/arm64 --tag minus34/gnafloader_test:latest --tag minus34/gnafloader_test:202411 -f ${DOCKER_FOLDER}/Dockerfile . --load # --push
-
-docker buildx build --platform linux/arm64 --tag minus34/gnafloader_test:latest --tag minus34/gnafloader_test:202411 -f ${DOCKER_FOLDER}/Dockerfile . --push
+docker buildx build --platform linux/amd64,linux/arm64 --tag minus34/gnafloader_test:latest --tag minus34/gnafloader_test:202411 -f ${DOCKER_FOLDER}/Dockerfile . --push
+#docker buildx build --platform linux/arm64 --tag minus34/gnafloader_test:latest --tag minus34/gnafloader_test:202411 -f ${DOCKER_FOLDER}/Dockerfile . --push
 
 
 #echo "---------------------------------------------------------------------------------------------------------------------"
