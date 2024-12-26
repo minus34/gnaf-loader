@@ -29,10 +29,10 @@ RUN /etc/init.d/postgresql start \
 RUN echo "host all  all    0.0.0.0/0  md5" >> /etc/postgresql/15/main/pg_hba.conf
 RUN echo "listen_addresses='*'" >> /etc/postgresql/15/main/postgresql.conf
 
-## download and restore GNAF & Admin Boundary Postgres dump files
-#RUN mkdir -p /data
-#WORKDIR /data
-#
+# download and restore GNAF & Admin Boundary Postgres dump files
+RUN mkdir -p /data
+WORKDIR /data
+
 #ADD gnaf-202411.dmp .
 #ADD admin-bdys-202411.dmp .
 #
