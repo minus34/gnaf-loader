@@ -8,6 +8,9 @@ OUTPUT_FOLDER_2020="/Users/$(whoami)/tmp/geoscape_202411_gda2020"
 
 DOCKER_FOLDER=${SCRIPT_DIR}/../../docker_new
 
+## set build logging to screen
+#export BUILDKIT_PROGRESS=plain
+
 echo "---------------------------------------------------------------------------------------------------------------------"
 echo "copy postgres dump files to Dockerfile folder"
 echo "---------------------------------------------------------------------------------------------------------------------"
@@ -38,7 +41,7 @@ docker buildx create --name gnafloader_test_builder --use
 docker buildx inspect --bootstrap
 
 # 2. build and push images
-docker buildx build --platform linux/amd64,linux/arm64 --tag minus34/gnafloader_test:latest --tag minus34/gnafloader_test:202411 . --load # --push
+docker buildx build --platform linux/amd64,linux/arm64 --tag minus34/gnafloader_test:latest --tag minus34/gnafloader_test:202411 . --load --no-cache # --push
 #-f ${DOCKER_FOLDER}/Dockerfile
 
 #echo "---------------------------------------------------------------------------------------------------------------------"

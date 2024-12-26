@@ -2,7 +2,7 @@ FROM postgres:17-bullseye
 
 ENV POSTGRES_PASSWORD=password
 ENV POSTGRES_USER=postgres
-ENV POSTGRES_DB=geo
+ENV POSTGRES_DB=postgres
 
 LABEL maintainer="PostGIS Project - https://postgis.net" \
       org.opencontainers.image.description="PostGIS 3.5.0+dfsg-1.pgdg110+1 spatial database extension with PostgreSQL 17 bullseye" \
