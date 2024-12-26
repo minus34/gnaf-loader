@@ -6,7 +6,7 @@ SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 OUTPUT_FOLDER="/Users/$(whoami)/tmp/geoscape_202411"
 OUTPUT_FOLDER_2020="/Users/$(whoami)/tmp/geoscape_202411_gda2020"
 
-DOCKER_FOLDER=${SCRIPT_DIR}/../../docker_new
+DOCKER_FOLDER=${SCRIPT_DIR}/../../docker_old
 
 ## set build logging to screen
 #export BUILDKIT_PROGRESS=plain
@@ -28,9 +28,9 @@ cd ${DOCKER_FOLDER}
 #sleep 90
 
 ## required or Docker VM will run out of space
-#echo 'y' | docker builder prune --all
-#echo 'y' | docker system prune --all
-#echo 'y' | docker buildx rm --all-inactive
+echo 'y' | docker builder prune --all
+echo 'y' | docker system prune --all
+echo 'y' | docker buildx rm --all-inactive
 
 echo "---------------------------------------------------------------------------------------------------------------------"
 echo "build gnaf-loader GDA94 docker image"
@@ -41,8 +41,9 @@ docker buildx create --name gnafloader_test_builder --use
 docker buildx inspect --bootstrap
 
 # 2. build and push images
-docker buildx build --platform linux/amd64,linux/arm64 --tag minus34/gnafloader_test:latest --tag minus34/gnafloader_test:202411 . --load --no-cache # --push
-#-f ${DOCKER_FOLDER}/Dockerfile
+docker buildx build --platform linux/amd64,linux/arm64 --tag minus34/gnafloader_test:latest --tag minus34/gnafloader_test:202411 -f ${DOCKER_FOLDER}/Dockerfile . --load # --push
+
+
 
 #echo "---------------------------------------------------------------------------------------------------------------------"
 #echo "clean up Docker locally - warning: this could accidentally destroy other Docker images"
