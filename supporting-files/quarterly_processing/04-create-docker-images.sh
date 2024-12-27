@@ -41,7 +41,7 @@ docker buildx create --name gnafloader_test_builder --use
 docker buildx inspect --bootstrap
 
 # 2. build and push images
-docker buildx build --platform linux/arm64,linux/amd64 --tag minus34/gnafloader_test:latest --tag minus34/gnafloader_test:202411 -f ${DOCKER_FOLDER}/Dockerfile . --load
+docker buildx build --no-cache --platform linux/arm64,linux/amd64 --tag minus34/gnafloader_test:latest --tag minus34/gnafloader_test:202411 -f ${DOCKER_FOLDER}/Dockerfile . --load
 
 #echo "---------------------------------------------------------------------------------------------------------------------"
 #echo "clean up Docker locally - warning: this could accidentally destroy other Docker images"

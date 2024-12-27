@@ -1,6 +1,6 @@
 FROM debian:bookworm-slim
 
-# replaced the downloading of the Potgres dump files to use local files instead (for performance)
+# replaced the downloading of the Postgres dump files to use local files instead (for performance)
 # ARG BASE_URL="https://minus34.com/opendata/geoscape-202411"
 # ENV BASE_URL ${BASE_URL}
 
@@ -34,10 +34,6 @@ RUN /etc/init.d/postgresql start \
     && sudo -u postgres psql -c "CREATE EXTENSION postgis;" \
     && /etc/init.d/postgresql stop
 
-# enable external access to postgres - WARNING: these are insecure settings! Edit these to restrict access
-RUN echo "host all  all    0.0.0.0/0  md5" >> /etc/postgresql/16/main/pg_hba.conf
-RUN echo "listen_addresses='*'" >> /etc/postgresql/16/main/postgresql.conf
-
 # download and restore GNAF & Admin Boundary Postgres dump files
 RUN mkdir -p /data
 WORKDIR /data
@@ -51,14 +47,18 @@ ADD admin-bdys-202411.dmp .
 #     && wget --quiet ${BASE_URL}/admin-bdys-202411.dmp
 
 RUN /etc/init.d/postgresql start \
-    && pg_restore -Fc -d postgres -h localhost -p 5432 -U postgres /data/gnaf-202411.dmp \
+    && pg_restore -Fc -d postgres -h 127.0.0.1 -p 5432 -U postgres /data/gnaf-202411.dmp \
     && /etc/init.d/postgresql stop \
     && rm /data/gnaf-202411.dmp
 
 RUN /etc/init.d/postgresql start \
-    && pg_restore -Fc -d postgres -h localhost -p 5432 -U postgres /data/admin-bdys-202411.dmp \
+    && pg_restore -Fc -d postgres -h 127.0.0.1 -p 5432 -U postgres /data/admin-bdys-202411.dmp \
     && /etc/init.d/postgresql stop \
     && rm /data/admin-bdys-202411.dmp
+
+# enable external access to postgres - WARNING: these are insecure settings! Edit these to restrict access
+RUN echo "host all  all    0.0.0.0/0  md5" >> /etc/postgresql/16/main/pg_hba.conf
+RUN echo "listen_addresses='*'" >> /etc/postgresql/16/main/postgresql.conf
 
 EXPOSE 5432
 
