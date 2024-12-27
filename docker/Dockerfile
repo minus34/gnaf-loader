@@ -40,23 +40,23 @@ RUN /etc/init.d/postgresql start \
 RUN mkdir -p /data
 WORKDIR /data
 
-ADD gnaf-202411.dmp .
-ADD admin-bdys-202411.dmp .
-
-# replace the add statements above if wanting to download Postgres dump files
-# RUN /data \
-#     && wget --quiet ${BASE_URL}/gnaf-202411.dmp \
-#     && wget --quiet ${BASE_URL}/admin-bdys-202411.dmp
-
-RUN /etc/init.d/postgresql start \
-    && pg_restore -Fc -d postgres -h 127.0.0.1 -p 5432 -U postgres /data/gnaf-202411.dmp \
-    && /etc/init.d/postgresql stop \
-    && rm /data/gnaf-202411.dmp
-
-RUN /etc/init.d/postgresql start \
-    && pg_restore -Fc -d postgres -h 127.0.0.1 -p 5432 -U postgres /data/admin-bdys-202411.dmp \
-    && /etc/init.d/postgresql stop \
-    && rm /data/admin-bdys-202411.dmp
+#ADD gnaf-202411.dmp .
+#ADD admin-bdys-202411.dmp .
+#
+## replace the add statements above if wanting to download Postgres dump files
+## RUN /data \
+##     && wget --quiet ${BASE_URL}/gnaf-202411.dmp \
+##     && wget --quiet ${BASE_URL}/admin-bdys-202411.dmp
+#
+#RUN /etc/init.d/postgresql start \
+#    && pg_restore -Fc -d postgres -h 127.0.0.1 -p 5432 -U postgres /data/gnaf-202411.dmp \
+#    && /etc/init.d/postgresql stop \
+#    && rm /data/gnaf-202411.dmp
+#
+#RUN /etc/init.d/postgresql start \
+#    && pg_restore -Fc -d postgres -h 127.0.0.1 -p 5432 -U postgres /data/admin-bdys-202411.dmp \
+#    && /etc/init.d/postgresql stop \
+#    && rm /data/admin-bdys-202411.dmp
 
 # enable external access to postgres - WARNING: these are insecure settings! Edit these to restrict access
 RUN echo "host all  all    0.0.0.0/0  md5" >> /etc/postgresql/16/main/pg_hba.conf
