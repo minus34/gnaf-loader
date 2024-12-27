@@ -27,8 +27,6 @@ RUN apt update && apt install -y \
     postgresql-16-postgis-3 \
     && rm -rf /var/lib/apt/lists/*
 
-#    && apt-get clean \
-
 # start Postgres server and set the default user password
 RUN /etc/init.d/postgresql start \
     && sudo -u postgres psql -c "ALTER USER postgres PASSWORD '${pg_password}';" \
@@ -47,15 +45,19 @@ ADD admin-bdys-202411.dmp .
 #     && wget --quiet ${BASE_URL}/gnaf-202411.dmp \
 #     && wget --quiet ${BASE_URL}/admin-bdys-202411.dmp
 
+# start database & disable autovacumm to speed up pg_restore
 RUN /etc/init.d/postgresql start \
-    && pg_restore -Fc -d postgres -h 127.0.0.1 -p 5432 -U postgres /data/gnaf-202411.dmp \
-    && /etc/init.d/postgresql stop \
-    && rm /data/gnaf-202411.dmp
+    && psql -c "ALTER SYSTEM SET autovacuum = off;" && psql -c "SELECT PG_RELOAD_CONF();"
 
-RUN /etc/init.d/postgresql start \
-    && pg_restore -Fc -d postgres -h 127.0.0.1 -p 5432 -U postgres /data/admin-bdys-202411.dmp \
-    && /etc/init.d/postgresql stop \
+# import both schemas
+RUN pg_restore -Fc -d postgres -h 127.0.0.1 -p 5432 -U postgres /data/gnaf-202411.dmp \
+    && pg_restore -Fc -d postgres -h 127.0.0.1 -p 5432 -U postgres /data/admin-bdys-202411.dmp
+    && rm /data/gnaf-202411.dmp \
     && rm /data/admin-bdys-202411.dmp
+
+# re-enable autovacuum & stop database
+RUN psql -c "ALTER SYSTEM SET autovacuum = on;" && psql -c "SELECT PG_RELOAD_CONF();" \
+    /etc/init.d/postgresql stop
 
 # enable external access to postgres - WARNING: these are insecure settings! Edit these to restrict access
 RUN echo "host all  all    0.0.0.0/0  md5" >> /etc/postgresql/16/main/pg_hba.conf
