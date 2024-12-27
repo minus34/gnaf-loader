@@ -22,6 +22,7 @@ echo "--------------------------------------------------------------------------
 export TMPDIR=/Users/$(whoami)/tmp/podman/
 
 podman machine stop
+echo 'y' | podman machine rm
 podman machine init --cpus 10 --memory 16384 --disk-size=128  # memory in Mb, disk size in Gb
 podman machine start
 podman login -u ${DOCKER_USER} -p ${DOCKER_PASSWORD} docker.io/minus34/gnafloader_test
@@ -70,5 +71,5 @@ echo "--------------------------------------------------------------------------
 # required or podman VM could run out of space
 echo 'y' | podman system prune --all
 podman machine stop
-podman machine rm
+echo 'y' | podman machine rm
 
