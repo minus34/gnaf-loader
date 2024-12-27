@@ -8,9 +8,6 @@ OUTPUT_FOLDER_2020="/Users/$(whoami)/tmp/geoscape_202411_gda2020"
 
 DOCKER_FOLDER=${SCRIPT_DIR}/../../docker
 
-## set build logging to screen
-#export BUILDKIT_PROGRESS=plain
-
 echo "---------------------------------------------------------------------------------------------------------------------"
 echo "copy postgres dump files to Dockerfile folder"
 echo "---------------------------------------------------------------------------------------------------------------------"
@@ -18,14 +15,14 @@ echo "--------------------------------------------------------------------------
 cp ${OUTPUT_FOLDER}/*.dmp ${DOCKER_FOLDER}/
 
 echo "---------------------------------------------------------------------------------------------------------------------"
-echo "start Podman"
+echo "start podman"
 echo "---------------------------------------------------------------------------------------------------------------------"
 
 # default folder /var/tmp/ is too small
 export TMPDIR=/Users/$(whoami)/tmp/podman/
 
 podman machine stop
-podman machine init --cpus 10 --memory 16384 --disk-size=128
+podman machine init --cpus 10 --memory 16384 --disk-size=128  # memory in Mb, disk size in Gb
 podman machine start
 podman login -u ${DOCKER_USER} -p ${DOCKER_PASSWORD} docker.io/minus34/gnafloader_test
 
@@ -40,21 +37,13 @@ echo "build gnaf-loader GDA94 docker image"
 echo "---------------------------------------------------------------------------------------------------------------------"
 
 # build images
-podman build --no-cache --platform linux/arm64,linux/amd64 --tag minus34/gnafloader_test:latest --tag minus34/gnafloader_test:202411 -f ${DOCKER_FOLDER}/Dockerfile .
-podman push localhost/minus34/gnafloader_test docker://docker.io/minus34/gnafloader_test
+podman build --no-cache --platform linux/arm64,linux/amd64 --tag minus34/gnafloader_test:latest --tag minus34/gnafloader_test:202411 .
+
+# delete postgres dmp files
+rm ${DOCKER_FOLDER}/*.dmp
 
 echo "---------------------------------------------------------------------------------------------------------------------"
-echo "clean up podman locally - warning: this could accidentally destroy other images"
-echo "---------------------------------------------------------------------------------------------------------------------"
-
-# required or podman VM could run out of space
-#podman machine stop
-#podman machine rm
-#podman machine init --cpus 10 --memory 16384 --disk-size=128
-#podman machine start
-
-echo "---------------------------------------------------------------------------------------------------------------------"
-echo "copy GSA2020 postgres dump files to Dockerfile folder"
+echo "copy GDA2020 postgres dump files to Dockerfile folder"
 echo "---------------------------------------------------------------------------------------------------------------------"
 
 cp ${OUTPUT_FOLDER_2020}/*.dmp ${DOCKER_FOLDER}/
@@ -64,6 +53,9 @@ echo "build gnaf-loader GDA2020 docker image"
 echo "---------------------------------------------------------------------------------------------------------------------"
 
 podman build --no-cache --platform linux/arm64,linux/amd64 --tag minus34/gnafloader_test:latest-gda2020 --tag minus34/gnafloader_test:202411-gda2020 .
+
+# delete postgres dmp files
+rm ${DOCKER_FOLDER}/*.dmp
 
 echo "---------------------------------------------------------------------------------------------------------------------"
 echo "push all images"
@@ -79,3 +71,4 @@ echo "--------------------------------------------------------------------------
 echo 'y' | podman system prune --all
 podman machine stop
 podman machine rm
+
