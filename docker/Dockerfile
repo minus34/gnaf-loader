@@ -4,13 +4,13 @@ FROM debian:bookworm-slim
 # ARG BASE_URL="https://minus34.com/opendata/geoscape-202411"
 # ENV BASE_URL ${BASE_URL}
 
+ENV DEBIAN_FRONTEND=noninteractive
+
 # Postgres user password - WARNING: change this to something a lot more secure
 ARG pg_password="password"
 ENV PGPASSWORD=${pg_password}
 
-# get postgres signing key, add Postgres repo to apt and install Postgres with PostGIS
-ENV DEBIAN_FRONTEND=noninteractive
-
+# update debian & get pre-requsities
 RUN apt-get update && apt-get install -y \
     wget \
     gnupg \
@@ -18,6 +18,7 @@ RUN apt-get update && apt-get install -y \
     sudo \
     && rm -rf /var/lib/apt/lists/*
 
+# get postgres signing key, add Postgres repo to apt and install Postgres with PostGIS
 RUN wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | gpg --dearmor -o /usr/share/keyrings/postgresql-archive-keyring.gpg
 RUN echo "deb [signed-by=/usr/share/keyrings/postgresql-archive-keyring.gpg] http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list
 

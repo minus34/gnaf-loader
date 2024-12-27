@@ -25,6 +25,7 @@ podman machine stop
 podman machine init
 podman machine set --cpus 12 --memory 24576 --disk-size=256
 podman machine start
+podman login -u ${DOCKER_USER} -p ${DOCKER_PASSWORD} docker.io/minus34/gnafloader_test
 
 # go to Dockerfile directory
 cd ${DOCKER_FOLDER}
@@ -37,8 +38,7 @@ echo "build gnaf-loader GDA94 docker image"
 echo "---------------------------------------------------------------------------------------------------------------------"
 
 # build and push images
-podman build --platform linux/arm64,linux/amd64 --tag minus34/gnafloader_test:latest --tag minus34/gnafloader_test:202411 -f ${DOCKER_FOLDER}/Dockerfile . --load
-#docker buildx build --platform linux/amd64 --tag minus34/gnafloader_test:latest --tag minus34/gnafloader_test:202411 -f ${DOCKER_FOLDER}/Dockerfile . --load
+podman build --platform linux/arm64,linux/amd64 --tag minus34/gnafloader_test:latest --tag minus34/gnafloader_test:202411 -f ${DOCKER_FOLDER}/Dockerfile .
 
 #echo "---------------------------------------------------------------------------------------------------------------------"
 #echo "clean up Docker locally - warning: this could accidentally destroy other Docker images"
