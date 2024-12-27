@@ -41,9 +41,7 @@ docker buildx create --name gnafloader_test_builder --use
 docker buildx inspect --bootstrap
 
 # 2. build and push images
-#docker buildx build --platform linux/arm64,linux/amd64 --tag minus34/gnafloader_test:latest --tag minus34/gnafloader_test:202411 -f ${DOCKER_FOLDER}/Dockerfile . --push
-docker buildx build --platform linux/amd64,linux/arm64 --tag minus34/gnafloader_test:latest --tag minus34/gnafloader_test:202411 -f ${DOCKER_FOLDER}/Dockerfile . --push
-
+docker buildx build --platform linux/arm64,linux/amd64 --tag minus34/gnafloader_test:latest --tag minus34/gnafloader_test:202411 -f ${DOCKER_FOLDER}/Dockerfile . --load
 
 #echo "---------------------------------------------------------------------------------------------------------------------"
 #echo "clean up Docker locally - warning: this could accidentally destroy other Docker images"
@@ -52,6 +50,7 @@ docker buildx build --platform linux/amd64,linux/arm64 --tag minus34/gnafloader_
 ## required or Docker VM will run out of space
 #echo 'y' | docker builder prune --all
 #echo 'y' | docker system prune --all
+#echo 'y' | docker buildx rm --all-inactive
 #
 #echo "---------------------------------------------------------------------------------------------------------------------"
 #echo "build gnaf-loader GDA2020 docker image"
