@@ -39,9 +39,16 @@ echo "--------------------------------------------------------------------------
 
 # build images
 podman build --no-cache --platform linux/arm64,linux/amd64 --tag minus34/gnafloader_test:latest --tag minus34/gnafloader_test:202411 .
+podman push localhost/minus34/gnafloader_test docker://docker.io/minus34/gnafloader_test
 
 # delete postgres dmp files
 rm ${DOCKER_FOLDER}/*.dmp
+
+podman machine stop
+echo 'y' | podman machine rm
+podman machine init --cpus 10 --memory 16384 --disk-size=128  # memory in Mb, disk size in Gb
+podman machine start
+podman login -u ${DOCKER_USER} -p ${DOCKER_PASSWORD} docker.io/minus34/gnafloader_test
 
 echo "---------------------------------------------------------------------------------------------------------------------"
 echo "copy GDA2020 postgres dump files to Dockerfile folder"
@@ -54,15 +61,10 @@ echo "build gnaf-loader GDA2020 docker image"
 echo "---------------------------------------------------------------------------------------------------------------------"
 
 podman build --no-cache --platform linux/arm64,linux/amd64 --tag minus34/gnafloader_test:latest-gda2020 --tag minus34/gnafloader_test:202411-gda2020 .
+podman push localhost/minus34/gnafloader_test docker://docker.io/minus34/gnafloader_test
 
 # delete postgres dmp files
 rm ${DOCKER_FOLDER}/*.dmp
-
-echo "---------------------------------------------------------------------------------------------------------------------"
-echo "push all images"
-echo "---------------------------------------------------------------------------------------------------------------------"
-
-podman push localhost/minus34/gnafloader_test docker://docker.io/minus34/gnafloader_test
 
 echo "---------------------------------------------------------------------------------------------------------------------"
 echo "clean up podman locally - warning: this could accidentally destroy other images"
@@ -72,4 +74,3 @@ echo "--------------------------------------------------------------------------
 echo 'y' | podman system prune --all
 podman machine stop
 echo 'y' | podman machine rm
-
