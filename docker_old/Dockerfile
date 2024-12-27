@@ -25,8 +25,9 @@ RUN apt update && apt install -y \
     postgresql-16 \
     postgresql-client-16 \
     postgresql-16-postgis-3 \
-    && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
+
+#    && apt-get clean \
 
 # start Postgres server and set the default user password
 RUN /etc/init.d/postgresql start \
