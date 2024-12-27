@@ -25,52 +25,57 @@ echo "--------------------------------------------------------------------------
 export TMPDIR=/Users/$(whoami)/tmp/podman/
 
 podman machine stop
-podman machine init
-podman machine set --cpus 10 --memory 16384 --disk-size=128
+podman machine init --cpus 10 --memory 16384 --disk-size=128
 podman machine start
 podman login -u ${DOCKER_USER} -p ${DOCKER_PASSWORD} docker.io/minus34/gnafloader_test
 
 # go to Dockerfile directory
 cd ${DOCKER_FOLDER}
 
-### required or Docker VM will run out of space
+# required or podman VM could run out of space
 echo 'y' | podman system prune --all
 
 echo "---------------------------------------------------------------------------------------------------------------------"
 echo "build gnaf-loader GDA94 docker image"
 echo "---------------------------------------------------------------------------------------------------------------------"
 
-# build and push images
-podman build --platform linux/arm64,linux/amd64 --tag minus34/gnafloader_test:latest --tag minus34/gnafloader_test:202411 -f ${DOCKER_FOLDER}/Dockerfile .
+# build images
+podman build --no-cache --platform linux/arm64,linux/amd64 --tag minus34/gnafloader_test:latest --tag minus34/gnafloader_test:202411 -f ${DOCKER_FOLDER}/Dockerfile .
+podman push localhost/minus34/gnafloader_test docker://docker.io/minus34/gnafloader_test
 
-#echo "---------------------------------------------------------------------------------------------------------------------"
-#echo "clean up Docker locally - warning: this could accidentally destroy other Docker images"
-#echo "---------------------------------------------------------------------------------------------------------------------"
-#
-## required or Docker VM will run out of space
-#echo 'y' | docker builder prune --all
-#echo 'y' | docker system prune --all
-#echo 'y' | docker buildx rm --all-inactive
-#
-#echo "---------------------------------------------------------------------------------------------------------------------"
-#echo "build gnaf-loader GDA2020 docker image"
-#echo "---------------------------------------------------------------------------------------------------------------------"
-#
-## 1. go to Dockerfile directory
-#cd ${OUTPUT_FOLDER_2020}
-#
-## 2. launch buildx
-#docker buildx create --name gnafloader_test_gda2020_builder --use
-#docker buildx inspect --bootstrap
-#
-## 3. build and push images
-#docker buildx build --platform linux/amd64,linux/arm64 --tag minus34/gnafloader_test:latest-gda2020  --tag minus34/gnafloader_test:202411-gda2020 -f /Users/$(whoami)/git/minus34/gnaf-loader/docker/Dockerfile . --push
-#
-#echo "---------------------------------------------------------------------------------------------------------------------"
-#echo "clean up Docker locally - warning: this could accidentally destroy other Docker images"
-#echo "---------------------------------------------------------------------------------------------------------------------"
-#
-## required or Docker VM will run out of space
-#echo 'y' | docker builder prune --all
-#echo 'y' | docker system prune --all
-#echo 'y' | docker buildx rm --all-inactive
+echo "---------------------------------------------------------------------------------------------------------------------"
+echo "clean up podman locally - warning: this could accidentally destroy other images"
+echo "---------------------------------------------------------------------------------------------------------------------"
+
+# required or podman VM could run out of space
+#podman machine stop
+#podman machine rm
+#podman machine init --cpus 10 --memory 16384 --disk-size=128
+#podman machine start
+
+echo "---------------------------------------------------------------------------------------------------------------------"
+echo "copy GSA2020 postgres dump files to Dockerfile folder"
+echo "---------------------------------------------------------------------------------------------------------------------"
+
+cp ${OUTPUT_FOLDER_2020}/*.dmp ${DOCKER_FOLDER}/
+
+echo "---------------------------------------------------------------------------------------------------------------------"
+echo "build gnaf-loader GDA2020 docker image"
+echo "---------------------------------------------------------------------------------------------------------------------"
+
+podman build --no-cache --platform linux/arm64,linux/amd64 --tag minus34/gnafloader_test:latest-gda2020 --tag minus34/gnafloader_test:202411-gda2020 .
+
+echo "---------------------------------------------------------------------------------------------------------------------"
+echo "push all images"
+echo "---------------------------------------------------------------------------------------------------------------------"
+
+podman push localhost/minus34/gnafloader_test docker://docker.io/minus34/gnafloader_test
+
+echo "---------------------------------------------------------------------------------------------------------------------"
+echo "clean up podman locally - warning: this could accidentally destroy other images"
+echo "---------------------------------------------------------------------------------------------------------------------"
+
+# required or podman VM could run out of space
+echo 'y' | podman system prune --all
+podman machine stop
+podman machine rm
