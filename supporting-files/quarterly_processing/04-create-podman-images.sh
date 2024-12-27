@@ -21,9 +21,12 @@ echo "--------------------------------------------------------------------------
 echo "start Podman"
 echo "---------------------------------------------------------------------------------------------------------------------"
 
+# default folder /var/tmp/ is too small
+export TMPDIR=/Users/$(whoami)/tmp/podman/
+
 podman machine stop
 podman machine init
-podman machine set --cpus 12 --memory 24576 --disk-size=256
+podman machine set --cpus 10 --memory 16384 --disk-size=128
 podman machine start
 podman login -u ${DOCKER_USER} -p ${DOCKER_PASSWORD} docker.io/minus34/gnafloader_test
 
