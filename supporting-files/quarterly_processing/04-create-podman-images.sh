@@ -18,11 +18,11 @@ echo "--------------------------------------------------------------------------
 cp ${OUTPUT_FOLDER}/*.dmp ${DOCKER_FOLDER}/
 
 echo "---------------------------------------------------------------------------------------------------------------------"
-echo "start podman - warning: this could accidentally destroy other images"
+echo "initialise podman - warning: this could accidentally destroy other images"
 echo "---------------------------------------------------------------------------------------------------------------------"
 
-podman machine stop
 echo 'y' | podman system prune --all
+podman machine stop
 echo 'y' | podman machine rm
 podman machine init --cpus 10 --memory 16384 --disk-size=128  # memory in Mb, disk size in Gb
 podman machine start
@@ -32,7 +32,7 @@ podman login -u ${DOCKER_USER} -p ${DOCKER_PASSWORD} docker.io/minus34
 cd ${DOCKER_FOLDER}
 
 echo "---------------------------------------------------------------------------------------------------------------------"
-echo "build gnaf-loader GDA94 docker image"
+echo "build gnaf-loader GDA94 docker images"
 echo "---------------------------------------------------------------------------------------------------------------------"
 
 # build images
@@ -40,13 +40,13 @@ podman manifest create localhost/gnafloader_test
 podman build --platform linux/amd64,linux/arm64/v8 --manifest localhost/gnafloader_test .
 
 echo "---------------------------------------------------------------------------------------------------------------------"
-echo "push latest GDA94 docker image : $(date)"
+echo "push 'latest' GDA94 docker images : $(date)"
 echo "---------------------------------------------------------------------------------------------------------------------"
 
 podman manifest push localhost/gnafloader_test docker://docker.io/minus34/gnafloader_test:latest
 
 echo "---------------------------------------------------------------------------------------------------------------------"
-echo "push 202411 GDA94 docker image : $(date)"
+echo "push '202411' GDA94 docker images : $(date)"
 echo "---------------------------------------------------------------------------------------------------------------------"
 
 podman manifest push localhost/gnafloader_test docker://docker.io/minus34/gnafloader_test:202411
@@ -61,11 +61,11 @@ echo "--------------------------------------------------------------------------
 cp ${OUTPUT_FOLDER_2020}/*.dmp ${DOCKER_FOLDER}/
 
 echo "---------------------------------------------------------------------------------------------------------------------"
-echo "start podman - warning: this could accidentally destroy other images"
+echo "re-initialise podman - warning: this could accidentally destroy other images"
 echo "---------------------------------------------------------------------------------------------------------------------"
 
-podman machine stop
 echo 'y' | podman system prune --all
+podman machine stop
 echo 'y' | podman machine rm
 podman machine init --cpus 10 --memory 16384 --disk-size=128  # memory in Mb, disk size in Gb
 podman machine start
@@ -75,7 +75,7 @@ podman login -u ${DOCKER_USER} -p ${DOCKER_PASSWORD} docker.io/minus34
 cd ${DOCKER_FOLDER}
 
 echo "---------------------------------------------------------------------------------------------------------------------"
-echo "build gnaf-loader GDA2020 docker image"
+echo "build gnaf-loader GDA2020 docker images"
 echo "---------------------------------------------------------------------------------------------------------------------"
 
 # build images
@@ -83,13 +83,13 @@ podman manifest create localhost/gnafloader_test
 podman build --platform linux/amd64,linux/arm64/v8 --manifest localhost/gnafloader_test .
 
 echo "---------------------------------------------------------------------------------------------------------------------"
-echo "push latest GDA2020 docker image : $(date)"
+echo "push 'latest' GDA2020 docker images : $(date)"
 echo "---------------------------------------------------------------------------------------------------------------------"
 
 podman manifest push localhost/gnafloader_test docker://docker.io/minus34/gnafloader_test:latest-gda2020
 
 echo "---------------------------------------------------------------------------------------------------------------------"
-echo "push latest GDA2020 docker image : $(date)"
+echo "push 'latest' GDA2020 docker images : $(date)"
 echo "---------------------------------------------------------------------------------------------------------------------"
 
 podman manifest push localhost/gnafloader_test docker://docker.io/minus34/gnafloader_test:202411-gda2020
