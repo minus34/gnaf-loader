@@ -36,10 +36,10 @@ RUN /etc/init.d/postgresql start \
     && sudo -u postgres psql -c "CREATE EXTENSION postgis;" \
     && /etc/init.d/postgresql stop
 
-# download and restore GNAF & Admin Boundary Postgres dump files
-RUN mkdir -p /data
-WORKDIR /data
-
+## download and restore GNAF & Admin Boundary Postgres dump files
+#RUN mkdir -p /data
+#WORKDIR /data
+#
 #ADD gnaf-202411.dmp .
 #ADD admin-bdys-202411.dmp .
 #

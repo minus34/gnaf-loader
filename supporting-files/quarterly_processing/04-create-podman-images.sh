@@ -25,7 +25,7 @@ podman machine stop
 echo 'y' | podman machine rm
 podman machine init --cpus 10 --memory 16384 --disk-size=128  # memory in Mb, disk size in Gb
 podman machine start
-podman login -u ${DOCKER_USER} -p ${DOCKER_PASSWORD} docker.io/minus34/gnafloader_test
+podman login -u ${DOCKER_USER} -p ${DOCKER_PASSWORD} docker.io/minus34
 
 # go to Dockerfile directory
 cd ${DOCKER_FOLDER}
@@ -39,9 +39,19 @@ echo "--------------------------------------------------------------------------
 
 # build images
 podman manifest create minus34/gnafloader_test:latest
-podman build --platform linux/amd64,linux/arm64  --manifest minus34/gnafloader_test:latest .
-podman tag minus34/gnafloader_test:latest docker.io/minus34/gnafloader_test:latest docker.io/minus34/gnafloader_test:202411
-podman manifest push minus34/gnafloader_test
+podman build --platform linux/amd64,linux/arm64 --manifest minus34/gnafloader_test:latest .
+podman manifest push minus34/gnafloader_test:latest
+
+docker manifest create minus34/gnafloader_test:202411 minus34/gnafloader_test:latest
+docker manifest push minus34/gnafloader_test:202411
+
+#podman build --platform linux/amd64,linux/arm64 --tag docker.io/minus34/gnafloader_test:latest --tag docker.io/minus34/gnafloader_test:202411 .
+#
+#podman manifest create minus34/gnafloader_test
+#podman manifest add minus34/gnafloader_test docker.io/minus34/gnafloader_test:latest
+#podman manifest add minus34/gnafloader_test docker.io/minus34/gnafloader_test:202411
+#podman manifest push minus34/gnafloader_test
+
 
 
 
