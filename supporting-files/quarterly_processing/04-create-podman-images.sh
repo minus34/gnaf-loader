@@ -38,8 +38,9 @@ echo "build gnaf-loader GDA94 docker image"
 echo "---------------------------------------------------------------------------------------------------------------------"
 
 # build images
-podman manifest create minus34/gnafloader_test:latest
-podman build --platform linux/amd64,linux/arm64 --manifest minus34/gnafloader_test:latest .
+podman build --platform linux/amd64,linux/arm64 --tag fred .
+
+podman manifest create minus34/gnafloader_test:latest fred
 podman manifest push minus34/gnafloader_test:latest
 
 docker manifest create minus34/gnafloader_test:202411 minus34/gnafloader_test:latest
@@ -61,8 +62,8 @@ docker manifest push minus34/gnafloader_test:202411
 # delete postgres dmp files
 rm ${DOCKER_FOLDER}/*.dmp
 
-podman machine stop
-echo 'y' | podman machine rm
+#podman machine stop
+#echo 'y' | podman machine rm
 #podman machine init --cpus 10 --memory 16384 --disk-size=128  # memory in Mb, disk size in Gb
 #podman machine start
 #podman login -u ${DOCKER_USER} -p ${DOCKER_PASSWORD} docker.io/minus34/gnafloader_test
