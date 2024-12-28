@@ -94,7 +94,6 @@ echo "--------------------------------------------------------------------------
 
 podman manifest push localhost/gnafloader_test docker://docker.io/minus34/gnafloader_test:202411-gda2020
 
-
 # delete postgres dmp files
 rm ${DOCKER_FOLDER}/*.dmp
 
