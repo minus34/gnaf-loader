@@ -22,6 +22,7 @@ echo "--------------------------------------------------------------------------
 export TMPDIR=/Users/$(whoami)/tmp/podman/
 
 podman machine stop
+echo 'y' | podman system prune --all
 echo 'y' | podman machine rm
 podman machine init --cpus 10 --memory 16384 --disk-size=128  # memory in Mb, disk size in Gb
 podman machine start
@@ -30,20 +31,17 @@ podman login -u ${DOCKER_USER} -p ${DOCKER_PASSWORD} docker.io/minus34
 # go to Dockerfile directory
 cd ${DOCKER_FOLDER}
 
-# required or podman VM could run out of space
-echo 'y' | podman system prune --all
-
 echo "---------------------------------------------------------------------------------------------------------------------"
 echo "build gnaf-loader GDA94 docker image"
 echo "---------------------------------------------------------------------------------------------------------------------"
 
 # build images
-podman build --platform linux/amd64,linux/arm64 --tag fred .
+podman build --platform linux/amd64,linux/arm64 --tag localhost/fred .
 
-podman manifest create minus34/gnafloader_test:latest fred
+podman manifest create minus34/gnafloader_test:latest localhost/fred
 podman manifest push minus34/gnafloader_test:latest
 
-docker manifest create minus34/gnafloader_test:202411 minus34/gnafloader_test:latest
+docker manifest create minus34/gnafloader_test:202411 localhost/fred
 docker manifest push minus34/gnafloader_test:202411
 
 #podman build --platform linux/amd64,linux/arm64 --tag docker.io/minus34/gnafloader_test:latest --tag docker.io/minus34/gnafloader_test:202411 .
@@ -63,6 +61,7 @@ docker manifest push minus34/gnafloader_test:202411
 rm ${DOCKER_FOLDER}/*.dmp
 
 #podman machine stop
+#echo 'y' | podman system prune --all
 #echo 'y' | podman machine rm
 #podman machine init --cpus 10 --memory 16384 --disk-size=128  # memory in Mb, disk size in Gb
 #podman machine start
