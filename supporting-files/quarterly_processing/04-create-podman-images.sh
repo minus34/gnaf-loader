@@ -12,7 +12,7 @@ DOCKER_FOLDER=${SCRIPT_DIR}/../../docker
 export TMPDIR=/Users/$(whoami)/tmp/podman/
 
 echo "---------------------------------------------------------------------------------------------------------------------"
-echo "copy postgres dump files to Dockerfile folder"
+echo "copy GDA94 postgres dump files to Dockerfile folder"
 echo "---------------------------------------------------------------------------------------------------------------------"
 
 cp ${OUTPUT_FOLDER}/*.dmp ${DOCKER_FOLDER}/
@@ -37,8 +37,18 @@ echo "--------------------------------------------------------------------------
 
 # build images
 podman manifest create localhost/gnafloader_test
-podman build --platform linux/amd64,linux/arm64 --manifest localhost/gnafloader_test .
+podman build --platform linux/amd64,linux/arm64/v8 --manifest localhost/gnafloader_test .
+
+echo "---------------------------------------------------------------------------------------------------------------------"
+echo "push latest GDA94 docker image : $(date)"
+echo "---------------------------------------------------------------------------------------------------------------------"
+
 podman manifest push localhost/gnafloader_test docker://docker.io/minus34/gnafloader_test:latest
+
+echo "---------------------------------------------------------------------------------------------------------------------"
+echo "push 202411 GDA94 docker image : $(date)"
+echo "---------------------------------------------------------------------------------------------------------------------"
+
 podman manifest push localhost/gnafloader_test docker://docker.io/minus34/gnafloader_test:202411
 
 # delete postgres dmp files
@@ -70,12 +80,20 @@ echo "--------------------------------------------------------------------------
 
 # build images
 podman manifest create localhost/gnafloader_test
-podman build --platform linux/amd64,linux/arm64 --manifest localhost/gnafloader_test .
+podman build --platform linux/amd64,linux/arm64/v8 --manifest localhost/gnafloader_test .
+
+echo "---------------------------------------------------------------------------------------------------------------------"
+echo "push latest GDA2020 docker image : $(date)"
+echo "---------------------------------------------------------------------------------------------------------------------"
+
 podman manifest push localhost/gnafloader_test docker://docker.io/minus34/gnafloader_test:latest-gda2020
+
+echo "---------------------------------------------------------------------------------------------------------------------"
+echo "push latest GDA2020 docker image : $(date)"
+echo "---------------------------------------------------------------------------------------------------------------------"
+
 podman manifest push localhost/gnafloader_test docker://docker.io/minus34/gnafloader_test:202411-gda2020
 
-# delete postgres dmp files
-rm ${DOCKER_FOLDER}/*.dmp
 
 # delete postgres dmp files
 rm ${DOCKER_FOLDER}/*.dmp
