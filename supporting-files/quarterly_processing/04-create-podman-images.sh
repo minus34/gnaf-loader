@@ -39,7 +39,7 @@ echo "--------------------------------------------------------------------------
 
 # build images
 podman manifest create localhost/gnafloader_test
-podman build --platform linux/amd64,linux/arm64/v8 --manifest localhost/gnafloader_test .
+podman build --quiet --platform linux/amd64,linux/arm64/v8 --manifest localhost/gnafloader_test .
 
 echo "---------------------------------------------------------------------------------------------------------------------"
 echo "push 'latest' GDA94 images : $(date)"
@@ -81,20 +81,20 @@ echo "build gnaf-loader GDA2020 images"
 echo "---------------------------------------------------------------------------------------------------------------------"
 
 # build images
-podman manifest create localhost/gnafloader_test
-podman build --platform linux/amd64,linux/arm64/v8 --manifest localhost/gnafloader_test .
+podman manifest create localhost/gnafloader_test-gda2020
+podman build --quiet --platform linux/amd64,linux/arm64/v8 --manifest localhost/gnafloader_test-gda2020 .
 
 echo "---------------------------------------------------------------------------------------------------------------------"
 echo "push 'latest' GDA2020 images : $(date)"
 echo "---------------------------------------------------------------------------------------------------------------------"
 
-podman manifest push localhost/gnafloader_test docker://docker.io/minus34/gnafloader_test:latest-gda2020
+podman manifest push localhost/gnafloader_test-gda2020 docker://docker.io/minus34/gnafloader_test:latest-gda2020
 
 echo "---------------------------------------------------------------------------------------------------------------------"
 echo "push 'latest' GDA2020 images : $(date)"
 echo "---------------------------------------------------------------------------------------------------------------------"
 
-podman manifest push localhost/gnafloader_test docker://docker.io/minus34/gnafloader_test:202411-gda2020
+podman manifest push localhost/gnafloader_test-gda2020 docker://docker.io/minus34/gnafloader_test:202411-gda2020
 
 # delete postgres dmp files
 rm ${DOCKER_FOLDER}/*.dmp
