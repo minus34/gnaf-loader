@@ -16,30 +16,11 @@ RUN apt-get update && apt-get install -y \
     gnupg \
     lsb-release \
     sudo \
-    && rm -rf /var/lib/apt/lists/*
-
-# get postgres signing key, add Postgres repo to apt and install Postgres with PostGIS
-RUN wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | gpg --dearmor -o /usr/share/keyrings/postgresql-archive-keyring.gpg
-RUN echo "deb [signed-by=/usr/share/keyrings/postgresql-archive-keyring.gpg] http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list
-
-RUN apt-get update && apt-get install -y \
-    postgresql-16 \
-    postgresql-client-16 \
-    postgresql-16-postgis-3 \
-    && rm -rf /var/lib/apt/lists/*
-
-# start Postgres server and set the default user password
-RUN /etc/init.d/postgresql start \
-    && sudo -u postgres psql -c "ALTER USER postgres PASSWORD '${pg_password}';" \
-    && sudo -u postgres psql -c "ALTER SYSTEM SET autovacuum = off;" \
-    && sudo -u postgres psql -c "SELECT PG_RELOAD_CONF();" \
-    && sudo -u postgres psql -c "CREATE EXTENSION postgis;" \
-    && /etc/init.d/postgresql stop
+    && rm -rf /var/lib/apt/lists/* \
+    && mkdir -p /data
 
 # download and restore GNAF & Admin Boundary Postgres dump files
-RUN mkdir -p /data
 WORKDIR /data
-
 ADD gnaf-202411.dmp .
 ADD admin-bdys-202411.dmp .
 
@@ -48,19 +29,27 @@ ADD admin-bdys-202411.dmp .
 #     && wget --quiet ${BASE_URL}/gnaf-202411.dmp \
 #     && wget --quiet ${BASE_URL}/admin-bdys-202411.dmp
 
-RUN /etc/init.d/postgresql start \
-    && pg_restore -Fc -d postgres -h 127.0.0.1 -p 5432 -U postgres /data/gnaf-202411.dmp \
-    && /etc/init.d/postgresql stop \
-    && rm /data/gnaf-202411.dmp
+# get postgres signing key, add Postgres repo to apt and install Postgres with PostGIS
+RUN wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | gpg --dearmor -o /usr/share/keyrings/postgresql-archive-keyring.gpg \
+    && echo "deb [signed-by=/usr/share/keyrings/postgresql-archive-keyring.gpg] http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list
 
-RUN /etc/init.d/postgresql start \
+# install postgres with postgis, restore schemas and enable external access - WARNING: these are insecure settings! Edit these to restrict access
+RUN apt-get update && apt-get install -y \
+    postgresql-16 \
+    postgresql-client-16 \
+    postgresql-16-postgis-3 \
+    && rm -rf /var/lib/apt/lists/* \
+    && /etc/init.d/postgresql start \
+    && sudo -u postgres psql -c "ALTER USER postgres PASSWORD '${pg_password}';" \
+    && sudo -u postgres psql -c "ALTER SYSTEM SET autovacuum = off;" \
+    && sudo -u postgres psql -c "SELECT PG_RELOAD_CONF();" \
+    && sudo -u postgres psql -c "CREATE EXTENSION postgis;" \
+    && pg_restore -Fc -d postgres -h 127.0.0.1 -p 5432 -U postgres /data/gnaf-202411.dmp \
     && pg_restore -Fc -d postgres -h 127.0.0.1 -p 5432 -U postgres /data/admin-bdys-202411.dmp \
     && /etc/init.d/postgresql stop \
-    && rm /data/admin-bdys-202411.dmp
-
-# enable external access to postgres - WARNING: these are insecure settings! Edit these to restrict access
-RUN echo "host all  all    0.0.0.0/0  md5" >> /etc/postgresql/16/main/pg_hba.conf
-RUN echo "listen_addresses='*'" >> /etc/postgresql/16/main/postgresql.conf
+    && rm /data/*.dmp \
+    && echo "host all  all    0.0.0.0/0  md5" >> /etc/postgresql/16/main/pg_hba.conf \
+    && echo "listen_addresses='*'" >> /etc/postgresql/16/main/postgresql.conf
 
 EXPOSE 5432
 
