@@ -40,6 +40,7 @@ RUN /etc/init.d/postgresql start \
 RUN mkdir -p /data
 WORKDIR /data
 
+# add local postgres dump files
 ADD gnaf-202411.dmp .
 ADD admin-bdys-202411.dmp .
 
