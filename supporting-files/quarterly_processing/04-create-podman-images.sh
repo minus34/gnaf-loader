@@ -45,13 +45,13 @@ echo "--------------------------------------------------------------------------
 echo "push 'latest' GDA94 images : $(date)"
 echo "---------------------------------------------------------------------------------------------------------------------"
 
-podman manifest push --compression-level 9 --retry 10 localhost/gnafloader_test docker://docker.io/minus34/gnafloader_test:latest
+podman manifest push --compression-level 9 localhost/gnafloader_test docker://docker.io/minus34/gnafloader_test:latest
 
 echo "---------------------------------------------------------------------------------------------------------------------"
 echo "push '202411' GDA94 images : $(date)"
 echo "---------------------------------------------------------------------------------------------------------------------"
 
-podman manifest push --compression-level 9 --retry 10 localhost/gnafloader_test docker://docker.io/minus34/gnafloader_test:202411
+podman manifest push --compression-level 9 localhost/gnafloader_test docker://docker.io/minus34/gnafloader_test:202411
 
 # delete postgres dmp files
 rm ${DOCKER_FOLDER}/*.dmp
@@ -88,13 +88,13 @@ echo "--------------------------------------------------------------------------
 echo "push 'latest' GDA2020 images : $(date)"
 echo "---------------------------------------------------------------------------------------------------------------------"
 
-podman manifest push --compression-level 9 --retry 10 localhost/gnafloader_test-gda2020 docker://docker.io/minus34/gnafloader_test:latest-gda2020
+podman manifest push --compression-level 9 localhost/gnafloader_test-gda2020 docker://docker.io/minus34/gnafloader_test:latest-gda2020
 
 echo "---------------------------------------------------------------------------------------------------------------------"
 echo "push '202411' GDA2020 images : $(date)"
 echo "---------------------------------------------------------------------------------------------------------------------"
 
-podman manifest push --compression-level 9 --retry 10 localhost/gnafloader_test-gda2020 docker://docker.io/minus34/gnafloader_test:202411-gda2020
+podman manifest push --compression-level 9 localhost/gnafloader_test-gda2020 docker://docker.io/minus34/gnafloader_test:202411-gda2020
 
 # delete postgres dmp files
 rm ${DOCKER_FOLDER}/*.dmp
