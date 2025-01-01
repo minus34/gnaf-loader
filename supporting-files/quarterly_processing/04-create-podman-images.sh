@@ -38,20 +38,20 @@ echo "build gnaf-loader GDA94 images : $(date)"
 echo "---------------------------------------------------------------------------------------------------------------------"
 
 # build images
-podman manifest create localhost/gnafloader_test
-podman build --quiet --squash --platform linux/amd64,linux/arm64/v8 --manifest localhost/gnafloader_test .
+podman manifest create localhost/gnafloader
+podman build --quiet --squash --platform linux/amd64,linux/arm64/v8 --manifest localhost/gnafloader .
 
 echo "---------------------------------------------------------------------------------------------------------------------"
 echo "push 'latest' GDA94 images : $(date)"
 echo "---------------------------------------------------------------------------------------------------------------------"
 
-podman manifest push --compression-level 9 localhost/gnafloader_test docker://docker.io/minus34/gnafloader_test:latest
+podman manifest push --compression-level 9 localhost/gnafloader docker://docker.io/minus34/gnafloader:latest
 
 echo "---------------------------------------------------------------------------------------------------------------------"
 echo "push '202411' GDA94 images : $(date)"
 echo "---------------------------------------------------------------------------------------------------------------------"
 
-podman manifest push --compression-level 9 localhost/gnafloader_test docker://docker.io/minus34/gnafloader_test:202411
+podman manifest push --compression-level 9 localhost/gnafloader docker://docker.io/minus34/gnafloader:202411
 
 # delete postgres dmp files
 rm ${DOCKER_FOLDER}/*.dmp
@@ -81,20 +81,20 @@ echo "build gnaf-loader GDA2020 images : $(date)"
 echo "---------------------------------------------------------------------------------------------------------------------"
 
 # build images
-podman manifest create localhost/gnafloader_test-gda2020
-podman build --quiet --squash --platform linux/amd64,linux/arm64/v8 --manifest localhost/gnafloader_test-gda2020 .
+podman manifest create localhost/gnafloader-gda2020
+podman build --quiet --squash --platform linux/amd64,linux/arm64/v8 --manifest localhost/gnafloader-gda2020 .
 
 echo "---------------------------------------------------------------------------------------------------------------------"
 echo "push 'latest' GDA2020 images : $(date)"
 echo "---------------------------------------------------------------------------------------------------------------------"
 
-podman manifest push --compression-level 9 localhost/gnafloader_test-gda2020 docker://docker.io/minus34/gnafloader_test:latest-gda2020
+podman manifest push --compression-level 9 localhost/gnafloader-gda2020 docker://docker.io/minus34/gnafloader:latest-gda2020
 
 echo "---------------------------------------------------------------------------------------------------------------------"
 echo "push '202411' GDA2020 images : $(date)"
 echo "---------------------------------------------------------------------------------------------------------------------"
 
-podman manifest push --compression-level 9 localhost/gnafloader_test-gda2020 docker://docker.io/minus34/gnafloader_test:202411-gda2020
+podman manifest push --compression-level 9 localhost/gnafloader-gda2020 docker://docker.io/minus34/gnafloader:202411-gda2020
 
 # delete postgres dmp files
 rm ${DOCKER_FOLDER}/*.dmp
