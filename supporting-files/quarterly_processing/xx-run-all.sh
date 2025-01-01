@@ -11,4 +11,4 @@ cd ${SCRIPT_DIR}
 
 . 03-run-gnaf-loader-locality-clean-and-copy-to-aws-s3-gda2020.sh
 
-. 04-create-docker-images.sh
+. 04-create-podman-images.sh
