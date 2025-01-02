@@ -1,3 +1,6 @@
+### November 2024 Release - 2025-01-02 Update
+- Docker images are now available for ARM64 as well as AMD64
+
 ### November 2023 Release
 - Tables are now exported to AWS S3 in Geoparquet format (plus Parquet format for the non-spatial tables). Geometries are WGS84 lat/long
 

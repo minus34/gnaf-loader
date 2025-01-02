@@ -94,14 +94,14 @@ When using the resulting data from this process - you will need to adhere to the
 
 ## Option 2 - Run the database in a docker container
 
-GNAF and the Admin Boundaries are ready to use in Postgres in an image on Docker Hub.
+GNAF and the Admin Boundaries are ready to use in Postgres in an AMD64 or ARM64 image on Docker Hub.
 
 ### Process
 1. In your docker environment pull the image using `docker pull minus34/gnafloader:latest`
 2. Run using `docker run --publish=5433:5432 minus34/gnafloader:latest`
 3. Access Postgres in the container via port `5433`. Default login is - user: `postgres`, password: `password`
 
-*Note: the compressed Docker image is 8Gb, uncompressed is 25Gb*
+*Note: the compressed Docker image is 7Gb, uncompressed is 27Gb*
 
 **WARNING: The default postgres superuser password is insecure and should be changed using:**
 
