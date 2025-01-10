@@ -14,13 +14,13 @@ DOCKER_FOLDER=${SCRIPT_DIR}/../../docker
 export TMPDIR=/Users/$(whoami)/tmp/podman/
 
 echo "---------------------------------------------------------------------------------------------------------------------"
-echo "copy GDA94 postgres dump files to Dockerfile folder"
+echo "copy GDA94 postgres dump files to Dockerfile folder : $(date)"
 echo "---------------------------------------------------------------------------------------------------------------------"
 
 cp ${OUTPUT_FOLDER}/*.dmp ${DOCKER_FOLDER}/
 
 echo "---------------------------------------------------------------------------------------------------------------------"
-echo "initialise podman - warning: this could accidentally destroy other images"
+echo "initialise podman - warning: this could accidentally destroy other images : $(date)"
 echo "---------------------------------------------------------------------------------------------------------------------"
 
 echo 'y' | podman system prune --all
@@ -57,13 +57,13 @@ podman manifest push --compression-level 9 localhost/gnafloader docker://docker.
 rm ${DOCKER_FOLDER}/*.dmp
 
 echo "---------------------------------------------------------------------------------------------------------------------"
-echo "copy GDA2020 postgres dump files to Dockerfile folder"
+echo "copy GDA2020 postgres dump files to Dockerfile folder : $(date)"
 echo "---------------------------------------------------------------------------------------------------------------------"
 
 cp ${OUTPUT_FOLDER_2020}/*.dmp ${DOCKER_FOLDER}/
 
 echo "---------------------------------------------------------------------------------------------------------------------"
-echo "re-initialise podman - warning: this could accidentally destroy other images"
+echo "re-initialise podman - warning: this could accidentally destroy other images : $(date)"
 echo "---------------------------------------------------------------------------------------------------------------------"
 
 echo 'y' | podman system prune --all
@@ -100,7 +100,7 @@ podman manifest push --compression-level 9 localhost/gnafloader-gda2020 docker:/
 rm ${DOCKER_FOLDER}/*.dmp
 
 echo "---------------------------------------------------------------------------------------------------------------------"
-echo "clean up podman locally - warning: this could accidentally destroy other images"
+echo "clean up podman locally - warning: this could accidentally destroy other images : $(date)"
 echo "---------------------------------------------------------------------------------------------------------------------"
 
 # clean up
