@@ -6,9 +6,9 @@ SELECT als.gnaf_pid, als.street_locality_pid, als.locality_pid, als.alias_princi
 					ST_MakePoint(als.longitude, als.latitude)::geography,
 					ST_MakePoint(gnaf.longitude, gnaf.latitude)::geography
 				) as distance
-  FROM gnaf_202411.address_aliases as als
-  INNER JOIN gnaf_202411.address_alias_lookup as lkp on als.gnaf_pid = lkp.alias_pid
-  INNER JOIN gnaf_202411.address_principals as gnaf on lkp.principal_pid = gnaf.gnaf_pid
+  FROM gnaf_202502.address_aliases as als
+  INNER JOIN gnaf_202502.address_alias_lookup as lkp on als.gnaf_pid = lkp.alias_pid
+  INNER JOIN gnaf_202502.address_principals as gnaf on lkp.principal_pid = gnaf.gnaf_pid
   WHERE als.latitude <> gnaf.latitude
   OR als.longitude <> als.longitude
   order by ST_Distance(
