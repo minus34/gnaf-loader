@@ -34,10 +34,10 @@ for state in states:
     input_file = os.path.join(file_path, "{}_localities.shp".format(state))
 
     if state == "ACT":
-        print("  - importing {}".format(state), end="")
+        print(f"  - importing {state}", end="")
         table_action = "replace"
     else:
-        print(", {}".format(state), end="")
+        print(f", {state}", end="")
         table_action = "append"
 
     # import Shapefile to GeoPandas
