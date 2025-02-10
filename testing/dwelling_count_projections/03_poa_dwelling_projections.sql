@@ -1,24 +1,26 @@
 
-drop table if exists testing.census_dwelling_projections_poa;
+drop table if exists testing.census_dwelling_projections_poa cascade;
 create table testing.census_dwelling_projections_poa
 (
-    poa_name_2021   text,
-    poa_code_2021   text,
-    address_count_202111 integer,
-    residential_address_count_202111 integer,
-    dwelling_count_2021 integer,
-    dwelling_with_vehicle_count_2021 integer,
-    population_count_2021 integer,
-    vehicle_count_2021 integer,
-    average_household_size_2021 float,
-    current_address_count integer,
-    current_residential_address_count integer,
-    residential_address_diff integer,
-    address_diff integer,
-    current_dwelling_count integer,
+    poa_name_2021                       text,
+    poa_code_2021                       text,
+    address_count_202111                integer,
+    residential_address_count_202111    integer,
+    dwelling_count_2021                 integer,
+    dwelling_with_vehicle_count_2021    integer,
+    population_count_2021               integer,
+    population_over_15_count_2021       integer,
+    vehicle_count_2021                  integer,
+    average_household_size_2021         float,
+    current_address_count               integer,
+    current_residential_address_count   integer,
+    residential_address_diff            integer,
+    address_diff                        integer,
+    current_dwelling_count              integer,
     current_dwelling_with_vehicle_count integer,
-    current_population_count integer,
-    current_vehicle_count integer
+    current_population_count            integer,
+    current_population_over_15_count    integer,
+    current_vehicle_count               integer
 );
 alter table testing.census_dwelling_projections_poa owner to postgres;
 
@@ -43,7 +45,7 @@ with gnaf as (
     group by poa_code_2021
 )
 update testing.census_dwelling_projections_poa as dw
-    set current_address_count = gnaf.address_count
+set current_address_count = gnaf.address_count
 from gnaf
 where dw.poa_code_2021 = gnaf.poa_code_2021
 ;
@@ -108,38 +110,69 @@ from abs
 where dw.poa_code_2021 = abs.poa_code_2021
 ;
 
+
+-- select * from census_2021_data.metadata_stats
+-- where table_number = 'G04A'
+-- order by sequential_id
+-- ;
+
+
 -- add population
 with abs as (
-    select region_id as poa_code_2021,
-           g562 as population_count_2021
-    from census_2021_data.poa_g04b
+    select b.region_id as poa_code_2021,
+           g562 as population_count_2021,
+           g562 - g274 - g292 - g310 - g313 as population_over_15_count_2021
+    from census_2021_data.poa_g04b as b
+         inner join census_2021_data.poa_g04a as a on b.region_id = a.region_id
 )
 update testing.census_dwelling_projections_poa as dw
-set population_count_2021 = abs.population_count_2021
+set population_count_2021 = abs.population_count_2021,
+    population_over_15_count_2021 = abs.population_over_15_count_2021
 from abs
 where dw.poa_code_2021 = abs.poa_code_2021
 ;
 
 -- add projections based on increase in residential address counts
 update testing.census_dwelling_projections_poa
-    set current_dwelling_count = ceil(dwelling_count_2021 * (current_residential_address_count::float / residential_address_count_202111::float)),
-        current_dwelling_with_vehicle_count = ceil(dwelling_with_vehicle_count_2021 * (current_residential_address_count::float / residential_address_count_202111::float)),
-        current_population_count = ceil(population_count_2021 * (current_residential_address_count::float / residential_address_count_202111::float)),
-        current_vehicle_count = ceil(vehicle_count_2021 * (current_residential_address_count::float / residential_address_count_202111::float))
+set current_dwelling_count = ceil(dwelling_count_2021 * (current_residential_address_count::float / residential_address_count_202111::float)),
+    current_dwelling_with_vehicle_count = ceil(dwelling_with_vehicle_count_2021 * (current_residential_address_count::float / residential_address_count_202111::float)),
+    current_population_count = ceil(population_count_2021 * (current_residential_address_count::float / residential_address_count_202111::float)),
+    current_population_over_15_count = ceil(population_over_15_count_2021 * (current_residential_address_count::float / residential_address_count_202111::float)),
+    current_vehicle_count = ceil(vehicle_count_2021 * (current_residential_address_count::float / residential_address_count_202111::float))
 ;
-
-
 
 
 select *
 from testing.census_dwelling_projections_poa
--- where poa_name_2021 = '3052'
 ;
 
 
 
--- select *
--- from census_2021_data.metadata_stats
--- where table_number = 'G04B'
--- order by sequential_id
--- ;
+-- -- create view
+-- drop view if exists testing.vw_census_dwelling_projections_poa;
+-- create view testing.vw_census_dwelling_projections_poa as
+-- select stats.*,
+--     bdy.geom
+-- from testing.census_dwelling_projections_poa as stats
+-- inner join census_2021_bdys_gda94.poa_2021_aust_gda94 as bdy on stats.poa_code_2021 = bdy.poa_code_2021
+--
+--
+--
+-- select distinct mb_category_2021
+-- from census_2021_bdys_gda94.mb_2021_aust_gda94
+-- where mb_category_2021 not in (
+-- 'ANTARCTICA',
+-- 'MIGRATORY',
+-- 'NOUSUALRESIDENCE',
+-- 'OFFSHORE',
+-- 'Outside Australia',
+-- 'SHIPPING'
+-- )
+--
+-- -- QGIS filter
+-- -- mb_category_2021 in (
+-- -- 'Parkland',
+-- -- 'Primary Production',
+-- -- 'Other',
+-- -- 'Residential'
+-- -- )
