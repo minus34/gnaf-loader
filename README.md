@@ -5,7 +5,7 @@ A quick way to load the complete Geocoded National Address File of Australia (GN
 Have a look at [these intro slides](https://minus34.com/opendata/intro-to-gnaf.pptx) ([PDF](https://minus34.com/opendata/intro-to-gnaf.pdf)), as well as the [data.gov.au page](https://data.gov.au/dataset/geocoded-national-address-file-g-naf).
 
 ### There are 4 options for loading the data
-1. [Run](https://github.com/minus34/gnaf-loader#option-1---run-loadgnafpy) the load-gnaf Python script and build the database yourself in a single step
+1. [Run](https://github.com/minus34/gnaf-loader#option-1---run-loadgnafpy) the `load-gnaf.py` Python script and build the database yourself in a single step
 2. [Pull](https://github.com/minus34/gnaf-loader#option-2---run-the-database-in-a-docker-container) the database from Docker Hub and run it in a container
 3. [Download](https://github.com/minus34/gnaf-loader#option-3---load-pg_dump-files) the GNAF and/or Admin Bdys Postgres dump files & restore them in your Postgres 14+ database
 4. [Use or download](https://github.com/minus34/gnaf-loader#option-4---geoparquet-files-in-s3) Geoparquet and Parquet Files in S3 for your data & analytics workflows; either in AWS or your own platform.
@@ -16,12 +16,12 @@ Running the Python script takes 30-120 minutes on a Postgres server configured t
 You can process the GDA94 or GDA2020 version of the data - just ensure that you download the same version for both GNAF and the Administrative Boundaries. If you don't know what GDA94 or GDA2020 is, download the GDA94 versions (FYI - they're different coordinate systems) 
 
 ### Performance
-To get a good load time you'll need to configure your Postgres server for performance. There's a good guide [here](https://postgis.net/workshops/postgis-intro/tuning.html), noting it's a few years old and some of the memory parameters can be beefed up if you have the RAM.
+To get a good load time you'll need to configure your Postgres server for performance. There's a good, somewhat outdated, guide [here](https://postgis.net/workshops/postgis-intro/tuning.html), noting it's a few years old and some of the memory parameters can be beefed up if you have the RAM.
 
 ### Pre-requisites
 - Postgres 14.x and above with PostGIS 3.2+
 - Add the Postgres bin directory to your system PATH
-- Python 3.6+ with Psycopg 3.x
+- Python 3.11+ with the Psycopg packge
 
 ### Process
 1. Download [Geoscape GNAF from data.gov.au](https://data.gov.au/dataset/geocoded-national-address-file-g-naf) (GDA94 or GDA2020)
@@ -51,8 +51,8 @@ The behaviour of gnaf-loader can be controlled by specifying various command lin
 
 #### Optional Arguments
 * `--srid` Sets the coordinate system of the input data. Valid values are `4283` (the default: GDA94 lat/long) and `7844` (GDA2020 lat/long).
-* `--geoscape-version` Geoscape version number in YYYYMM format. Defaults to current year and last release month. e.g. `202411`.
-* `--previous-geoscape-version` Previous Geoscape release version number as YYYYMM; used for QA comparison. e.g. `202408`.
+* `--geoscape-version` Geoscape version number in YYYYMM format. Defaults to current year and last release month. e.g. `202502`.
+* `--previous-geoscape-version` Previous Geoscape release version number as YYYYMM; used for QA comparison. e.g. `202411`.
 * `--raw-gnaf-schema` schema name to store raw GNAF tables in. Defaults to `raw_gnaf_<geoscape_version>`.
 * `--raw-admin-schema` schema name to store raw admin boundary tables in. Defaults to `raw_admin_bdys_<geoscape_version>`.
 * `--gnaf-schema` destination schema name to store final GNAF tables in. Defaults to `gnaf_<geoscape_version>`.
@@ -69,12 +69,12 @@ The behaviour of gnaf-loader can be controlled by specifying various command lin
 * `--no-boundary-tag` DO NOT tag all addresses with some of the key admin boundary IDs for creating aggregates and choropleth maps.
 
 ### Example Command Line Arguments
-* Local Postgres server: `python load-gnaf.py --gnaf-tables-path="C:\temp\geoscape_202411\G-NAF" --admin-bdys-path="C:\temp\geoscape_202411\Administrative Boundaries"` Loads the GNAF tables to a Postgres server running locally. GNAF archives have been extracted to the folder `C:\temp\geoscape_202411\G-NAF`, and admin boundaries have been extracted to the `C:\temp\geoscape_202411\Administrative Boundaries` folder.
+* Local Postgres server: `python load-gnaf.py --gnaf-tables-path="C:\temp\geoscape_202502\G-NAF" --admin-bdys-path="C:\temp\geoscape_202502\Administrative Boundaries"` Loads the GNAF tables to a Postgres server running locally. GNAF archives have been extracted to the folder `C:\temp\geoscape_202502\G-NAF`, and admin boundaries have been extracted to the `C:\temp\geoscape_202502\Administrative Boundaries` folder.
 * Remote Postgres server: `python load-gnaf.py --gnaf-tables-path="\\svr\shared\gnaf" --local-server-dir="f:\shared\gnaf" --admin-bdys-path="c:\temp\unzipped\AdminBounds_ESRI"` Loads the GNAF tables which have been extracted to the shared folder `\\svr\shared\gnaf`. This shared folder corresponds to the local `f:\shared\gnaf` folder on the Postgres server. Admin boundaries have been extracted to the `c:\temp\unzipped\AdminBounds_ESRI` folder.
 * Loading only selected states: `python load-gnaf.py --states VIC TAS NT ...` Loads only the data for Victoria, Tasmania and Northern Territory
 
 ### Advanced
-You can load the Admin Boundaries without GNAF. To do this: comment out steps 1, 3 and 4 in def main.
+You can load the Admin Boundaries without GNAF. To do this: comment out steps 1, 3 and 4 in `def main()`.
 
 Note: you can't load GNAF without the Admin Bdys due to dependencies required to split Melbourne and to fix non-boundary locality_pids on addresses.
 
@@ -84,10 +84,9 @@ When using the resulting data from this process - you will need to adhere to the
 ### WARNING:
 - The scripts will DROP ALL TABLES using CASCADE in the GNAF and Admin Bdy schemas and then recreate them; meaning you'll LOSE YOUR VIEWS if you have created any! If you want to keep the existing data - you'll need to change the schema names in the script or use a different database
 - All raw GNAF tables can be created UNLOGGED to speed up the data load. This will make them UNRECOVERABLE if your database is corrupted. You can run these scripts again to recreate them. If you think this sounds ok - set the unlogged_tables flag to True for a slightly faster load
-- Boundary tagging (on by default) will add 15-60 minutes to the process if you have PostGIS 2.2+. If you have PostGIS 2.1 or lower - it can take HOURS as the boundary tables can't be optimised!
 
 ### IMPORTANT:
-- Whilst you can choose which 4 schemas to load the data into, I haven't QA'd every permutation. Stick with the defaults if you have limited Postgres experience
+- Whilst you can choose which 4 schemas to load the data into, NOt every permutation has been tested. Stick with the defaults if you have limited Postgres experience
 - If you're not running the Python script on the Postgres server, you'll need to have access to a network path to the GNAF files on the database server (to create the list of files to process). The alternative is to have a local copy of the raw files
 - The 'create tables' sql script will add the PostGIS extension to the database in the public schema, you don't need to add it to your database
 - There is an option to VACUUM the database at the start after dropping the existing GNAF/Admin Bdy tables - this doesn't really do anything outside of repeated testing. (I was too lazy to take it out of the code as it meant renumbering all the SQL files and I'd like to go to bed now)
@@ -117,9 +116,9 @@ Should take 15-60 minutes.
 - A knowledge of [Postgres pg_restore parameters](https://www.postgresql.org/docs/14/app-pgrestore.html)
 
 ### Process
-1. Download the [GNAF dump file](https://minus34.com/opendata/geoscape-202411/gnaf-202411.dmp) or [GNAF GDA2020 dump file](https://minus34.com/opendata/geoscape-202411-gda2020/gnaf-202411.dmp) (~2.0Gb)
-2. Download the [Admin Bdys dump file](https://minus34.com/opendata/geoscape-202411/admin-bdys-202411.dmp) or [Admin Bdys GDA2020 dump file](https://minus34.com/opendata/geoscape-202411-gda2020/admin-bdys-202411.dmp) (~2.8Gb)
-3. Edit the _restore-gnaf-admin-bdys.bat_ or _.sh_ script in the supporting-files folder for your dump file names, database parameters and for the location of pg_restore
+1. Download the [GNAF dump file](https://minus34.com/opendata/geoscape-202502/gnaf-202502.dmp) or [GNAF GDA2020 dump file](https://minus34.com/opendata/geoscape-202502-gda2020/gnaf-202502.dmp) (~2.0Gb)
+2. Download the [Admin Bdys dump file](https://minus34.com/opendata/geoscape-202502/admin-bdys-202502.dmp) or [Admin Bdys GDA2020 dump file](https://minus34.com/opendata/geoscape-202502-gda2020/admin-bdys-202502.dmp) (~2.8Gb)
+3. Edit the _restore-gnaf-admin-bdys.bat_ or _.sh_ script in the `supporting-files` folder for your dump file names, database parameters and for the location of pg_restore
 5. Run the script, come back in 15-60 minutes and enjoy!
 
 ## Option 4 - Geoparquet Files in S3
@@ -127,11 +126,11 @@ Geoparquet versions of the spatial tables, as well as parquet versions of the no
 
 Geometries have WGS84 lat/long coordinates (SRID/EPSG:4326). A sample query for analysing the data using [Apache Sedona](https://sedona.apache.org/), the spatial extension to [Apache Spark](https://spark.apache.org/) is in the `spark` folder.
 
-The files are here: `s3://minus34.com/opendata/geoscape-202411/geoparquet/`
+The files are here: `s3://minus34.com/opendata/geoscape-202502/geoparquet/`
 
 ### AWS CLI Examples:
-- List all datasets: `aws s3 ls s3://minus34.com/opendata/geoscape-202411/geoparquet/`
-- Copy all datasets: `aws s3 sync s3://minus34.com/opendata/geoscape-202411/geoparquet/ <my-local-folder>`
+- List all datasets: `aws s3 ls s3://minus34.com/opendata/geoscape-202502/geoparquet/`
+- Copy all datasets: `aws s3 sync s3://minus34.com/opendata/geoscape-202502/geoparquet/ <my-local-folder>`
 
 ## DATA LICENSES
 
@@ -140,7 +139,7 @@ Incorporates or developed using G-NAF © [Geoscape Australia](https://geoscape.c
 Incorporates or developed using Administrative Boundaries © [Geoscape Australia](https://geoscape.com.au/legal/data-copyright-and-disclaimer/) licensed by the Commonwealth of Australia under [Creative Commons Attribution 4.0 International licence (CC BY 4.0)](https://creativecommons.org/licenses/by/4.0/).
 
 ## DATA CUSTOMISATION
-GNAF and the Admin Bdys have been customised to remove some of the known, minor limitations with the data. The most notable are:
+GNAF and the Admin Bdys have been customised to remove some of the known limitations with the data. The most notable are:
 - All addresses link to a gazetted locality that has a boundary. Those small number of addresses that don't in raw GNAF have had their locality_pid changed to a gazetted equivalent
 - Localities have had address and street counts added to them
 - Suburb-Locality bdys have been flattened into a single continuous layer of localities - South Australian Hundreds have been removed and ACT districts have been added where there are no gazetted localities

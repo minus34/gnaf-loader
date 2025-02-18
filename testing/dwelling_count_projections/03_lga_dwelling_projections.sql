@@ -1,5 +1,5 @@
 
-drop table if exists testing.census_dwelling_projections_lga;
+drop table if exists testing.census_dwelling_projections_lga cascade;
 create table testing.census_dwelling_projections_lga
 (
     lga_name_2021                       text,
@@ -9,6 +9,7 @@ create table testing.census_dwelling_projections_lga
     dwelling_count_2021                 integer,
     dwelling_with_vehicle_count_2021    integer,
     population_count_2021               integer,
+    population_over_15_count_2021       integer,
     vehicle_count_2021                  integer,
     average_household_size_2021         float,
     current_address_count               integer,
@@ -18,6 +19,7 @@ create table testing.census_dwelling_projections_lga
     current_dwelling_count              integer,
     current_dwelling_with_vehicle_count integer,
     current_population_count            integer,
+    current_population_over_15_count    integer,
     current_vehicle_count               integer
 );
 alter table testing.census_dwelling_projections_lga owner to postgres;
@@ -27,7 +29,7 @@ insert into testing.census_dwelling_projections_lga (lga_name_2021, lga_code_202
 select lga_name_2021,
        lga_code_2021,
        count(*) as address_count
-from gnaf_202411.address_principal_census_2021_boundaries
+from gnaf_202502.address_principal_census_2021_boundaries
 where lga_code_2021 is not null
   and mb_category_2021 in ('Residential', 'Primary Production', 'Other')
 group by lga_name_2021,
@@ -38,7 +40,7 @@ group by lga_name_2021,
 with gnaf as (
     select lga_code_2021,
            count(*) as address_count
-    from gnaf_202411.address_principal_census_2021_boundaries
+    from gnaf_202502.address_principal_census_2021_boundaries
     where lga_code_2021 is not null
     group by lga_code_2021
 )
@@ -108,14 +110,24 @@ from abs
 where dw.lga_code_2021 = abs.lga_code_2021
 ;
 
+
+-- select * from census_2021_data.metadata_stats
+-- where table_number = 'G04A'
+-- order by sequential_id
+-- ;
+
+
 -- add population
 with abs as (
-    select region_id as lga_code_2021,
-           g562 as population_count_2021
-    from census_2021_data.lga_g04b
+    select b.region_id as lga_code_2021,
+           g562 as population_count_2021,
+           g562 - g274 - g292 - g310 - g313 as population_over_15_count_2021
+    from census_2021_data.lga_g04b as b
+    inner join census_2021_data.lga_g04a as a on b.region_id = a.region_id
 )
 update testing.census_dwelling_projections_lga as dw
-set population_count_2021 = abs.population_count_2021
+set population_count_2021 = abs.population_count_2021,
+    population_over_15_count_2021 = abs.population_over_15_count_2021
 from abs
 where dw.lga_code_2021 = abs.lga_code_2021
 ;
@@ -125,6 +137,7 @@ update testing.census_dwelling_projections_lga
     set current_dwelling_count = ceil(dwelling_count_2021 * (current_residential_address_count::float / residential_address_count_202111::float)),
         current_dwelling_with_vehicle_count = ceil(dwelling_with_vehicle_count_2021 * (current_residential_address_count::float / residential_address_count_202111::float)),
         current_population_count = ceil(population_count_2021 * (current_residential_address_count::float / residential_address_count_202111::float)),
+        current_population_over_15_count = ceil(population_over_15_count_2021 * (current_residential_address_count::float / residential_address_count_202111::float)),
         current_vehicle_count = ceil(vehicle_count_2021 * (current_residential_address_count::float / residential_address_count_202111::float))
 ;
 

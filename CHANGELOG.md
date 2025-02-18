@@ -27,7 +27,7 @@
 - Added fix for missing coordinates in default geocode table. Affects 10 South Australian addresses
 
 #### Code
-- Postgres connections have been reverted to standard connections. Due to a connection pool bug related to multiprocessing
+- Postgres connections have been reverted to standard connections due to a connection pool bug related to multiprocessing
 
 ### August 2021 Release
 
