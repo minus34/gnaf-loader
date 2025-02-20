@@ -123,6 +123,14 @@ CREATE VIEW gnaf.addresses AS
   SELECT * FROM gnaf.address_aliases;
 
 
+-- create lookup view of meshblock IDs
+DROP VIEW IF EXISTS gnaf.address_mb_lookup;
+CREATE VIEW gnaf.address_mb_lookup AS
+SELECT gnaf_pid, mb_2021_code FROM gnaf.address_principals
+UNION ALL
+SELECT gnaf_pid, mb_2021_code FROM gnaf.address_aliases;
+
+
 -- streets
 DROP TABLE IF EXISTS gnaf.streets CASCADE;
 CREATE TABLE gnaf.streets(
