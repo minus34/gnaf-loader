@@ -4,7 +4,7 @@
 --------------------------------------------------------------------------------------
 
 DROP TABLE IF EXISTS admin_bdys.postcode_bdys_analysis CASCADE;
-CREATE UNLOGGED TABLE admin_bdys.postcode_bdys_analysis
+CREATE TABLE admin_bdys.postcode_bdys_analysis
 (
   gid SERIAL NOT NULL,
   postcode text,
@@ -16,7 +16,7 @@ ALTER TABLE admin_bdys.postcode_bdys_analysis OWNER TO postgres;
 
 INSERT INTO admin_bdys.postcode_bdys_analysis (postcode, state, geom)
 SELECT postcode,
-       state, 
+       state,
        ST_Subdivide((ST_Dump(ST_Buffer(geom, 0.0))).geom, 512)
   FROM admin_bdys.locality_bdys;
 
