@@ -110,7 +110,7 @@ UPDATE gnaf.localities AS loc
   WHERE loc.locality_pid = sqt.locality_pid
   AND sqt.locality_pid = loc_pc.locality_pid
   AND sqt.max_address_count = loc_pc.address_count
-  AND (loc.postcode IS NULL OR loc.postcode = '9999');
+  AND (loc.postcode IS NULL OR loc.postcode = '9999' OR loc.postcode = '9998');
 
 DROP TABLE temp_locality_postcode;
 
