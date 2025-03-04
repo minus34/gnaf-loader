@@ -24,8 +24,8 @@ To get a good load time you'll need to configure your Postgres server for perfor
 - Python 3.11+ with the Psycopg packge
 
 ### Process
-1. Download [Geoscape GNAF from data.gov.au](https://data.gov.au/dataset/geocoded-national-address-file-g-naf) (GDA94 or GDA2020)
-2. Download [Geoscape Administrative Boundaries from data.gov.au](https://data.gov.au/dataset/geoscape-administrative-boundaries) (**download the ESRI Shapefile (GDA94 or GDA2020) version**)
+1. Download [Geoscape GNAF from data.gov.au](https://data.gov.au/data/dataset/geocoded-national-address-file-g-naf) (GDA94 or GDA2020)
+2. Download [Geoscape Administrative Boundaries from data.gov.au](https://data.gov.au/data/dataset/geoscape-administrative-boundaries) (**download the ESRI Shapefile (GDA94 or GDA2020) version**)
 3. Unzip GNAF to a directory on your Postgres server
 4. Unzip Admin Bdys to a local directory
 5. Alter security on those directories to grant Postgres read access
