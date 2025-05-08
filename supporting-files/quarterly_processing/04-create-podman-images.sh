@@ -31,7 +31,7 @@ podman machine start
 podman login -u ${DOCKER_USER} -p ${DOCKER_PASSWORD} docker.io/minus34
 
 # go to Dockerfile directory
-cd ${DOCKER_FOLDER}
+cd ${DOCKER_FOLDER} || exit
 
 echo "---------------------------------------------------------------------------------------------------------------------"
 echo "build gnaf-loader GDA94 images : $(date)"
@@ -74,7 +74,7 @@ podman machine start
 podman login -u ${DOCKER_USER} -p ${DOCKER_PASSWORD} docker.io/minus34
 
 # go to Dockerfile directory
-cd ${DOCKER_FOLDER}
+cd ${DOCKER_FOLDER} || exit
 
 echo "---------------------------------------------------------------------------------------------------------------------"
 echo "build gnaf-loader GDA2020 images : $(date)"
