@@ -203,10 +203,10 @@ UPDATE admin_bdys.locality_bdys
 ;
 
 
--- -- add old locality_pids to unedited localities -- need to rollover old locality pids from GNAF 202502 release - not supplied in 202502 release
+-- -- add old locality_pids to unedited localities -- need to rollover old locality pids from GNAF 202505 release - not supplied in 202505 release
 -- UPDATE admin_bdys.locality_bdys as new
 --     SET old_locality_pid = old.old_locality_pid
--- FROM admin_bdys_202502.locality_bdys AS old
+-- FROM admin_bdys_202505.locality_bdys AS old
 -- WHERE new.locality_pid = old.locality_pid;
 
 

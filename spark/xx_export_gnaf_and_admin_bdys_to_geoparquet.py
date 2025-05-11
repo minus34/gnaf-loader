@@ -66,7 +66,7 @@ pg_connect_string = "dbname={DB} host={HOST} port={PORT} user={USER} password={P
 
 # # aws details
 # s3_bucket = "minus34.com"
-# s3_folder = "opendata/geoscape-202502/geoparquet"
+# s3_folder = "opendata/geoscape-202505/geoparquet"
 
 # get runtime arguments
 parser = argparse.ArgumentParser(description="Converts Postgres/PostGIS tables to Parquet files with WKT geometries.")
