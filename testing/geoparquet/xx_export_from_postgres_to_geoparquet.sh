@@ -9,7 +9,7 @@
 # get the directory this script is running from
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
-OUTPUT_FOLDER="/Users/$(whoami)/tmp/geoscape_202502/geoparquet"
+OUTPUT_FOLDER="/Users/$(whoami)/tmp/geoscape_202505/geoparquet"
 mkdir -p "${OUTPUT_FOLDER}"
 cd "${OUTPUT_FOLDER}"
 
@@ -17,7 +17,7 @@ cd "${OUTPUT_FOLDER}"
 # get list of tables to export
 rm tables.txt
 
-for input_schema in "admin_bdys_202502" "gnaf_202502"
+for input_schema in "admin_bdys_202505" "gnaf_202505"
 do
   QUERY="SELECT concat(table_schema, '.', table_name)
          FROM information_schema.tables

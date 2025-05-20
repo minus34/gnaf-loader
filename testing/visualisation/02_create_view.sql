@@ -1,10 +1,10 @@
---DROP TABLE IF EXISTS gnaf_202502.temp_address_principals;
---CREATE TABLE gnaf_202502.temp_address_principals AS
+--DROP TABLE IF EXISTS gnaf_202505.temp_address_principals;
+--CREATE TABLE gnaf_202505.temp_address_principals AS
 
 COPY (
 	SELECT longitude AS x,
            latitude AS y
-    FROM gnaf_202502.address_principals
+    FROM gnaf_202505.address_principals
 ) TO '/Users/hugh.saalmans/tmp/address_principals_point.csv' HEADER CSV;
 
 
@@ -13,7 +13,7 @@ COPY (
 --SELECT gid,
 --       longitude AS x,
 --       latitude AS y
---FROM gnaf_202502.address_principals;
+--FROM gnaf_202505.address_principals;
 --
---ALTER TABLE ONLY gnaf_202502.temp_address_principals
+--ALTER TABLE ONLY gnaf_202505.temp_address_principals
 --    ADD CONSTRAINT temp_address_principals_pk PRIMARY KEY (gid);

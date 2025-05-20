@@ -29,7 +29,7 @@ insert into testing.census_dwelling_projections_lga (lga_name_2021, lga_code_202
 select lga_name_2021,
        lga_code_2021,
        count(*) as address_count
-from gnaf_202502.address_principal_census_2021_boundaries
+from gnaf_202505.address_principal_census_2021_boundaries
 where lga_code_2021 is not null
   and mb_category_2021 in ('Residential', 'Primary Production', 'Other')
 group by lga_name_2021,
@@ -40,7 +40,7 @@ group by lga_name_2021,
 with gnaf as (
     select lga_code_2021,
            count(*) as address_count
-    from gnaf_202502.address_principal_census_2021_boundaries
+    from gnaf_202505.address_principal_census_2021_boundaries
     where lga_code_2021 is not null
     group by lga_code_2021
 )
