@@ -3,7 +3,7 @@
 # --------------------------------------------------------------------------------------------------------------------
 
 ENV_NAME=geo
-PYTHON_VERSION="3.11"
+PYTHON_VERSION="3.13"
 
 # --------------------------------------------------------------------------------------------------------------------
 
@@ -38,7 +38,7 @@ conda activate ${ENV_NAME}
 
 # install geospatial packages
 #pip install open3d==0.15.1
-conda install -y -c conda-forge gdal pygeos geopandas openpyxl psycopg geoalchemy2 rasterio jupyter boto3 requests
+conda install -y -c conda-forge gdal geopandas openpyxl psycopg geoalchemy2 rasterio jupyter boto3 requests
 #conda install -y -c conda-forge plotly python-kaleido libgdal-arrow-parquet dask-geopandas aiohttp
 conda activate ${ENV_NAME}
 
