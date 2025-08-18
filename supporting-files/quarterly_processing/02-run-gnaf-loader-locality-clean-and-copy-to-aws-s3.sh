@@ -60,20 +60,3 @@ echo "copy Postgres dump files to AWS S3 and allow public read access (requires 
 echo "---------------------------------------------------------------------------------------------------------------------"
 
 aws --profile=${AWS_PROFILE} s3 sync ${OUTPUT_FOLDER} s3://minus34.com/opendata/geoscape-202508 --exclude "*" --include "*.dmp" --acl public-read
-
-echo "---------------------------------------------------------------------------------------------------------------------"
-echo "create geoparquet versions of GNAF and Admin Bdys and upload to AWS S3"
-echo "---------------------------------------------------------------------------------------------------------------------"
-
-# first - activate or create Conda environment with Apache Spark + Sedona
-#. /Users/$(whoami)/git/iag_geo/spark_testing/apache_sedona/01_setup_sedona.sh
-
-conda activate sedona
-
-# delete all existing files
-rm -rf ${OUTPUT_FOLDER}/geoparquet
-
-python ${SCRIPT_DIR}/../../spark/xx_export_gnaf_and_admin_bdys_to_geoparquet.py --admin-schema="admin_bdys_202508" --gnaf-schema="gnaf_202508" --output-path="${OUTPUT_FOLDER}/geoparquet"
-
-aws --profile=${AWS_PROFILE} s3 rm s3://minus34.com/opendata/geoscape-202508/geoparquet/ --recursive
-aws --profile=${AWS_PROFILE} s3 sync ${OUTPUT_FOLDER}/geoparquet s3://minus34.com/opendata/geoscape-202508/geoparquet --acl public-read
