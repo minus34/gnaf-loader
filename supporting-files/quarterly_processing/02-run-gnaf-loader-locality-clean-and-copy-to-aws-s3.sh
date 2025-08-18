@@ -4,9 +4,6 @@
 conda deactivate
 conda activate geo
 
-# get the directory this script is running from
-SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
-
 # ---------------------------------------------------------------------------------------------------------------------
 # edit these to taste - NOTE: you can't use "~" for your home folder, Postgres doesn't like it
 # ---------------------------------------------------------------------------------------------------------------------
