@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # first - activate or create Conda environment with Apache Spark + Sedona
-#. /Users/$(whoami)/git/iag_geo/spark_testing/apache_sedona/01_setup_sedona.sh
+. /Users/$(whoami)/git/iag_geo/spark_testing/apache_sedona/01_setup_sedona.sh
 
 # need a Python 3.6+ environment with Psycopg (run 01_setup_conda_env.sh to create Conda environment)
 conda deactivate
