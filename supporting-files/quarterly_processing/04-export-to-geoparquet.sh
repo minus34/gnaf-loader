@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # first - activate or create Conda environment with Apache Spark + Sedona
-. /Users/$(whoami)/git/iag_geo/spark_testing/apache_sedona/01_setup_sedona.sh
+. "/Users/$(whoami)/git/iag_geo/spark_testing/apache_sedona/01_setup_sedona.sh"
 
 # need a Python 3.6+ environment with Psycopg (run 01_setup_conda_env.sh to create Conda environment)
 conda deactivate
@@ -23,7 +23,7 @@ rm -rf "${OUTPUT_FOLDER}/geoparquet"
 python "${SCRIPT_DIR}/../../spark/xx_export_gnaf_and_admin_bdys_to_geoparquet.py" --admin-schema="admin_bdys_202508" --gnaf-schema="gnaf_202508" --output-path="${OUTPUT_FOLDER}/geoparquet"
 
 aws --profile=${AWS_PROFILE} s3 rm s3://minus34.com/opendata/geoscape-202508/geoparquet/ --recursive
-aws --profile=${AWS_PROFILE} s3 sync "${OUTPUT_FOLDER}/geoparquet s3://minus34.com/opendata/geoscape-202508/geoparquet" --acl public-read
+aws --profile=${AWS_PROFILE} s3 sync "${OUTPUT_FOLDER}/geoparquet" "s3://minus34.com/opendata/geoscape-202508/geoparquet" --acl public-read
 
 
 # disabled as currently only exporting the GDA94 version in WGS84 coordinates
