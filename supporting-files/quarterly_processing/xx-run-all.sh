@@ -11,6 +11,10 @@ cd "${SCRIPT_DIR}" || exit
 
 . 03-run-gnaf-loader-locality-clean-and-copy-to-aws-s3-gda2020.sh
 
-. 04-create-podman-images.sh
+cd "${SCRIPT_DIR}" || exit
 
-. 05-export-to-geoparquet.sh
+. 04-export-to-geoparquet.sh
+
+. 05-create-podman-images.sh
+
+cd "${SCRIPT_DIR}" || exit
