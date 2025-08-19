@@ -18,3 +18,8 @@ cd "${SCRIPT_DIR}" || exit
 . 05-create-podman-images.sh
 
 cd "${SCRIPT_DIR}" || exit
+
+
+# URLs
+# https://github.com/minus34/gnaf-loader
+# https://hub.docker.com/r/minus34/gnafloader
