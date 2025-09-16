@@ -16,9 +16,8 @@ echo "Start time : $(date)"
 #   - Removes existing 'sedona' Conda environment
 #
 # PRE_REQUISITES:
-#   1. Java 11 OpenJDK is installed using Homebrew: brew install openjdk@11
-#   2. JAVA_HOME is set as an environment variable: export JAVA_HOME=/opt/homebrew/opt/openjdk@11 (if installed via brew)
-#   3. Miniconda is installed in the default directory ($HOME/opt/miniconda3). Get the installer here:
+#   1. Java 17 OpenJDK is installed using Homebrew: brew install openjdk@17
+#   2. Miniconda is installed in the default directory ($HOME/opt/miniconda3). Get the installer here:
 #        - Intel: https://repo.anaconda.com/miniconda/Miniconda3-latest-MacOSX-x86_64.pkg
 #        - M1/M2: https://repo.anaconda.com/miniconda/Miniconda3-latest-MacOSX-arm64.pkg
 #
@@ -35,12 +34,12 @@ echo "Start time : $(date)"
 ENV_NAME=sedona
 
 PYTHON_VERSION="3.12"
-SPARK_VERSION="3.5.6"  # uncomment to install specific version of Spark
-SPARK_MINOR_VERSION="3.5"  # required to get the correct Sedona Spark shaded JAR (must match latest version here: https://repo1.maven.org/maven2/org/apache/sedona/)
-SEDONA_VERSION="1.7.2"
-SCALA_VERSION="2.12"  # leave at 2.12 until PySpark in Pypi moves to 2.13
+SPARK_VERSION="4.0.1"  # uncomment to install specific version of Spark
+SPARK_MINOR_VERSION="4.0"  # required to get the correct Sedona Spark shaded JAR (must match latest version here: https://repo1.maven.org/maven2/org/apache/sedona/)
+SEDONA_VERSION="1.8.0"
+SCALA_VERSION="2.13"  # leave at 2.12 until PySpark in Pypi moves to 2.13
 #TEMP_WRAPPER_VERSION="1.5.0"  # required when GeoTools Wrapper points to an old version of Sedona
-GEOTOOLS_VERSION="28.5"
+GEOTOOLS_VERSION="33.1"
 POSTGRES_JDBC_VERSION="42.7.7"
 
 # --------------------------------------------------------------------------------------------------------------------
@@ -72,6 +71,7 @@ conda update -y conda
 conda create -y -n ${ENV_NAME} python=${PYTHON_VERSION}
 
 # add environment variables for Pyspark
+conda env config vars set JAVA_HOME="/opt/homebrew/Cellar/openjdk@17/17.0.16/libexec/openjdk.jdk/Contents/Home"
 conda env config vars set SPARK_HOME="${SPARK_HOME_DIR}"
 conda env config vars set SPARK_LOCAL_IP="127.0.0.1"
 conda env config vars set SPARK_LOCAL_DIRS="${HOME}/tmp/spark"
