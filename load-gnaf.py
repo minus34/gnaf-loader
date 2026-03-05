@@ -974,8 +974,11 @@ def create_qa_tables(pg_cur):
 if __name__ == "__main__":
     logger = logging.getLogger()
 
+    file_time = datetime.now()
+    file_time_str = file_time.strftime("YYYY-MM-DD-HH-MM-SS")
+
     # set logger
-    log_file = os.path.abspath(__file__).replace(".py", ".log")
+    log_file = os.path.abspath(__file__).replace(".py", f"-{file_time_str}.log")
     logging.basicConfig(filename=log_file, level=logging.DEBUG, format="%(asctime)s %(message)s",
                         datefmt="%m/%d/%Y %I:%M:%S %p")
 
