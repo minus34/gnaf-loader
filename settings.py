@@ -128,6 +128,9 @@ parser.add_argument(
     help="Local path on server corresponding to gnaf-tables-path, if different to gnaf-tables-path.")
 parser.add_argument(
     "--admin-bdys-path", required=True, help="Local path to source admin boundary files.")
+parser.add_argument(
+    "--log-path",
+    help="Optional directory for the loader log file. Defaults to a log file beside load-gnaf.py.")
 
 # states to load
 parser.add_argument("--states", nargs="+", choices=["ACT", "NSW", "NT", "OT", "QLD", "SA", "TAS", "VIC", "WA"],
@@ -181,6 +184,8 @@ else:
     gnaf_pg_server_local_directory = gnaf_network_directory
 
 admin_bdys_local_directory = args.admin_bdys_path.replace("\\", "/")
+
+log_path = args.log_path
 
 # create postgres connect string
 pg_host = args.pghost or os.getenv("PGHOST", "localhost")
