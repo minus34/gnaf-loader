@@ -975,7 +975,7 @@ if __name__ == "__main__":
     logger = logging.getLogger()
 
     file_time = datetime.now()
-    file_time_str = file_time.strftime("YYYY-MM-DD-HH-MM-SS")
+    file_time_str = file_time.strftime("%Y-%m-%d-%H-%M-%S")
 
     # set logger
     log_file = os.path.abspath(__file__).replace(".py", f"-{file_time_str}.log")
