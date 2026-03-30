@@ -978,7 +978,11 @@ if __name__ == "__main__":
     file_time_str = file_time.strftime("%Y-%m-%d-%H-%M-%S")
 
     # set logger
-    log_file = os.path.abspath(__file__).replace(".py", f"-{file_time_str}.log")
+    if settings.log_path:
+        os.makedirs(settings.log_path, exist_ok=True)
+        log_file = os.path.join(settings.log_path, f"load-gnaf-{file_time_str}.log")
+    else:
+        log_file = os.path.abspath(__file__).replace(".py", f"-{file_time_str}.log")
     logging.basicConfig(filename=log_file, level=logging.DEBUG, format="%(asctime)s %(message)s",
                         datefmt="%m/%d/%Y %I:%M:%S %p")
 
