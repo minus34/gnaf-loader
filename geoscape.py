@@ -60,8 +60,11 @@ def run_command_line(cmd):
     # run the command line without any output (it'll still tell you if it fails miserably)
     try:
         f_null = open(os.devnull, "w")
-        subprocess.call(cmd, shell=True, stdout=f_null, stderr=subprocess.STDOUT)
-        result = "SUCCESS"
+        returncode = subprocess.call(cmd, shell=True, stdout=f_null, stderr=subprocess.STDOUT)
+        if returncode != 0:
+            result = f"COMMAND FAILED! : {cmd} : exit code {returncode}"
+        else:
+            result = "SUCCESS"
     except Exception as ex:
         result = f"COMMAND FAILED! : {cmd} : {ex}"
 
@@ -219,6 +222,11 @@ def import_shapefile_to_postgres(file_path, pg_table, pg_schema, delete_table, s
     except Exception as ex:
         return f"Importing {file_path} - Couldn't convert Shapefile to SQL : {ex}"
 
+    # check shp2pgsql exit code — a non-zero return means the conversion failed
+    if process.returncode != 0:
+        err_msg = err.decode("utf-8").strip() if err else "unknown error"
+        return f"Importing {file_path} - shp2pgsql failed (exit code {process.returncode}): {err_msg}"
+
     # prep Shapefile SQL
     sql = sqlobj.decode("utf-8")  # this is required for Python 3
     sql = sql.replace("Shapefile type: ", "-- Shapefile type: ")
@@ -232,6 +240,10 @@ def import_shapefile_to_postgres(file_path, pg_table, pg_schema, delete_table, s
     # this is required due to differing approaches by different versions of PostGIS
     sql = sql.replace("DROP TABLE ", "DROP TABLE IF EXISTS ")
     sql = sql.replace("DROP TABLE IF EXISTS IF EXISTS ", "DROP TABLE IF EXISTS ")
+
+    # guard against empty SQL — shp2pgsql may exit 0 but produce no output
+    if len(sql.strip()) == 0:
+        return f"Importing {file_path} - shp2pgsql produced empty SQL output"
 
     # import data to Postgres
     pg_conn = psycopg.connect(settings.pg_connect_string)
