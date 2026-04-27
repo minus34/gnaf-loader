@@ -62,8 +62,8 @@ The behaviour of gnaf-loader can be controlled by specifying various command lin
 #### Optional Arguments
 
 - `--srid` Sets the coordinate system of the input data. Valid values are `4283` (the default: GDA94 lat/long) and `7844` (GDA2020 lat/long).
-- `--geoscape-version` Geoscape version number in YYYYMM format. Defaults to current year and last release month. e.g. `202602`.
-- `--previous-geoscape-version` Previous Geoscape release version number as YYYYMM; used for QA comparison. e.g. `202511`.
+- `--geoscape-version` Geoscape version number in YYYYMM format. Defaults to current year and last release month. e.g. `202605`.
+- `--previous-geoscape-version` Previous Geoscape release version number as YYYYMM; used for QA comparison. e.g. `202602`.
 - `--raw-gnaf-schema` schema name to store raw GNAF tables in. Defaults to `raw_gnaf_<geoscape_version>`.
 - `--raw-admin-schema` schema name to store raw admin boundary tables in. Defaults to `raw_admin_bdys_<geoscape_version>`.
 - `--gnaf-schema` destination schema name to store final GNAF tables in. Defaults to `gnaf_<geoscape_version>`.
@@ -81,7 +81,7 @@ The behaviour of gnaf-loader can be controlled by specifying various command lin
 
 ### Example Command Line Arguments
 
-- Local Postgres server: `python load-gnaf.py --gnaf-tables-path="C:\temp\geoscape_202602\G-NAF" --admin-bdys-path="C:\temp\geoscape_202602\Administrative Boundaries"` Loads the GNAF tables to a Postgres server running locally. GNAF archives have been extracted to the folder `C:\temp\geoscape_202602\G-NAF`, and admin boundaries have been extracted to the `C:\temp\geoscape_202602\Administrative Boundaries` folder.
+- Local Postgres server: `python load-gnaf.py --gnaf-tables-path="C:\temp\geoscape_202605\G-NAF" --admin-bdys-path="C:\temp\geoscape_202605\Administrative Boundaries"` Loads the GNAF tables to a Postgres server running locally. GNAF archives have been extracted to the folder `C:\temp\geoscape_202605\G-NAF`, and admin boundaries have been extracted to the `C:\temp\geoscape_202605\Administrative Boundaries` folder.
 - Remote Postgres server: `python load-gnaf.py --gnaf-tables-path="\\svr\shared\gnaf" --local-server-dir="f:\shared\gnaf" --admin-bdys-path="c:\temp\unzipped\AdminBounds_ESRI"` Loads the GNAF tables which have been extracted to the shared folder `\\svr\shared\gnaf`. This shared folder corresponds to the local `f:\shared\gnaf` folder on the Postgres server. Admin boundaries have been extracted to the `c:\temp\unzipped\AdminBounds_ESRI` folder.
 - Loading only selected states: `python load-gnaf.py --states VIC TAS NT ...` Loads only the data for Victoria, Tasmania and Northern Territory
 
@@ -135,8 +135,8 @@ Should take 15-60 minutes.
 
 ### Process
 
-1. Download the [GNAF dump file](https://minus34.com/opendata/geoscape-202602/gnaf-202602.dmp) or [GNAF GDA2020 dump file](https://minus34.com/opendata/geoscape-202602-gda2020/gnaf-202602.dmp) (~2.0Gb)
-2. Download the [Admin Bdys dump file](https://minus34.com/opendata/geoscape-202602/admin-bdys-202602.dmp) or [Admin Bdys GDA2020 dump file](https://minus34.com/opendata/geoscape-202602-gda2020/admin-bdys-202602.dmp) (~2.8Gb)
+1. Download the [GNAF dump file](https://minus34.com/opendata/geoscape-202605/gnaf-202605.dmp) or [GNAF GDA2020 dump file](https://minus34.com/opendata/geoscape-202605-gda2020/gnaf-202605.dmp) (~2.0Gb)
+2. Download the [Admin Bdys dump file](https://minus34.com/opendata/geoscape-202605/admin-bdys-202605.dmp) or [Admin Bdys GDA2020 dump file](https://minus34.com/opendata/geoscape-202605-gda2020/admin-bdys-202605.dmp) (~2.8Gb)
 3. Edit the _restore-gnaf-admin-bdys.bat_ or _.sh_ script in the `supporting-files` folder for your dump file names, database parameters and for the location of pg_restore
 4. Run the script, come back in 15-60 minutes and enjoy!
 
@@ -146,12 +146,12 @@ Geoparquet versions of the spatial tables, as well as parquet versions of the no
 
 Geometries have WGS84 lat/long coordinates (SRID/EPSG:4326). A sample query for analysing the data using [Apache Sedona](https://sedona.apache.org/), the spatial extension to [Apache Spark](https://spark.apache.org/) is in the `spark` folder.
 
-The files are here: `s3://minus34.com/opendata/geoscape-202602/geoparquet/`
+The files are here: `s3://minus34.com/opendata/geoscape-202605/geoparquet/`
 
 ### AWS CLI Examples
 
-- List all datasets: `aws s3 ls s3://minus34.com/opendata/geoscape-202602/geoparquet/`
-- Copy all datasets: `aws s3 sync s3://minus34.com/opendata/geoscape-202602/geoparquet/ <my-local-folder>`
+- List all datasets: `aws s3 ls s3://minus34.com/opendata/geoscape-202605/geoparquet/`
+- Copy all datasets: `aws s3 sync s3://minus34.com/opendata/geoscape-202605/geoparquet/ <my-local-folder>`
 
 ## DATA LICENSES
 
