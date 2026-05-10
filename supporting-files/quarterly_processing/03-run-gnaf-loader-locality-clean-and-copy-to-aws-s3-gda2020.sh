@@ -37,9 +37,9 @@ echo "--------------------------------------------------------------------------
 echo "dump postgres schemas to a local folder"
 echo "---------------------------------------------------------------------------------------------------------------------"
 
-/Applications/Postgres.app/Contents/Versions/14/bin/pg_dump -Fc -d geo -n gnaf_202605_gda2020 -p 5432 -U postgres -f "${OUTPUT_FOLDER_2020}/gnaf-202605.dmp" --no-owner
+/Applications/Postgres.app/Contents/Versions/16/bin/pg_dump -Fc -d geo -n gnaf_202605_gda2020 -p 5432 -U postgres -f "${OUTPUT_FOLDER_2020}/gnaf-202605.dmp" --no-owner
 echo "GNAF schema exported to dump file"
-/Applications/Postgres.app/Contents/Versions/14/bin/pg_dump -Fc -d geo -n admin_bdys_202605_gda2020 -p 5432 -U postgres -f "${OUTPUT_FOLDER_2020}/admin-bdys-202605.dmp" --no-owner
+/Applications/Postgres.app/Contents/Versions/16/bin/pg_dump -Fc -d geo -n admin_bdys_202605_gda2020 -p 5432 -U postgres -f "${OUTPUT_FOLDER_2020}/admin-bdys-202605.dmp" --no-owner
 echo "Admin Bdys schema exported to dump file"
 
 echo "---------------------------------------------------------------------------------------------------------------------"
