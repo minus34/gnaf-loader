@@ -1,8 +1,8 @@
 # Change Log
 
-## November 2026 Release
+## May 2026 Release
 
-- In the future November 2026 release - the Postgres dump files will only support Postgres 15 upwards as Postgres 14 will reach end-of-support in November.
+- The Postgres dump files only support Postgres 16+ as Postgres 14 will reach end-of-support in November 2026 and Postgres 15 in Nov 2027.
 
 ## November 2024 Release - 2025-01-02 Update
 
