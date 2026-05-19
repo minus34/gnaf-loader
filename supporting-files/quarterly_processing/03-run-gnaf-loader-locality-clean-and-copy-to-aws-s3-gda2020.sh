@@ -11,7 +11,7 @@ conda activate geo
 AWS_PROFILE="minus34"
 OUTPUT_FOLDER_2020="/Users/$(whoami)/tmp/geoscape_202605_gda2020"
 GNAF_2020_PATH="/Users/$(whoami)/Downloads/g-naf_may26_allstates_gda2020_psv_1023"
-BDYS_2020_PATH="/Users/$(whoami)/Downloads/may26_AdminBounds_GDA_2020_SHP"
+BDYS_2020_PATH="/Users/$(whoami)/Downloads/May26_AdminBounds_GDA_2020_SHP"
 
 echo "---------------------------------------------------------------------------------------------------------------------"
 echo "Run gnaf-loader and locality boundary clean"
@@ -23,7 +23,7 @@ python3 "/Users/$(whoami)/git/iag_geo/psma-admin-bdys/locality-clean.py" --pgpor
 # upload locality bdy files to S3
 aws --profile=${AWS_PROFILE} s3 sync ${OUTPUT_FOLDER_2020} s3://minus34.com/opendata/geoscape-202605-gda2020 --exclude "*" --include "*.zip" --acl public-read
 
-# done in GDA94 script (files not processed for GDA2020 data as the result is 99.99999.....% the same)
+# done in GDA94 script (files not processed for GDA2020 data as the result is 99.99999% [estimated] the same)
 #echo "---------------------------------------------------------------------------------------------------------------------"
 #echo "create concordance file"
 #echo "---------------------------------------------------------------------------------------------------------------------"

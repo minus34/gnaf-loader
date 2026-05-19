@@ -12,7 +12,7 @@ AWS_PROFILE="minus34"
 OUTPUT_FOLDER="/Users/$(whoami)/tmp/geoscape_202605"
 OUTPUT_FOLDER_2020="/Users/$(whoami)/tmp/geoscape_202605_gda2020"
 GNAF_PATH="/Users/$(whoami)/Downloads/g-naf_may26_allstates_gda94_psv_1023"
-BDYS_PATH="/Users/$(whoami)/Downloads/may26_AdminBounds_GDA_94_SHP"
+BDYS_PATH="/Users/$(whoami)/Downloads/May26_AdminBounds_GDA_94_SHP"
 
 echo "---------------------------------------------------------------------------------------------------------------------"
 echo "Run gnaf-loader and locality boundary clean"
