@@ -1,7 +1,7 @@
 FROM debian:bookworm-slim
 
 # replaced the downloading of the Postgres dump files to use local files instead (for performance)
-# ARG BASE_URL="https://minus34.com/opendata/geoscape-202602"
+# ARG BASE_URL="https://minus34.com/opendata/geoscape-202605"
 # ENV BASE_URL ${BASE_URL}
 
 ENV DEBIAN_FRONTEND=noninteractive
@@ -23,9 +23,9 @@ RUN wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | gpg -
 RUN echo "deb [signed-by=/usr/share/keyrings/postgresql-archive-keyring.gpg] http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list
 
 RUN apt-get update && apt-get install -y \
-    postgresql-16 \
-    postgresql-client-16 \
-    postgresql-16-postgis-3 \
+    postgresql-18 \
+    postgresql-client-18 \
+    postgresql-18-postgis-3 \
     && rm -rf /var/lib/apt/lists/*
 
 # start Postgres server and set the default user password
@@ -41,23 +41,23 @@ RUN mkdir -p /data
 WORKDIR /data
 
 # add local postgres dump files
-ADD gnaf-202602.dmp .
-ADD admin-bdys-202602.dmp .
+ADD gnaf-202605.dmp .
+ADD admin-bdys-202605.dmp .
 
-# replace the add statements above if wanting to download Postgres dump files
+# replace the add statements above if you want to download the Postgres dump files
 # RUN /data \
-#     && wget --quiet ${BASE_URL}/gnaf-202602.dmp \
-#     && wget --quiet ${BASE_URL}/admin-bdys-202602.dmp
+#     && wget --quiet ${BASE_URL}/gnaf-202605.dmp \
+#     && wget --quiet ${BASE_URL}/admin-bdys-202605.dmp
 
 RUN /etc/init.d/postgresql start \
-    && pg_restore -Fc -d postgres -h 127.0.0.1 -p 5432 -U postgres /data/gnaf-202602.dmp \
-    && pg_restore -Fc -d postgres -h 127.0.0.1 -p 5432 -U postgres /data/admin-bdys-202602.dmp \
+    && pg_restore -Fc -d postgres -h 127.0.0.1 -p 5432 -U postgres /data/gnaf-202605.dmp \
+    && pg_restore -Fc -d postgres -h 127.0.0.1 -p 5432 -U postgres /data/admin-bdys-202605.dmp \
     && /etc/init.d/postgresql stop \
     && rm /data/*.dmp
 
 # enable external access to postgres - WARNING: these are insecure settings! Edit these to restrict access
-RUN echo "host all  all    0.0.0.0/0  md5" >> /etc/postgresql/16/main/pg_hba.conf
-RUN echo "listen_addresses='*'" >> /etc/postgresql/16/main/postgresql.conf
+RUN echo "host all  all    0.0.0.0/0  md5" >> /etc/postgresql/18/main/pg_hba.conf
+RUN echo "listen_addresses='*'" >> /etc/postgresql/18/main/postgresql.conf
 
 EXPOSE 5432
 
@@ -68,4 +68,4 @@ USER postgres
 # VOLUME  ["/etc/postgresql", "/var/log/postgresql", "/var/lib/postgresql"]
 
 # Start postgres when starting the container
-CMD ["/usr/lib/postgresql/16/bin/postgres", "-D", "/var/lib/postgresql/16/main", "-c", "config_file=/etc/postgresql/16/main/postgresql.conf"]
+CMD ["/usr/lib/postgresql/18/bin/postgres", "-D", "/var/lib/postgresql/18/main", "-c", "config_file=/etc/postgresql/18/main/postgresql.conf"]

@@ -5,8 +5,8 @@
 # get the directory this script is running from
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
-OUTPUT_FOLDER="/Users/$(whoami)/tmp/geoscape_202602"
-OUTPUT_FOLDER_2020="/Users/$(whoami)/tmp/geoscape_202602_gda2020"
+OUTPUT_FOLDER="/Users/$(whoami)/tmp/geoscape_202605"
+OUTPUT_FOLDER_2020="/Users/$(whoami)/tmp/geoscape_202605_gda2020"
 
 DOCKER_FOLDER=${SCRIPT_DIR}/../../docker
 
@@ -48,10 +48,10 @@ echo "--------------------------------------------------------------------------
 podman manifest push --compression-level 9 localhost/gnafloader docker://docker.io/minus34/gnafloader:latest
 
 echo "---------------------------------------------------------------------------------------------------------------------"
-echo "push '202602' GDA94 images : $(date)"
+echo "push '202605' GDA94 images : $(date)"
 echo "---------------------------------------------------------------------------------------------------------------------"
 
-podman manifest push --compression-level 9 localhost/gnafloader docker://docker.io/minus34/gnafloader:202602
+podman manifest push --compression-level 9 localhost/gnafloader docker://docker.io/minus34/gnafloader:202605
 
 # delete postgres dmp files
 rm ${DOCKER_FOLDER}/*.dmp
@@ -91,10 +91,10 @@ echo "--------------------------------------------------------------------------
 podman manifest push --compression-level 9 localhost/gnafloader-gda2020 docker://docker.io/minus34/gnafloader:latest-gda2020
 
 echo "---------------------------------------------------------------------------------------------------------------------"
-echo "push '202602' GDA2020 images : $(date)"
+echo "push '202605' GDA2020 images : $(date)"
 echo "---------------------------------------------------------------------------------------------------------------------"
 
-podman manifest push --compression-level 9 localhost/gnafloader-gda2020 docker://docker.io/minus34/gnafloader:202602-gda2020
+podman manifest push --compression-level 9 localhost/gnafloader-gda2020 docker://docker.io/minus34/gnafloader:202605-gda2020
 
 # delete postgres dmp files
 rm ${DOCKER_FOLDER}/*.dmp
