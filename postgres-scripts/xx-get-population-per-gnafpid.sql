@@ -36,7 +36,7 @@
 --UPDATE testing.mb_2026_counts AS mb
 --  SET geom = bdys.geom
 --  FROM admin_bdys_202608.abs_2026_mb as bdys
---  WHERE mb.mb_2026_code = bdys.mb_16code::bigint;
+--  WHERE mb.mb_2026_code = bdys.mb_26code::bigint;
 --
 --ANALYSE testing.mb_2026_counts;
 --

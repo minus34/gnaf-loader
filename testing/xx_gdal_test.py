@@ -21,7 +21,7 @@
 
 from osgeo import gdal
 
-dem_file_name = "/Users/hugh.saalmans/Downloads/3secSRTM_DEM/DEM_ESRI_GRID_16bit_Integer/dem3s_int/hdr.adf"
+dem_file_name = "/Users/hugh.saalmans/Downloads/3secSRTM_DEM/DEM_ESRI_GRID_26bit_Integer/dem3s_int/hdr.adf"
 dem_dataset = gdal.Open(dem_file_name, gdal.GA_ReadOnly)
 
 # print(f"Driver: {dem_dataset.GetDriver().ShortName}/{dem_dataset.GetDriver().LongName}")

@@ -4,7 +4,7 @@ DROP TABLE IF EXISTS gnaf_202608.basic_address_principals;
 CREATE TABLE gnaf_202608.basic_address_principals AS
 WITH points AS (
 SELECT adr.address_detail_pid AS gnaf_pid,
-       mb16.mb_2026_code::bigint,
+       mb26.mb_2026_code::bigint,
        gty.name AS geocode_type,
        CASE
          WHEN gty.name = 'GAP GEOCODE' THEN 3
@@ -25,7 +25,7 @@ SELECT adr.address_detail_pid AS gnaf_pid,
   SELECT mb1.address_detail_pid, mb2.mb_2026_code
     FROM raw_gnaf_202608.address_mesh_block_2026 AS mb1
     INNER JOIN raw_gnaf_202608.mb_2026 AS mb2 ON mb1.mb_2026_pid = mb2.mb_2026_pid
-  ) AS mb16 ON adr.address_detail_pid = mb16.address_detail_pid
+  ) AS mb26 ON adr.address_detail_pid = mb26.address_detail_pid
   WHERE adr.confidence > -1
     AND adr.alias_principal = 'P'
 )

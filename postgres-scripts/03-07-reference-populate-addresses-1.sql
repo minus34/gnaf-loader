@@ -39,7 +39,7 @@ SELECT adr.address_detail_pid AS gnaf_pid,
        adr.confidence::smallint,
        adr.legal_parcel_id,
 --       mb11.mb_2011_code::bigint,
-       mb16.mb_2026_code::bigint,
+       mb26.mb_2026_code::bigint,
        mb21.mb_2021_code::bigint,
        pnt.latitude,
        pnt.longitude,
@@ -67,7 +67,7 @@ SELECT adr.address_detail_pid AS gnaf_pid,
   SELECT mb1.address_detail_pid, mb2.mb_2026_code
     FROM raw_gnaf.address_mesh_block_2026 AS mb1
     INNER JOIN raw_gnaf.mb_2026 AS mb2 ON mb1.mb_2026_pid = mb2.mb_2026_pid
-  ) AS mb16 ON adr.address_detail_pid = mb16.address_detail_pid
+  ) AS mb26 ON adr.address_detail_pid = mb26.address_detail_pid
   LEFT OUTER JOIN (
   SELECT mb1.address_detail_pid, mb2.mb_2021_code
     FROM raw_gnaf.address_mesh_block_2021 AS mb1

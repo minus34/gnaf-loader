@@ -117,7 +117,7 @@ def main():
     start_time = datetime.now()
 
     # # open SRTM 3 second DEM of Australia (ESRI Binary Grid format)
-    # dem_file_name = "/Users/hugh.saalmans/Downloads/3secSRTM_DEM/DEM_ESRI_GRID_16bit_Integer/dem3s_int/hdr.adf"
+    # dem_file_name = "/Users/hugh.saalmans/Downloads/3secSRTM_DEM/DEM_ESRI_GRID_26bit_Integer/dem3s_int/hdr.adf"
     # dem_dataset = gdal.Open(dem_file_name, gdal.GA_ReadOnly)
     # dem_geotransform = dem_dataset.GetGeoTransform()
     #
