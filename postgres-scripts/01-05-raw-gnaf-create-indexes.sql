@@ -4,5 +4,5 @@ CREATE UNIQUE INDEX address_mesh_block_2026_pid_idx ON raw_gnaf.address_mesh_blo
 CREATE UNIQUE INDEX address_mesh_block_2021_pid_idx ON raw_gnaf.address_mesh_block_2021 USING btree (address_detail_pid);
 CREATE INDEX street_locality_loc_pid_idx ON raw_gnaf.street_locality USING btree (locality_pid);
 --CREATE UNIQUE INDEX mb_2011_pid_idx ON raw_gnaf.mb_2011 USING btree (mb_2011_pid);
-CREATE UNIQUE INDEX mb_2026_pid_idx ON raw_gnaf.mb_2026 USING btree (mb_2026_pid);
+CREATE UNIQUE INDEX mb_pid_2026_idx ON raw_gnaf.mb_2026 USING btree (mb_pid_2026);
 CREATE UNIQUE INDEX mb_2021_pid_idx ON raw_gnaf.mb_2021 USING btree (mb_2021_pid);

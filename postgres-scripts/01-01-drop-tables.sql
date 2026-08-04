@@ -13,7 +13,6 @@ DROP TABLE IF EXISTS raw_gnaf.address_site_geocode CASCADE;
 DROP TABLE IF EXISTS raw_gnaf.locality_alias CASCADE;
 DROP TABLE IF EXISTS raw_gnaf.locality_point CASCADE;
 --DROP TABLE IF EXISTS raw_gnaf.address_mesh_block_2011 CASCADE;
-DROP TABLE IF EXISTS raw_gnaf.address_mesh_block_2026 CASCADE;
 DROP TABLE IF EXISTS raw_gnaf.address_alias CASCADE;
 DROP TABLE IF EXISTS raw_gnaf.locality_neighbour CASCADE;
 DROP TABLE IF EXISTS raw_gnaf.address_default_geocode CASCADE;
@@ -21,7 +20,6 @@ DROP TABLE IF EXISTS raw_gnaf.street_locality_alias CASCADE;
 DROP TABLE IF EXISTS raw_gnaf.address_detail CASCADE;
 DROP TABLE IF EXISTS raw_gnaf.mb_match_code_aut CASCADE;
 --DROP TABLE IF EXISTS raw_gnaf.mb_2011 CASCADE;
-DROP TABLE IF EXISTS raw_gnaf.mb_2026 CASCADE;
 DROP TABLE IF EXISTS raw_gnaf.street_locality_alias_type_aut CASCADE;
 DROP TABLE IF EXISTS raw_gnaf.locality_alias_type_aut CASCADE;
 DROP TABLE IF EXISTS raw_gnaf.geocode_type_aut CASCADE;
@@ -48,6 +46,9 @@ DROP TABLE IF EXISTS raw_gnaf.address_mesh_block_2021 CASCADE;
 DROP TABLE IF EXISTS raw_gnaf.mb_2021 CASCADE;
 DROP TABLE IF EXISTS raw_gnaf.locality_pid_linkage CASCADE;
 --DROP TABLE IF EXISTS raw_gnaf.locality_pid_linkage_distinct CASCADE;
+-- new for August 2026
+DROP TABLE IF EXISTS raw_gnaf.mb_2026 CASCADE;
+DROP TABLE IF EXISTS raw_gnaf.address_mesh_block_2026 CASCADE;
 
 ---- drop raw admin boundaries - bit of a who cares...
 --DROP TABLE IF EXISTS raw_admin_bdys.aus_comm_electoral CASCADE;

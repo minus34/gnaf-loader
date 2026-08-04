@@ -4,7 +4,7 @@ DROP TABLE IF EXISTS gnaf_202608.basic_address_principals;
 CREATE TABLE gnaf_202608.basic_address_principals AS
 WITH points AS (
 SELECT adr.address_detail_pid AS gnaf_pid,
-       mb26.mb_2026_code::bigint,
+       mb26.mb_code_2026::bigint,
        gty.name AS geocode_type,
        CASE
          WHEN gty.name = 'GAP GEOCODE' THEN 3
@@ -22,14 +22,14 @@ SELECT adr.address_detail_pid AS gnaf_pid,
 --    INNER JOIN raw_gnaf_202608.mb_2011 AS mb2 ON mb1.mb_2011_pid = mb2.mb_2011_pid
 --  ) AS mb11 ON adr.address_detail_pid = mb11.address_detail_pid
   LEFT OUTER JOIN (
-  SELECT mb1.address_detail_pid, mb2.mb_2026_code
+  SELECT mb1.address_detail_pid, mb2.mb_code_2026
     FROM raw_gnaf_202608.address_mesh_block_2026 AS mb1
-    INNER JOIN raw_gnaf_202608.mb_2026 AS mb2 ON mb1.mb_2026_pid = mb2.mb_2026_pid
+    INNER JOIN raw_gnaf_202608.mb_2026 AS mb2 ON mb1.mb_pid_2026 = mb2.mb_pid_2026
   ) AS mb26 ON adr.address_detail_pid = mb26.address_detail_pid
   WHERE adr.confidence > -1
     AND adr.alias_principal = 'P'
 )
-SELECT gnaf_pid, mb_2026_code, geom FROM points
+SELECT gnaf_pid, mb_code_2026, geom FROM points
     WHERE reliability < 4;
 
 ANALYSE gnaf_202608.basic_address_principals;
@@ -37,4 +37,4 @@ ANALYSE gnaf_202608.basic_address_principals;
 CREATE INDEX basic_address_principals_geom_idx ON gnaf_202608.basic_address_principals USING gist (geom);
 ALTER TABLE gnaf_202608.basic_address_principals CLUSTER ON basic_address_principals_geom_idx;
 
-CREATE INDEX basic_address_principals_mb_2026_code_idx ON gnaf_202608.basic_address_principals USING btree(mb_2026_code);
+CREATE INDEX basic_address_principals_mb_code_2026_idx ON gnaf_202608.basic_address_principals USING btree(mb_code_2026);

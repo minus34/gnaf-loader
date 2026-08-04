@@ -5,28 +5,31 @@
 
 DROP TABLE IF EXISTS admin_bdys.abs_2026_mb CASCADE;
 CREATE TABLE admin_bdys.abs_2026_mb AS
-SELECT bdy.gid,
-       tab.mb_26code::bigint,
-       aut.name::text AS mb_category,
-       tab.sa1_26main,
-       tab.sa1_26_7cd,
-       tab.sa2_26main,
-       tab.sa2_26_5cd,
-       tab.sa2_26name::text,
-       tab.sa3_26code,
-       tab.sa3_26name::text,
-       tab.sa4_26code,
-       tab.sa4_26name::text,
-       tab.gcc_26code::text,
-       tab.gcc_26name::text,
+SELECT tab.gid,
+       mb_26ppid,
+       tab.dt_create,
+       mb_26pid::text,
+       mb26_code::bigint,
+       mb_cat::text,
+       chng_flag::integer,
+       chng_label::text,
+       sa1_26pid::text,
+       sa1_26code,
+       sa2_26code,
+       sa2_26name::text,
+       sa3_26code,
+       sa3_26name::text,
+       sa4_26code,
+       sa4_26name::text,
+       gcc_26code::text,
+       gcc_26name::text,
        ste.st_abbrev::text AS state,
-       tab.area_sqm,
-       tab.mb26_pop,
-       tab.mb26_dwell,
-       bdy.geom
+       area_sqm,
+       mb26_dwell,
+       mb26_pop,
+       loci26_uri::text,
+       geom
   FROM raw_admin_bdys.aus_mb_2026 AS tab
-  INNER JOIN raw_admin_bdys.aus_mb_2026_polygon AS bdy ON tab.mb_26pid = bdy.mb_26pid
-  INNER JOIN raw_admin_bdys.aus_mb_category_class_aut AS aut ON tab.mb_cat_cd = aut.code
   INNER JOIN raw_admin_bdys.aus_state AS ste ON tab.state_pid = ste.state_pid;
 
 ALTER TABLE admin_bdys.abs_2026_mb ADD CONSTRAINT abs_2026_mb_pk PRIMARY KEY (gid);
@@ -40,23 +43,27 @@ ALTER TABLE admin_bdys.abs_2026_mb CLUSTER ON abs_2026_mb_geom_idx;
 
 DROP TABLE IF EXISTS admin_bdys.abs_2026_sa1 CASCADE;
 CREATE TABLE admin_bdys.abs_2026_sa1 AS
-SELECT bdy.gid,
-       tab.sa1_26main,
-       tab.sa1_26_7cd,
-       tab.sa2_26main,
-       tab.sa2_26_5cd,
-       tab.sa2_26name::text,
-       tab.sa3_26code,
-       tab.sa3_26name::text,
-       tab.sa4_26code,
-       tab.sa4_26name::text,
-       tab.gcc_26code::text,
-       tab.gcc_26name::text,
+SELECT tab.gid,
+       sa1_26ppid,
+       tab.dt_create,
+       sa1_26pid,
+       sa1_26code,
+       chng_flag,
+       chng_label::text,
+       sa2_26pid,
+       sa2_26code,
+       sa2_26name::text,
+       sa3_26code,
+       sa3_26name::text,
+       sa4_26code,
+       sa4_26name::text,
+       gcc_26code,
+       gcc_26name::text,
        ste.st_abbrev::text AS state,
-       tab.area_sqm,
-       bdy.geom
+       area_sqm,
+       loci26_uri::text,
+       geom
   FROM raw_admin_bdys.aus_sa1_2026 AS tab
-  INNER JOIN raw_admin_bdys.aus_sa1_2026_polygon AS bdy ON tab.sa1_26pid = bdy.sa1_26pid
   INNER JOIN raw_admin_bdys.aus_state AS ste ON tab.state_pid = ste.state_pid;
 
 ALTER TABLE admin_bdys.abs_2026_sa1 ADD CONSTRAINT abs_2026_sa1_pk PRIMARY KEY (gid);
@@ -70,21 +77,26 @@ ALTER TABLE admin_bdys.abs_2026_sa1 CLUSTER ON abs_2026_sa1_geom_idx;
 
 DROP TABLE IF EXISTS admin_bdys.abs_2026_sa2 CASCADE;
 CREATE TABLE admin_bdys.abs_2026_sa2 AS
-SELECT bdy.gid,
-       tab.sa2_26main,
-       tab.sa2_26_5cd,
-       tab.sa2_26name::text,
-       tab.sa3_26code,
-       tab.sa3_26name::text,
-       tab.sa4_26code,
-       tab.sa4_26name::text,
-       tab.gcc_26code::text,
-       tab.gcc_26name::text,
+SELECT tab.gid,
+       sa2_26ppid,
+       tab.dt_create,
+       sa2_26pid,
+       sa2_26code,
+       sa2_26name::text,
+       chng_flag,
+       chng_label::text,
+       sa3_26pid,
+       sa3_26code,
+       sa3_26name::text,
+       sa4_26code,
+       sa4_26name::text,
+       gcc_26code,
+       gcc_26name::text,
        ste.st_abbrev::text AS state,
-       tab.area_sqm,
-       bdy.geom
+       area_sqm,
+       loci26_uri::text,
+       geom
   FROM raw_admin_bdys.aus_sa2_2026 AS tab
-  INNER JOIN raw_admin_bdys.aus_sa2_2026_polygon AS bdy ON tab.sa2_26pid = bdy.sa2_26pid
   INNER JOIN raw_admin_bdys.aus_state AS ste ON tab.state_pid = ste.state_pid;
 
 ALTER TABLE admin_bdys.abs_2026_sa2 ADD CONSTRAINT abs_2026_sa2_pk PRIMARY KEY (gid);
@@ -98,18 +110,24 @@ ALTER TABLE admin_bdys.abs_2026_sa2 CLUSTER ON abs_2026_sa2_geom_idx;
 
 DROP TABLE IF EXISTS admin_bdys.abs_2026_sa3 CASCADE;
 CREATE TABLE admin_bdys.abs_2026_sa3 AS
-SELECT bdy.gid,
-       tab.sa3_26code,
-       tab.sa3_26name::text,
-       tab.sa4_26code,
-       tab.sa4_26name::text,
-       tab.gcc_26code::text,
-       tab.gcc_26name::text,
+SELECT tab.gid,
+       sa3_26ppid,
+       tab.dt_create,
+       sa3_26pid,
+       sa3_26code,
+       sa3_26name::text,
+       chng_flag,
+       chng_label::text,
+       sa4_26pid,
+       sa4_26code,
+       sa4_26name::text,
+       gcc_26code,
+       gcc_26name::text,
        ste.st_abbrev::text AS state,
-       tab.area_sqm,
-       bdy.geom
+       area_sqm,
+       loci26_uri::text,
+       geom
   FROM raw_admin_bdys.aus_sa3_2026 AS tab
-  INNER JOIN raw_admin_bdys.aus_sa3_2026_polygon AS bdy ON tab.sa3_26pid = bdy.sa3_26pid
   INNER JOIN raw_admin_bdys.aus_state AS ste ON tab.state_pid = ste.state_pid;
 
 ALTER TABLE admin_bdys.abs_2026_sa3 ADD CONSTRAINT abs_2026_sa3_pk PRIMARY KEY (gid);
@@ -123,16 +141,22 @@ ALTER TABLE admin_bdys.abs_2026_sa3 CLUSTER ON abs_2026_sa3_geom_idx;
 
 DROP TABLE IF EXISTS admin_bdys.abs_2026_sa4 CASCADE;
 CREATE TABLE admin_bdys.abs_2026_sa4 AS
-SELECT bdy.gid,
-       tab.sa4_26code,
-       tab.sa4_26name::text,
-       tab.gcc_26code::text,
-       tab.gcc_26name::text,
+SELECT tab.gid,
+       sa4_26ppid,
+       tab.dt_create,
+       sa4_26pid,
+       sa4_26code,
+       sa4_26name::text,
+       chng_flag,
+       chng_label::text,
+       gcc_26pid,
+       gcc_26code,
+       gcc_26name::text,
        ste.st_abbrev::text AS state,
-       tab.area_sqm,
-       bdy.geom
+       area_sqm,
+       loci26_uri::text,
+       geom
   FROM raw_admin_bdys.aus_sa4_2026 AS tab
-  INNER JOIN raw_admin_bdys.aus_sa4_2026_polygon AS bdy ON tab.sa4_26pid = bdy.sa4_26pid
   INNER JOIN raw_admin_bdys.aus_state AS ste ON tab.state_pid = ste.state_pid;
 
 ALTER TABLE admin_bdys.abs_2026_sa4 ADD CONSTRAINT abs_2026_sa4_pk PRIMARY KEY (gid);
@@ -146,14 +170,19 @@ ALTER TABLE admin_bdys.abs_2026_sa4 CLUSTER ON abs_2026_sa4_geom_idx;
 
 DROP TABLE IF EXISTS admin_bdys.abs_2026_gccsa CASCADE;
 CREATE TABLE admin_bdys.abs_2026_gccsa AS
-SELECT bdy.gid,
-       tab.gcc_26code::text,
-       tab.gcc_26name::text,
+SELECT tab.gid,
+       gcc_26ppid,
+       tab.dt_create,
+       gcc_26pid,
+       gcc_26code,
+       gcc_26name::text,
+       chng_flag,
+       chng_label::text,
        ste.st_abbrev::text AS state,
-       tab.area_sqm,
-       bdy.geom
+       area_sqm,
+       loci26_uri::text,
+       geom
   FROM raw_admin_bdys.aus_gccsa_2026 AS tab
-  INNER JOIN raw_admin_bdys.aus_gccsa_2026_polygon AS bdy ON tab.gcc_26pid = bdy.gcc_26pid
   INNER JOIN raw_admin_bdys.aus_state AS ste ON tab.state_pid = ste.state_pid;
 
 ALTER TABLE admin_bdys.abs_2026_gccsa ADD CONSTRAINT abs_2026_gccsa_pk PRIMARY KEY (gid);

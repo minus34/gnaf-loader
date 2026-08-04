@@ -236,7 +236,7 @@ def import_table(sql_engine, sql):
     # 19  locality_postcode    object
     # 20  confidence           int64
     # 21  legal_parcel_id      object
-    # 22  mb_2026_code         int64
+    # 22  mb_code_2026         int64
     # 23  mb_2021_code         int64
     # 24  latitude             float64
     # 25  longitude            float64

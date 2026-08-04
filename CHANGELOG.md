@@ -1,5 +1,10 @@
 # Change Log
 
+## August 2026 Release
+
+- ABS Census 2026 boundaries have been ADDED (Mesh Block, GCCSA, SA1, SA2, SA3, SA4); as well as Mesh Block 2026 boundary tags for GNAF addresses
+- Subsequently, ABS Census 2016 boundaries have been REMOVED; as well as Mesh Block 2016 boundary tags for GNAF addresses. These can be extracted from earlier versions of GNAF & Admin Boundaries
+
 ## May 2026 Release
 
 - The Postgres dump files now only support Postgres 16+ as Postgres 14 will reach end-of-support in November 2026 and Postgres 15 in Nov 2027

@@ -127,13 +127,14 @@ ALTER TABLE address_mesh_block_2021 OWNER TO postgres;
 -- Name: address_mesh_block_2026; Type: TABLE; Schema: public; Owner: postgres; Tablespace:
 --
 
+-- Note: column order change from 2016 table
 CREATE TABLE address_mesh_block_2026 (
     address_mesh_block_2026_pid character varying(15) NOT NULL,
     date_created date NOT NULL,
     date_retired date,
     address_detail_pid character varying(15) NOT NULL,
-    mb_match_code character varying(15) NOT NULL,
-    mb_2026_pid character varying(15) NOT NULL
+    mb_pid_2026 character varying(15) NOT NULL,
+    mb_match_code character varying(15) NOT NULL
 );
 
 
@@ -386,10 +387,10 @@ ALTER TABLE mb_2021 OWNER TO postgres;
 --
 
 CREATE TABLE mb_2026 (
-    mb_2026_pid character varying(15) NOT NULL,
+    mb_pid_2026 character varying(15) NOT NULL,
     date_created date NOT NULL,
     date_retired date,
-    mb_2026_code character varying(15) NOT NULL
+    mb_code_2026 character varying(11) NOT NULL
 );
 
 
