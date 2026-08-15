@@ -4,6 +4,7 @@
 
 - ABS Census 2026 boundaries have been ADDED (Mesh Block, GCCSA, SA1, SA2, SA3, SA4); as well as Mesh Block 2026 boundary tags for GNAF addresses
 - Subsequently, ABS Census 2016 boundaries have been REMOVED; as well as Mesh Block 2016 boundary tags for GNAF addresses. These can be extracted from earlier versions of GNAF & Admin Boundaries
+- Code has been cleaned up using Pylance and Ruff recommendations
 
 ## May 2026 Release
 

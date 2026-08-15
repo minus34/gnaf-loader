@@ -1,17 +1,21 @@
 
 # import io
-import multiprocessing
+import logging
 import math
+import multiprocessing
 import os
+import subprocess
+
 # import platform
 import psycopg
+
 import settings
-import subprocess
+
 # import sys
 
 
 # takes a list of sql queries or command lines and runs them using multiprocessing
-def multiprocess_list(mp_type, work_list, logger):
+def multiprocess_list(mp_type: str, work_list: list[str], logger: logging.Logger) -> None:
     pool = multiprocessing.Pool(processes=settings.max_processes)
 
     num_jobs = len(work_list)
@@ -35,14 +39,14 @@ def multiprocess_list(mp_type, work_list, logger):
             logger.info(result)
 
 
-def run_sql_multiprocessing(the_sql):
+def run_sql_multiprocessing(the_sql: str):
     pg_conn = psycopg.connect(settings.pg_connect_string)
     pg_conn.autocommit = True
     pg_cur = pg_conn.cursor()
 
     # set raw gnaf database schema (it's needed for the primary and foreign key creation)
     if settings.raw_gnaf_schema != "public":
-        pg_cur.execute(f"SET search_path = {settings.raw_gnaf_schema}, public, pg_catalog")
+        pg_cur.execute("SET search_path = %s, public, pg_catalog", (settings.raw_gnaf_schema,))
 
     try:
         pg_cur.execute(the_sql)
@@ -56,7 +60,7 @@ def run_sql_multiprocessing(the_sql):
     return result
 
 
-def run_command_line(cmd):
+def run_command_line(cmd: str) -> str:
     # run the command line without any output (it'll still tell you if it fails miserably)
     try:
         f_null = open(os.devnull, "w")
@@ -71,21 +75,23 @@ def run_command_line(cmd):
     return result
 
 
-def open_sql_file(file_name):
-    sql = open(os.path.join(settings.sql_dir, file_name), "r").read()
+def open_sql_file(file_name: str) -> str:
+    with open(os.path.join(settings.sql_dir, file_name), "r") as f:
+        sql = f.read()
+        
     return prep_sql(sql)
 
 
 # change schema names in an array of SQL script if schemas not the default
-def prep_sql_list(sql_list):
-    output_list = []
+def prep_sql_list(sql_list: list[str]) -> list[str]:
+    output_list = list[str]()
     for sql in sql_list:
         output_list.append(prep_sql(sql))
     return output_list
 
 
 # set schema names in the SQL script
-def prep_sql(sql):
+def prep_sql(sql: str) -> str:
     if settings.raw_gnaf_schema is not None:
         sql = sql.replace(" raw_gnaf.", f" {settings.raw_gnaf_schema}.")
     if settings.raw_admin_bdys_schema is not None:
@@ -102,7 +108,7 @@ def prep_sql(sql):
     return sql
 
 
-def split_sql_into_list(pg_cur, the_sql, table_schema, table_name, table_alias, table_gid, logger):
+def split_sql_into_list(pg_cur: psycopg.Cursor, the_sql: str, table_schema: str, table_name: str, table_alias: str, table_gid: str, logger: logging.Logger) -> list[str]:
     # get min max gid values from the table to split
     min_max_sql = f"SELECT MIN({table_gid}) AS min, MAX({table_gid}) AS max FROM {table_schema}.{table_name}"
 
@@ -161,7 +167,7 @@ def split_sql_into_list(pg_cur, the_sql, table_schema, table_name, table_alias, 
         return None
 
 
-def multiprocess_shapefile_load(work_list, logger):
+def multiprocess_shapefile_load(work_list: list, logger: logging.Logger):
     pool = multiprocessing.Pool(processes=settings.max_processes)
 
     num_jobs = len(work_list)
