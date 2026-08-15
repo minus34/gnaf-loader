@@ -11,7 +11,7 @@ from psycopg import sql
 
 
 # get latest Geoscape release version as YYYYMM, as of the date provided, as well as the prev. version 3 months prior
-def get_geoscape_version(date):
+def get_geoscape_version(date: datetime) -> tuple[str, str]:
     month = date.month
     year = date.year
 
@@ -88,7 +88,7 @@ parser.add_argument(
          "otherwise \"password\".")
 
 # schema names for the raw gnaf, flattened reference and admin boundary tables
-geoscape_version, previous_geoscape_version = get_geoscape_version(datetime.today())
+geoscape_version, previous_geoscape_version = get_geoscape_version(datetime.today())  # noqa: DTZ002
 parser.add_argument(
     "--geoscape-version", default=geoscape_version,
     help="Geoscape release version number as YYYYMM. Defaults to latest release year and month \""
@@ -163,7 +163,7 @@ srid = args.srid
 
 if srid not in (4283, 7844):
     print("Invalid coordinate system (SRID) - EXITING!\nValid values are 4283 (GDA94) and 7844 (GDA2020)")
-    exit()
+    sys.exit()
 
 raw_gnaf_schema = sql.Identifier(args.raw_gnaf_schema or "raw_gnaf_" + geoscape_version)
 
@@ -201,7 +201,7 @@ pg_connect_string = f"dbname='{pg_db}' host='{pg_host}' port='{pg_port}' user='{
 sql_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), "postgres-scripts")
 
 # set the list of admin bdys to create analysis tables for and to boundary tag with
-admin_bdy_list = list()
+admin_bdy_list = list[list[str]]()
 admin_bdy_list.append(["state_bdys", "state_pid"])
 admin_bdy_list.append(["locality_bdys", "locality_pid"])
 
@@ -226,11 +226,11 @@ temp_pg_cur = temp_pg_conn.cursor()
 
 # get Postgres version
 temp_pg_cur.execute("SELECT version()")
-pg_version = temp_pg_cur.fetchone()[0].replace("PostgreSQL ", "").split(",")[0]
+pg_version = str(temp_pg_cur.fetchone()[0]).replace("PostgreSQL ", "").split(",")[0] # type: ignore
 
 # get PostGIS version
 temp_pg_cur.execute("SELECT PostGIS_full_version()")
-lib_strings = temp_pg_cur.fetchone()[0].replace("\"", "").split(" ")
+lib_strings = str(temp_pg_cur.fetchone()[0]).replace("\"", "").split(" ") # type: ignore
 
 temp_pg_cur.close()
 temp_pg_cur = None
@@ -243,6 +243,9 @@ geos_version = "UNKNOWN"
 geos_version_num = 0.0
 
 st_subdivide_supported = False
+
+postgis_version_num = list[int]()
+geos_version_num = list[int]()
 
 for lib_string in lib_strings:
     if lib_string[:8] == "POSTGIS=":
