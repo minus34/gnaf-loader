@@ -49,9 +49,9 @@ def run_sql_multiprocessing(the_sql: str):
         pg_cur.execute("SET search_path = %s, public, pg_catalog", (settings.raw_gnaf_schema,))
 
     try:
-        pg_cur.execute(the_sql)
+        pg_cur.execute(the_sql) # type: ignore
         result = "SUCCESS"
-    except Exception as ex:
+    except psycopg.Error as ex:
         result = f"SQL FAILED! : {the_sql} : {ex}"
 
     pg_cur.close()
@@ -62,15 +62,12 @@ def run_sql_multiprocessing(the_sql: str):
 
 def run_command_line(cmd: str) -> str:
     # run the command line without any output (it'll still tell you if it fails miserably)
-    try:
-        f_null = open(os.devnull, "w")
+    with open(os.devnull, "w") as f_null:
         returncode = subprocess.call(cmd, shell=True, stdout=f_null, stderr=subprocess.STDOUT)
         if returncode != 0:
             result = f"COMMAND FAILED! : {cmd} : exit code {returncode}"
         else:
             result = "SUCCESS"
-    except Exception as ex:
-        result = f"COMMAND FAILED! : {cmd} : {ex}"
 
     return result
 
@@ -92,13 +89,13 @@ def prep_sql_list(sql_list: list[str]) -> list[str]:
 
 # set schema names in the SQL script
 def prep_sql(sql: str) -> str:
-    if settings.raw_gnaf_schema is not None:
+    if settings.raw_gnaf_schema:
         sql = sql.replace(" raw_gnaf.", f" {settings.raw_gnaf_schema}.")
-    if settings.raw_admin_bdys_schema is not None:
+    if settings.raw_admin_bdys_schema:
         sql = sql.replace(" raw_admin_bdys.", f" {settings.raw_admin_bdys_schema}.")
-    if settings.gnaf_schema is not None:
+    if settings.gnaf_schema:
         sql = sql.replace(" gnaf.", f" {settings.gnaf_schema}.")
-    if settings.admin_bdys_schema is not None:
+    if settings.admin_bdys_schema:
         sql = sql.replace(" admin_bdys.", f" {settings.admin_bdys_schema}.")
 
     if settings.pg_user != "postgres":
@@ -112,23 +109,23 @@ def split_sql_into_list(pg_cur: psycopg.Cursor, the_sql: str, table_schema: str,
     # get min max gid values from the table to split
     min_max_sql = f"SELECT MIN({table_gid}) AS min, MAX({table_gid}) AS max FROM {table_schema}.{table_name}"
 
-    pg_cur.execute(min_max_sql)
+    pg_cur.execute(min_max_sql) # type: ignore
 
     try:
         result = pg_cur.fetchone()
 
-        min_pkey = int(result[0])
-        max_pkey = int(result[1])
+        min_pkey = int(result[0]) # type: ignore
+        max_pkey = int(result[1]) # type: ignore
         diff = max_pkey - min_pkey
 
         # Number of records in each query
-        rows_per_request = int(math.floor(float(diff) / float(settings.max_processes))) + 1
+        rows_per_request = math.floor(float(diff) / float(settings.max_processes)) + 1
 
         # If less records than processes or rows per request,
         # reduce both to allow for a minimum of 15 records each process
         if float(diff) / float(settings.max_processes) < 10.0:
             rows_per_request = 10
-            processes = int(math.floor(float(diff) / 10.0)) + 1
+            processes = math.floor(float(diff) / 10.0) + 1
             logger.info(f"\t\t- running {processes} processes (adjusted due to low row count in table to split)")
         else:
             processes = settings.max_processes

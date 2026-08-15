@@ -1,12 +1,13 @@
 # takes the command line parameters and creates a dictionary of setting_dict
 
-import os
 import argparse
+import os
 import platform
-import psycopg
 import sys
-
 from datetime import datetime
+
+import psycopg
+from psycopg import sql
 
 
 # get latest Geoscape release version as YYYYMM, as of the date provided, as well as the prev. version 3 months prior
@@ -164,17 +165,17 @@ if srid not in (4283, 7844):
     print("Invalid coordinate system (SRID) - EXITING!\nValid values are 4283 (GDA94) and 7844 (GDA2020)")
     exit()
 
-raw_gnaf_schema = args.raw_gnaf_schema or "raw_gnaf_" + geoscape_version
+raw_gnaf_schema = sql.Identifier(args.raw_gnaf_schema or "raw_gnaf_" + geoscape_version)
 
-raw_admin_bdys_schema = args.raw_admin_schema or "raw_admin_bdys_" + geoscape_version
+raw_admin_bdys_schema = sql.Identifier(args.raw_admin_schema or "raw_admin_bdys_" + geoscape_version)
 
-gnaf_schema = args.gnaf_schema or "gnaf_" + geoscape_version
+gnaf_schema = sql.Identifier(args.gnaf_schema or "gnaf_" + geoscape_version)
 
-admin_bdys_schema = args.admin_schema or "admin_bdys_" + geoscape_version
+admin_bdys_schema = sql.Identifier(args.admin_schema or "admin_bdys_" + geoscape_version)
 
-previous_gnaf_schema = args.previous_gnaf_schema or "gnaf_" + previous_geoscape_version
+previous_gnaf_schema = sql.Identifier(args.previous_gnaf_schema or "gnaf_" + previous_geoscape_version)
 
-previous_admin_bdys_schema = args.previous_admin_schema or "admin_bdys_" + previous_geoscape_version
+previous_admin_bdys_schema = sql.Identifier(args.previous_admin_schema or "admin_bdys_" + previous_geoscape_version)
 
 gnaf_network_directory = args.gnaf_tables_path.replace("\\", "/")
 
