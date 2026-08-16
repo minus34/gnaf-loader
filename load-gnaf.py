@@ -610,7 +610,7 @@ def create_reference_tables(pg_cur):
     start_time = datetime.now()
     sql = geoscape.open_sql_file("03-07-reference-populate-addresses-1.sql").format(settings.srid)
     sql_list = geoscape.split_sql_into_list(pg_cur, sql, settings.gnaf_schema, "streets", "str", "gid", logger)
-    if sql_list is not None:
+    if sql_list
         geoscape.multiprocess_list("sql", sql_list, logger)
     pg_cur.execute(geoscape.prep_sql("ANALYZE gnaf.temp_addresses;"))
     logger.info(f"\t- Step  7 of 14 : addresses populated : {datetime.now() - start_time}")
@@ -640,7 +640,7 @@ def create_reference_tables(pg_cur):
     start_time = datetime.now()
     sql = geoscape.open_sql_file("03-12-reference-populate-addresses-2.sql")
     sql_list = geoscape.split_sql_into_list(pg_cur, sql, settings.gnaf_schema, "localities", "loc", "gid", logger)
-    if sql_list is not None:
+    if sql_list:
         geoscape.multiprocess_list("sql", sql_list, logger)
 
     # turf the temp address table
@@ -729,7 +729,7 @@ def boundary_tag_gnaf(pg_cur):
         short_sql_list = geoscape.split_sql_into_list(pg_cur, sql, settings.admin_bdys_schema, table[0],
                                                       "bdys", "gid", logger)
 
-        if short_sql_list is not None:
+        if short_sql_list:
             sql_list.extend(short_sql_list)
 
     # logger.info("\n".join(sql_list))
@@ -791,7 +791,7 @@ def boundary_tag_gnaf(pg_cur):
                                             "pnts", "gid", logger)
     # logger.info("\n".join(sql_list)
 
-    if sql_list is not None:
+    if sql_list:
         geoscape.multiprocess_list("sql", sql_list, logger)
 
     # drop temp tables

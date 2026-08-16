@@ -131,7 +131,7 @@ def split_sql_into_list(pg_cur: psycopg.Cursor, the_sql: str, table_schema: str,
             processes = settings.max_processes
 
         # create list of sql statements to run with multiprocessing
-        sql_list = []
+        sql_list = list[str]()
         start_pkey = min_pkey - 1
 
         for i in range(0, processes):
@@ -159,12 +159,12 @@ def split_sql_into_list(pg_cur: psycopg.Cursor, the_sql: str, table_schema: str,
         # logger.info("\n".join(sql_list))
 
         return sql_list
-    except Exception as ex:
+    except Exception as ex:  # noqa: BLE001
         logger.fatal(f"Looks like the table in this query is empty: {min_max_sql}\n{ex}")
-        return None
+        return list[str]()
 
 
-def multiprocess_shapefile_load(work_list: list, logger: logging.Logger):
+def multiprocess_shapefile_load(work_list: list[dict[str, str]], logger: logging.Logger):
     pool = multiprocessing.Pool(processes=settings.max_processes)
 
     num_jobs = len(work_list)
@@ -185,12 +185,12 @@ def multiprocess_shapefile_load(work_list: list, logger: logging.Logger):
             logger.info(result)
 
 
-def intermediate_shapefile_load_step(work_dict):
+def intermediate_shapefile_load_step(work_dict: dict[str, str]) -> str:
     file_path = work_dict["file_path"]
     pg_table = work_dict["pg_table"]
     pg_schema = work_dict["pg_schema"]
-    delete_table = work_dict["delete_table"]
-    spatial = work_dict["spatial"]
+    delete_table = bool(work_dict["delete_table"])
+    spatial = bool(work_dict["spatial"])
 
     result = import_shapefile_to_postgres(file_path, pg_table, pg_schema, delete_table, spatial)
 
@@ -199,7 +199,7 @@ def intermediate_shapefile_load_step(work_dict):
 
 # imports a Shapefile into Postgres in 2 steps: SHP > SQL; SQL > Postgres
 # overcomes issues trying to use psql with PGPASSWORD set at runtime
-def import_shapefile_to_postgres(file_path, pg_table, pg_schema, delete_table, spatial):
+def import_shapefile_to_postgres(file_path: str, pg_table: str, pg_schema: str, delete_table: bool, spatial: bool) -> str:
     # delete target table or append to it?
     if delete_table:
         # add delete and spatial index flag
