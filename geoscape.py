@@ -8,6 +8,7 @@ import subprocess
 
 # import platform
 import psycopg
+from psycopg import sql
 
 import settings
 
@@ -74,16 +75,16 @@ def run_command_line(cmd: str) -> str:
 
 def open_sql_file(file_name: str) -> str:
     with open(os.path.join(settings.sql_dir, file_name), "r") as f:
-        sql = f.read()
+        sql_string = f.read()
         
-    return prep_sql(sql)
+    return prep_sql(sql_string)
 
 
 # change schema names in an array of SQL script if schemas not the default
 def prep_sql_list(sql_list: list[str]) -> list[str]:
     output_list = list[str]()
-    for sql in sql_list:
-        output_list.append(prep_sql(sql))
+    for sql_string in sql_list:
+        output_list.append(prep_sql(sql_string))
     return output_list
 
 
@@ -105,11 +106,10 @@ def prep_sql(sql: str) -> str:
     return sql
 
 
-def split_sql_into_list(pg_cur: psycopg.Cursor, the_sql: str, table_schema: str, table_name: str, table_alias: str, table_gid: str, logger: logging.Logger) -> list[str]:
+def split_sql_into_list(pg_cur: psycopg.Cursor, the_sql: str, table_schema: sql.Identifier, table_name: str, table_alias: str, table_gid: str, logger: logging.Logger) -> list[str]:
     # get min max gid values from the table to split
-    min_max_sql = f"SELECT MIN({table_gid}) AS min, MAX({table_gid}) AS max FROM {table_schema}.{table_name}"
-
-    pg_cur.execute(min_max_sql) # type: ignore
+    min_max_sql = "SELECT MIN(%s) AS min, MAX(%s) AS max FROM %s.%s"
+    pg_cur.execute(min_max_sql, (table_gid, table_gid, table_schema, table_name))
 
     try:
         result = pg_cur.fetchone()
