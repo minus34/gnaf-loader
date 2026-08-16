@@ -190,7 +190,7 @@ log_path = args.log_path
 
 # create postgres connect string
 pg_host = args.pghost or os.getenv("PGHOST", "localhost")
-pg_port = args.pgport or os.getenv("PGPORT", 5432)
+pg_port = int(args.pgport or os.getenv("PGPORT", '5432'))
 pg_db = args.pgdb or os.getenv("PGDATABASE", "geoscape")
 pg_user = args.pguser or os.getenv("PGUSER", "postgres")
 pg_password = args.pgpassword or os.getenv("PGPASSWORD", "password")

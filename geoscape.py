@@ -134,7 +134,7 @@ def split_sql_into_list(pg_cur: psycopg.Cursor, the_sql: str, table_schema: str,
         sql_list = list[str]()
         start_pkey = min_pkey - 1
 
-        for i in range(0, processes):
+        for _ in range(processes):
             end_pkey = start_pkey + rows_per_request
 
             where_clause = \
@@ -222,7 +222,8 @@ def import_shapefile_to_postgres(file_path: str, pg_table: str, pg_schema: str, 
     try:
         process = subprocess.Popen(shp2pgsql_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
         sqlobj, err = process.communicate()
-    except Exception as ex:
+    except Exception as ex:  # noqa: BLE001
+        process.kill() # type: ignore
         return f"Importing {file_path} - Couldn't convert Shapefile to SQL : {ex}"
 
     # check shp2pgsql exit code — a non-zero return means the conversion failed
@@ -254,13 +255,13 @@ def import_shapefile_to_postgres(file_path: str, pg_table: str, pg_schema: str, 
     pg_cur = pg_conn.cursor()
 
     try:
-        pg_cur.execute(sql)
-    except Exception as ex:
+        pg_cur.execute(sql) # type: ignore
+    except psycopg.Error as ex:
         # if import fails for some reason - output sql to file for debugging
         file_name = os.path.basename(file_path)
 
-        target = open(os.path.join(os.path.dirname(os.path.realpath(__file__)), f"error_debug_{file_name}.sql"), "w")
-        target.write(sql)
+        with open(os.path.join(os.path.dirname(os.path.realpath(__file__)), f"error_debug_{file_name}.sql"), "w") as target:
+            target.write(sql)
 
         pg_cur.close()
         pg_conn.close()
@@ -272,8 +273,8 @@ def import_shapefile_to_postgres(file_path: str, pg_table: str, pg_schema: str, 
         sql = f"ALTER TABLE {pg_schema}.{pg_table} CLUSTER ON {pg_table}_geom_idx"
 
         try:
-            pg_cur.execute(sql)
-        except Exception as ex:
+            pg_cur.execute(sql) # type: ignore
+        except psycopg.Error as ex:
             pg_cur.close()
             pg_conn.close()
             return f"\tImporting {pg_table} - Couldn't cluster on spatial index : {ex}"

@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 # *********************************************************************************************************************
 # load-gnaf.py
 # *********************************************************************************************************************
@@ -29,7 +27,7 @@
 
 import os
 import psycopg
-import logging.config
+import logging
 import geoscape
 import settings  # gets global vars and runtime arguments
 
