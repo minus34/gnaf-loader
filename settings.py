@@ -166,12 +166,12 @@ if srid not in (4283, 7844):
     sys.exit()
 
 # use SQL identifer here to avoid SQL injection
-raw_gnaf_schema = sql.Identifier(args.raw_gnaf_schema or "raw_gnaf_" + geoscape_version)
-raw_admin_bdys_schema = sql.Identifier(args.raw_admin_schema or "raw_admin_bdys_" + geoscape_version)
-gnaf_schema = sql.Identifier(args.gnaf_schema or "gnaf_" + geoscape_version)
-admin_bdys_schema = sql.Identifier(args.admin_schema or "admin_bdys_" + geoscape_version)
-previous_gnaf_schema = sql.Identifier(args.previous_gnaf_schema or "gnaf_" + previous_geoscape_version)
-previous_admin_bdys_schema = sql.Identifier(args.previous_admin_schema or "admin_bdys_" + previous_geoscape_version)
+raw_gnaf_schema = sql.Identifier(args.raw_gnaf_schema or f"raw_gnaf_{geoscape_version}")
+raw_admin_bdys_schema = sql.Identifier(args.raw_admin_schema or f"raw_admin_bdys_{geoscape_version}")
+gnaf_schema = sql.Identifier(args.gnaf_schema or f"gnaf_{geoscape_version}")
+admin_bdys_schema = sql.Identifier(args.admin_schema or f"admin_bdys_{geoscape_version}")
+previous_gnaf_schema = sql.Identifier(args.previous_gnaf_schema or f"gnaf_{previous_geoscape_version}")
+previous_admin_bdys_schema = sql.Identifier(args.previous_admin_schema or f"admin_bdys_{previous_geoscape_version}")
 
 gnaf_network_directory = args.gnaf_tables_path.replace("\\", "/")
 
@@ -191,7 +191,9 @@ pg_db = args.pgdb or os.getenv("PGDATABASE", "geoscape")
 pg_user = sql.Identifier(args.pguser or os.getenv("PGUSER", "postgres"))
 pg_password = args.pgpassword or os.getenv("PGPASSWORD", "password")
 
-pg_connect_string = f"dbname='{pg_db}' host='{pg_host}' port='{pg_port}' user='{pg_user}' password='{pg_password}'"
+pg_connect_string = f"dbname='{pg_db}' host='{pg_host}' port='{pg_port}' user='{pg_user!s}' password='{pg_password}'"
+
+print(f"Postgres connection string: {pg_connect_string}")
 
 # set postgres script directory
 sql_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), "postgres-scripts")
