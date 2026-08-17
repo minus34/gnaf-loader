@@ -879,9 +879,9 @@ def create_qa_tables(pg_cur: psycopg.Cursor):
                       ot integer, qld integer, sa integer, tas integer, vic integer, wa integer) 
                   WITH (OIDS=FALSE);
                   ALTER TABLE {} OWNER TO {}""").format(
-            sql.Identifier(f"{schema}.qa"),
-            sql.Identifier(f"{schema}.qa"),
-            sql.Identifier(f"{schema}.qa"),
+            sql.Identifier(schema, "qa"),
+            sql.Identifier(schema, "qa"),
+            sql.Identifier(schema, "qa"),
             sql.Identifier(settings.pg_user),
         )
         pg_cur.execute(sql_string)
@@ -916,7 +916,7 @@ def create_qa_tables(pg_cur: psycopg.Cursor):
                           CASE WHEN state = 'WA' THEN 1 ELSE 0 END AS WA 
                           FROM {}
                       ) AS sqt""").format(
-                sql.Identifier(f"{schema}.qa"),
+                sql.Identifier(schema, "qa"),
                 sql.Literal(table_name),
                 qualified_table(schema, table_name),
             )
@@ -926,7 +926,7 @@ def create_qa_tables(pg_cur: psycopg.Cursor):
             except psycopg.Error:  # triggers when there is no state field in the table
                 # change the query for an Australia count only
                 sql_string = sql.SQL("INSERT INTO {} (table_name, aus) SELECT {}, Count(*) FROM {}").format(
-                    sql.Identifier(f"{schema}.qa"),
+                    sql.Identifier(schema, "qa"),
                     sql.Literal(table_name),
                     qualified_table(schema, table_name),
                 )
@@ -937,7 +937,7 @@ def create_qa_tables(pg_cur: psycopg.Cursor):
                     # if no state field - change the query for an Australia count only
                     logger.warning(f"Couldn't get row count for {schema}.{table_name} : {ex}")
 
-        pg_cur.execute(sql.SQL("ANALYZE {}").format(sql.Identifier(f"{schema}.qa")))
+        pg_cur.execute(sql.SQL("ANALYZE {}").format(sql.Identifier(schema, "qa")))
 
         # STEP 2 - compare row counts with previous Geoscape release
 
@@ -961,9 +961,9 @@ def create_qa_tables(pg_cur: psycopg.Cursor):
                           old_count integer
                      ) WITH (OIDS=FALSE);
                      ALTER TABLE {} OWNER TO {}""").format(
-                sql.Identifier(f"{schema}.qa_comparison"),
-                sql.Identifier(f"{schema}.qa_comparison"),
-                sql.Identifier(f"{schema}.qa_comparison"),
+                sql.Identifier(schema, "qa_comparison"),
+                sql.Identifier(schema, "qa_comparison"),
+                sql.Identifier(schema, "qa_comparison"),
                 sql.Identifier(settings.pg_user),
             )
             pg_cur.execute(sql_string)
@@ -976,16 +976,16 @@ def create_qa_tables(pg_cur: psycopg.Cursor):
                              old.aus as old_count
                       FROM {} as new
                       INNER JOIN {} as old ON new.table_name = old.table_name""").format(
-                sql.Identifier(f"{schema}.qa_comparison"),
-                sql.Identifier(f"{schema}.qa"),
-                sql.Identifier(f"{previous_schema}.qa"),
+                sql.Identifier(schema, "qa_comparison"),
+                sql.Identifier(schema, "qa"),
+                sql.Identifier(previous_schema, "qa"),
             )
             pg_cur.execute(sql_string)
 
-            pg_cur.execute(sql.SQL("ANALYZE {}").format(sql.Identifier(f"{schema}.qa_comparison")))
+            pg_cur.execute(sql.SQL("ANALYZE {}").format(sql.Identifier(schema, "qa_comparison")))
 
             # pretty print row counts to screen
-            pg_cur.execute(sql.SQL("SELECT * FROM {} ORDER BY table_name").format(sql.Identifier(f"{schema}.qa_comparison")))
+            pg_cur.execute(sql.SQL("SELECT * FROM {} ORDER BY table_name").format(sql.Identifier(schema, "qa_comparison")))
             rows = pg_cur.fetchall()
 
             logger.info("\t\t------------------------------------------------------------------------")
