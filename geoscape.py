@@ -8,6 +8,7 @@ import subprocess
 
 # import platform
 import psycopg
+from psycopg import sql
 
 import settings
 
@@ -46,7 +47,7 @@ def run_sql_multiprocessing(the_sql: str):
 
     # set raw gnaf database schema (it's needed for the primary and foreign key creation)
     if settings.raw_gnaf_schema != "public":
-        pg_cur.execute("SET search_path = %s, public, pg_catalog", (settings.raw_gnaf_schema,))
+        pg_cur.execute(sql.SQL("SET search_path = {}, public, pg_catalog").format(sql.Identifier(settings.raw_gnaf_schema)))
 
     try:
         pg_cur.execute(the_sql) # type: ignore
