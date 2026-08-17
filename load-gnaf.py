@@ -31,6 +31,7 @@ from datetime import datetime
 from typing import Any
 
 import psycopg
+from psycopg import sql
 
 import geoscape
 import settings  # gets global vars and runtime arguments
@@ -79,13 +80,17 @@ def main():
     logger.info(f"Part 1 of 6 : Create schemas : {start_time}")
 
     if settings.raw_gnaf_schema != "public":
-        pg_cur.execute("CREATE SCHEMA IF NOT EXISTS %s AUTHORIZATION %s", (settings.raw_gnaf_schema, settings.pg_user,))
+        query = sql.SQL("CREATE SCHEMA {} AUTHORIZATION {}").format(sql.Identifier(settings.raw_gnaf_schema), sql.Identifier(settings.pg_user))
+        pg_cur.execute(query)
     if settings.raw_admin_bdys_schema != "public":
-        pg_cur.execute("CREATE SCHEMA IF NOT EXISTS %s AUTHORIZATION %s", (settings.raw_admin_bdys_schema, settings.pg_user,))
+        query = sql.SQL("CREATE SCHEMA {} AUTHORIZATION {}").format(sql.Identifier(settings.raw_admin_bdys_schema), sql.Identifier(settings.pg_user))
+        pg_cur.execute(query)
     if settings.admin_bdys_schema != "public":
-        pg_cur.execute("CREATE SCHEMA IF NOT EXISTS %s AUTHORIZATION %s", (settings.admin_bdys_schema, settings.pg_user,))
+        query = sql.SQL("CREATE SCHEMA {} AUTHORIZATION {}").format(sql.Identifier(settings.admin_bdys_schema), sql.Identifier(settings.pg_user))
+        pg_cur.execute(query)
     if settings.gnaf_schema != "public":
-        pg_cur.execute("CREATE SCHEMA IF NOT EXISTS %s AUTHORIZATION %s", (settings.gnaf_schema, settings.pg_user,))
+        query = sql.SQL("CREATE SCHEMA {} AUTHORIZATION {}").format(sql.Identifier(settings.gnaf_schema), sql.Identifier(settings.pg_user))
+        pg_cur.execute(query)
     logger.info(f"Part 1 of 6 : Schemas created! : {datetime.now().astimezone() - start_time}")
 
     # PART 2 - load gnaf from PSV files
@@ -176,7 +181,8 @@ def create_raw_gnaf_tables(pg_cur: psycopg.Cursor):
 
     # set search path
     if settings.raw_gnaf_schema != "public":
-        pg_cur.execute("SET search_path = %s", (settings.raw_gnaf_schema,))
+        query = sql.SQL("SET search_path = {}").format(sql.Identifier(settings.raw_gnaf_schema))
+        pg_cur.execute(query)
 
         # alter create table script to run on chosen schema
         sql_string = sql_string.replace("SET search_path = public", f"SET search_path = {settings.raw_gnaf_schema}")
@@ -421,33 +427,33 @@ def clean_authority_files(pg_cur: psycopg.Cursor, schema_name: str, create_index
 
         # fix inconsistent field names with brute force method (issue loading Shapefile/DBF data)
         try:
-            pg_cur.execute("ALTER TABLE %s.%s RENAME COLUMN code_aut TO code", (schema_name, table_name,))
+            pg_cur.execute("ALTER TABLE %s.%s RENAME COLUMN code_aut TO code", (schema_name, table_name))
         except psycopg.Error:
             pass
 
         try:
-            pg_cur.execute("ALTER TABLE %s.%s RENAME COLUMN name_aut TO name", (schema_name, table_name,))
+            pg_cur.execute("ALTER TABLE %s.%s RENAME COLUMN name_aut TO name", (schema_name, table_name))
         except psycopg.Error:
             pass
 
         try:
-            pg_cur.execute("ALTER TABLE %s.%s RENAME COLUMN dscpn_aut TO description", (schema_name, table_name,))
+            pg_cur.execute("ALTER TABLE %s.%s RENAME COLUMN dscpn_aut TO description", (schema_name, table_name))
         except psycopg.Error:
             pass
 
         try:
-            pg_cur.execute("ALTER TABLE %s.%s RENAME COLUMN desc_aut TO description", (schema_name, table_name,))
+            pg_cur.execute("ALTER TABLE %s.%s RENAME COLUMN desc_aut TO description", (schema_name, table_name))
         except psycopg.Error:
             pass
 
         try:
-            pg_cur.execute("ALTER TABLE %s.%s RENAME COLUMN descriptio TO description", (schema_name, table_name,))
+            pg_cur.execute("ALTER TABLE %s.%s RENAME COLUMN descriptio TO description", (schema_name, table_name))
         except psycopg.Error:
             pass
 
         # fix inconsistent descriptions in meshblock authority table by setting them to null
         if table_name == "aus_mb_category_class_aut":
-            pg_cur.execute("UPDATE %s.%s SET description = NULL", (schema_name, table_name,))
+            pg_cur.execute("UPDATE %s.%s SET description = NULL", (schema_name, table_name))
 
         # get original row count
         pg_cur.execute("SELECT count(*) FROM %s.%s", (schema_name, table_name,))
@@ -470,7 +476,7 @@ def clean_authority_files(pg_cur: psycopg.Cursor, schema_name: str, create_index
             # delete all rows
             pg_cur.execute("TRUNCATE TABLE %s.%s", (schema_name, table_name,))
             # insert distinct rows
-            pg_cur.execute("INSERT INTO %s.%s (code, name, description) SELECT * FROM temp_aut", (schema_name, table_name,))
+            pg_cur.execute("INSERT INTO %s.%s (code, name, description) SELECT * FROM temp_aut", (schema_name, table_name))
 
             logger.info(f"\t\t- {duplicate_row_count} duplicates removed from {schema_name}.{table_name}")
 
@@ -494,7 +500,7 @@ def clean_authority_files(pg_cur: psycopg.Cursor, schema_name: str, create_index
 
         # clean up
         pg_cur.execute("DROP TABLE IF EXISTS temp_aut")
-        pg_cur.execute("VACUUM ANALYZE %s.%s", (schema_name, table_name,))
+        pg_cur.execute("VACUUM ANALYZE %s.%s", (schema_name, table_name))
 
     # kill gnaf-loader if duplicates couldn't be fixed - significant data integrity issue
     if error_count > 0:
@@ -691,7 +697,7 @@ def boundary_tag_gnaf(pg_cur: psycopg.Cursor):
 
     # create bdy tagged address tables
     for address_table in ["address_principal", "address_alias"]:
-        pg_cur.execute("DROP TABLE IF EXISTS %s.%s_admin_boundaries CASCADE", (settings.gnaf_schema, address_table,))
+        pg_cur.execute("DROP TABLE IF EXISTS %s.%s_admin_boundaries CASCADE", (settings.gnaf_schema, address_table))
         create_table_list = list[str]()
         create_table_list.append(f"""CREATE TABLE {settings.gnaf_schema}.{address_table}_admin_boundaries (
                                  gid serial NOT NULL,
@@ -718,7 +724,7 @@ def boundary_tag_gnaf(pg_cur: psycopg.Cursor):
     # create temp tables
     template_sql_string = geoscape.open_sql_file("04-01a-bdy-tag-create-table-template.sql")
     for table in table_list:
-        pg_cur.execute(template_sql_string.format(table[0],)) # type: ignore
+        pg_cur.execute(template_sql_string.format(table[0])) # type: ignore
 
     # create temp tables of bdy tagged gnaf_pids
     template_sql_string = geoscape.open_sql_file("04-01b-bdy-tag-template.sql")
