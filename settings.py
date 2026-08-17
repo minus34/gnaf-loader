@@ -88,6 +88,7 @@ parser.add_argument(
 
 # schema names for the raw gnaf, flattened reference and admin boundary tables
 geoscape_version, previous_geoscape_version = get_geoscape_version(datetime.today())  # noqa: DTZ002
+
 parser.add_argument(
     "--geoscape-version", default=geoscape_version,
     help="Geoscape release version number as YYYYMM. Defaults to latest release year and month \""

@@ -37,6 +37,10 @@ import geoscape
 import settings  # gets global vars and runtime arguments
 
 
+def qualified_table(schema_name: str, table_name: str) -> sql.Composed:
+    return sql.SQL("{}.{}").format(sql.Identifier(schema_name), sql.Identifier(table_name))
+
+
 def main():
     full_start_time = datetime.now().astimezone()
 
@@ -412,12 +416,12 @@ def clean_authority_files(pg_cur: psycopg.Cursor, schema_name: str, create_index
     error_count = 0
 
     # get table list for schema
-    sql_string = """SELECT table_name
+    sql_string = f"""SELECT table_name
               FROM information_schema.tables
-              WHERE table_schema='%s'
+              WHERE table_schema='%{schema_name}'
                   AND table_type='BASE TABLE'
-                  AND table_name LIKE '%s'"""
-    pg_cur.execute(sql_string, (schema_name, "%_aut"))
+                  AND table_name LIKE '%_aut'"""
+    pg_cur.execute(sql_string) # type: ignore
 
     tables = pg_cur.fetchall()
 
@@ -427,43 +431,43 @@ def clean_authority_files(pg_cur: psycopg.Cursor, schema_name: str, create_index
 
         # fix inconsistent field names with brute force method (issue loading Shapefile/DBF data)
         try:
-            pg_cur.execute("ALTER TABLE %s.%s RENAME COLUMN code_aut TO code", (schema_name, table_name))
+            pg_cur.execute(sql.SQL("ALTER TABLE {} RENAME COLUMN code_aut TO code").format(qualified_table(schema_name, table_name)))
         except psycopg.Error:
             pass
 
         try:
-            pg_cur.execute("ALTER TABLE %s.%s RENAME COLUMN name_aut TO name", (schema_name, table_name))
+            pg_cur.execute(sql.SQL("ALTER TABLE {} RENAME COLUMN name_aut TO name").format(qualified_table(schema_name, table_name)))
         except psycopg.Error:
             pass
 
         try:
-            pg_cur.execute("ALTER TABLE %s.%s RENAME COLUMN dscpn_aut TO description", (schema_name, table_name))
+            pg_cur.execute(sql.SQL("ALTER TABLE {} RENAME COLUMN dscpn_aut TO description").format(qualified_table(schema_name, table_name)))
         except psycopg.Error:
             pass
 
         try:
-            pg_cur.execute("ALTER TABLE %s.%s RENAME COLUMN desc_aut TO description", (schema_name, table_name))
+            pg_cur.execute(sql.SQL("ALTER TABLE {} RENAME COLUMN desc_aut TO description").format(qualified_table(schema_name, table_name)))
         except psycopg.Error:
             pass
 
         try:
-            pg_cur.execute("ALTER TABLE %s.%s RENAME COLUMN descriptio TO description", (schema_name, table_name))
+            pg_cur.execute(sql.SQL("ALTER TABLE {} RENAME COLUMN descriptio TO description").format(qualified_table(schema_name, table_name)))
         except psycopg.Error:
             pass
 
         # fix inconsistent descriptions in meshblock authority table by setting them to null
         if table_name == "aus_mb_category_class_aut":
-            pg_cur.execute("UPDATE %s.%s SET description = NULL", (schema_name, table_name))
+            pg_cur.execute(sql.SQL("UPDATE {} SET description = NULL").format(qualified_table(schema_name, table_name)))
 
         # get original row count
-        pg_cur.execute("SELECT count(*) FROM %s.%s", (schema_name, table_name,))
+        pg_cur.execute(sql.SQL("SELECT count(*) FROM {}").format(qualified_table(schema_name, table_name)))
         old_row_count = int(pg_cur.fetchone()[0]) # type: ignore
 
         # get distinct records
-        sql_string = """DROP TABLE IF EXISTS temp_aut;
+        sql_string = sql.SQL("""DROP TABLE IF EXISTS temp_aut;
                  CREATE TABLE temp_aut AS
-                 SELECT DISTINCT code, name, description FROM %s.%s;"""
-        pg_cur.execute(sql_string, (schema_name, table_name,))
+                 SELECT DISTINCT code, name, description FROM {};;""").format(qualified_table(schema_name, table_name))
+        pg_cur.execute(sql_string)
 
         # get new row count
         pg_cur.execute("SELECT count(*) FROM temp_aut")
@@ -474,9 +478,9 @@ def clean_authority_files(pg_cur: psycopg.Cursor, schema_name: str, create_index
 
         if duplicate_row_count > 0:
             # delete all rows
-            pg_cur.execute("TRUNCATE TABLE %s.%s", (schema_name, table_name,))
+            pg_cur.execute(sql.SQL("TRUNCATE TABLE {}").format(qualified_table(schema_name, table_name)))
             # insert distinct rows
-            pg_cur.execute("INSERT INTO %s.%s (code, name, description) SELECT * FROM temp_aut", (schema_name, table_name))
+            pg_cur.execute(sql.SQL("INSERT INTO {} (code, name, description) SELECT * FROM temp_aut").format(qualified_table(schema_name, table_name)))
 
             logger.info(f"\t\t- {duplicate_row_count} duplicates removed from {schema_name}.{table_name}")
 
@@ -485,13 +489,19 @@ def clean_authority_files(pg_cur: psycopg.Cursor, schema_name: str, create_index
         if create_indexes:
             # drop primary key on gid field
             try:
-                pg_cur.execute("ALTER TABLE ONLY %s.%s DROP CONSTRAINT %s_pkey", (schema_name, table_name, table_name))
+                pg_cur.execute(sql.SQL("ALTER TABLE ONLY {} DROP CONSTRAINT {}").format(
+                    qualified_table(schema_name, table_name),
+                    sql.Identifier(f"{table_name}_pkey"),
+                ))
             except psycopg.Error:
                 pass
 
             # attempt to create a primary key on the authority code - failure will imply a raw data error from Geoscape
             try:
-                pg_cur.execute("ALTER TABLE ONLY %s.%s ADD CONSTRAINT %s_pkey PRIMARY KEY (code)", (schema_name, table_name, table_name))
+                pg_cur.execute(sql.SQL("ALTER TABLE ONLY {} ADD CONSTRAINT {} PRIMARY KEY (code)").format(
+                    qualified_table(schema_name, table_name),
+                    sql.Identifier(f"{table_name}_pkey"),
+                ))
             except psycopg.Error as ex:
                 error_count += 1
 
@@ -500,7 +510,7 @@ def clean_authority_files(pg_cur: psycopg.Cursor, schema_name: str, create_index
 
         # clean up
         pg_cur.execute("DROP TABLE IF EXISTS temp_aut")
-        pg_cur.execute("VACUUM ANALYZE %s.%s", (schema_name, table_name))
+        pg_cur.execute(sql.SQL("VACUUM ANALYZE {}").format(qualified_table(schema_name, table_name)))
 
     # kill gnaf-loader if duplicates couldn't be fixed - significant data integrity issue
     if error_count > 0:
@@ -697,7 +707,7 @@ def boundary_tag_gnaf(pg_cur: psycopg.Cursor):
 
     # create bdy tagged address tables
     for address_table in ["address_principal", "address_alias"]:
-        pg_cur.execute("DROP TABLE IF EXISTS %s.%s_admin_boundaries CASCADE", (settings.gnaf_schema, address_table))
+        pg_cur.execute(sql.SQL("DROP TABLE IF EXISTS {} CASCADE").format(qualified_table(settings.gnaf_schema, f"{address_table}_admin_boundaries")))
         create_table_list = list[str]()
         create_table_list.append(f"""CREATE TABLE {settings.gnaf_schema}.{address_table}_admin_boundaries (
                                  gid serial NOT NULL,
@@ -804,27 +814,29 @@ def boundary_tag_gnaf(pg_cur: psycopg.Cursor):
     pg_cur.execute("".join(drop_table_list)) # type: ignore
 
     # get stats
-    pg_cur.execute("ANALYZE %s.address_principal_admin_boundaries ", (settings.gnaf_schema,))
+    pg_cur.execute(sql.SQL("ANALYZE {}").format(qualified_table(settings.gnaf_schema, "address_principal_admin_boundaries")))
 
     logger.info(f"\t- Step 3 of 7 : principal addresses - bdy tags added to output table : {datetime.now().astimezone() - start_time}")
 
     start_time = datetime.now().astimezone()
 
     # Step 4 of 7 : add index to output table
-    sql_string = "CREATE INDEX address_principal_admin_boundaries_gnaf_pid_idx ON %s.address_principal_admin_boundaries USING btree (gnaf_pid)"
-    pg_cur.execute(sql_string, (settings.gnaf_schema,))
+    sql_string = sql.SQL("CREATE INDEX address_principal_admin_boundaries_gnaf_pid_idx ON {} USING btree (gnaf_pid)").format(
+        qualified_table(settings.gnaf_schema, "address_principal_admin_boundaries")
+    )
+    pg_cur.execute(sql_string)
 
     logger.info(f"\t- Step 4 of 7 : created index on bdy tagged address table : {datetime.now().astimezone() - start_time}")
     start_time = datetime.now().astimezone()
 
     # Step 5 of 7 : log duplicates - happens when 2 boundaries overlap by a very small amount
     # (can be ignored if there's a small number of records affected)
-    sql_string = """SELECT gnaf_pid FROM (
+    sql_string = sql.SQL("""SELECT gnaf_pid FROM (
                   SELECT Count(*) AS cnt, gnaf_pid 
-                  FROM %s.address_principal_admin_boundaries 
+                  FROM {} 
                   GROUP BY gnaf_pid
-              ) AS sqt WHERE cnt > 1"""
-    pg_cur.execute(sql_string, (settings.gnaf_schema,))
+              ) AS sqt WHERE cnt > 1""").format(qualified_table(settings.gnaf_schema, "address_principal_admin_boundaries"))
+    pg_cur.execute(sql_string)
 
     # get cursor description to test if any rows returned safely
     columns = pg_cur.description
@@ -862,12 +874,17 @@ def create_qa_tables(pg_cur: psycopg.Cursor):
         # STEP 1 - get row counts of tables in each schema, by state, for visual QA
 
         # create qa table of rows counts
-        sql_string = """DROP TABLE IF EXISTS %s.qa;
-                  CREATE TABLE %s.qa (table_name text, aus integer, act integer, nsw integer, nt integer, 
+        sql_string = sql.SQL("""DROP TABLE IF EXISTS {};
+                  CREATE TABLE {} (table_name text, aus integer, act integer, nsw integer, nt integer, 
                       ot integer, qld integer, sa integer, tas integer, vic integer, wa integer) 
                   WITH (OIDS=FALSE);
-                  ALTER TABLE %s.qa OWNER TO %s"""
-        pg_cur.execute(sql_string, (schema, schema, schema, settings.pg_user))
+                  ALTER TABLE {} OWNER TO {}""").format(
+            sql.Identifier(f"{schema}.qa"),
+            sql.Identifier(f"{schema}.qa"),
+            sql.Identifier(f"{schema}.qa"),
+            sql.Identifier(settings.pg_user),
+        )
+        pg_cur.execute(sql_string)
 
         # get table names in schema
         sql_string = """SELECT table_name 
@@ -883,8 +900,8 @@ def create_qa_tables(pg_cur: psycopg.Cursor):
 
         # get row counts by state
         for table_name in table_names:
-            sql_string = """INSERT INTO %s.qa 
-                      SELECT %s, SUM(AUS), SUM(ACT), SUM(NSW), SUM(NT), SUM(OT), SUM(QLD), SUM(SA), 
+            sql_string = sql.SQL("""INSERT INTO {} 
+                      SELECT {}, SUM(AUS), SUM(ACT), SUM(NSW), SUM(NT), SUM(OT), SUM(QLD), SUM(SA), 
                           SUM(TAS), SUM(VIC), SUM(WA) 
                       FROM (
                           SELECT 1 AS AUS,
@@ -897,23 +914,30 @@ def create_qa_tables(pg_cur: psycopg.Cursor):
                           CASE WHEN state = 'TAS' THEN 1 ELSE 0 END AS TAS,
                           CASE WHEN state = 'VIC' THEN 1 ELSE 0 END AS VIC,
                           CASE WHEN state = 'WA' THEN 1 ELSE 0 END AS WA 
-                          FROM %s.%s
-                      ) AS sqt"""
+                          FROM {}
+                      ) AS sqt""").format(
+                sql.Identifier(f"{schema}.qa"),
+                sql.Literal(table_name),
+                qualified_table(schema, table_name),
+            )
 
             try:
-                pg_cur.execute(sql_string, (schema, table_name, schema, table_name))
+                pg_cur.execute(sql_string)
             except psycopg.Error:  # triggers when there is no state field in the table
                 # change the query for an Australia count only
-                sql_string = """INSERT INTO %s.qa (table_name, aus) " \
-                      f"SELECT %s, Count(*) FROM %s.%s"""
+                sql_string = sql.SQL("INSERT INTO {} (table_name, aus) SELECT {}, Count(*) FROM {}").format(
+                    sql.Identifier(f"{schema}.qa"),
+                    sql.Literal(table_name),
+                    qualified_table(schema, table_name),
+                )
 
                 try:
-                    pg_cur.execute(sql_string, (schema, table_name, schema, table_name))
+                    pg_cur.execute(sql_string)
                 except psycopg.Error as ex:
                     # if no state field - change the query for an Australia count only
                     logger.warning(f"Couldn't get row count for {schema}.{table_name} : {ex}")
 
-        pg_cur.execute("ANALYZE %s.qa", (schema,))
+        pg_cur.execute(sql.SQL("ANALYZE {}").format(sql.Identifier(f"{schema}.qa")))
 
         # STEP 2 - compare row counts with previous Geoscape release
 
@@ -929,30 +953,39 @@ def create_qa_tables(pg_cur: psycopg.Cursor):
 
         if test_schema_row is not None:
             # create qa table of rows counts
-            sql_string = """DROP TABLE IF EXISTS %s.qa_comparison;
-                      CREATE TABLE %s.qa_comparison (
+            sql_string = sql.SQL("""DROP TABLE IF EXISTS {};
+                      CREATE TABLE {} (
                           table_name text,
                           difference integer,
                           new_count integer,
                           old_count integer
                      ) WITH (OIDS=FALSE);
-                     ALTER TABLE %s.qa_comparison OWNER TO %s"""
-            pg_cur.execute(sql_string, (schema, schema, schema, settings.pg_user))
+                     ALTER TABLE {} OWNER TO {}""").format(
+                sql.Identifier(f"{schema}.qa_comparison"),
+                sql.Identifier(f"{schema}.qa_comparison"),
+                sql.Identifier(f"{schema}.qa_comparison"),
+                sql.Identifier(settings.pg_user),
+            )
+            pg_cur.execute(sql_string)
 
             # into get counts into qa_comparison table
-            sql_string = """INSERT INTO %s.qa_comparison
+            sql_string = sql.SQL("""INSERT INTO {}
                       SELECT new.table_name,
                              new.aus - old.aus as difference,
                              new.aus as new_count,
                              old.aus as old_count
-                      FROM %s.qa as new
-                      INNER JOIN %s.qa as old ON new.table_name = old.table_name"""
-            pg_cur.execute(sql_string, (schema, schema, previous_schema))
+                      FROM {} as new
+                      INNER JOIN {} as old ON new.table_name = old.table_name""").format(
+                sql.Identifier(f"{schema}.qa_comparison"),
+                sql.Identifier(f"{schema}.qa"),
+                sql.Identifier(f"{previous_schema}.qa"),
+            )
+            pg_cur.execute(sql_string)
 
-            pg_cur.execute("ANALYZE %s.qa_comparison", (schema,))
+            pg_cur.execute(sql.SQL("ANALYZE {}").format(sql.Identifier(f"{schema}.qa_comparison")))
 
             # pretty print row counts to screen
-            pg_cur.execute("SELECT * FROM %s.qa_comparison ORDER BY table_name", (schema,))
+            pg_cur.execute(sql.SQL("SELECT * FROM {} ORDER BY table_name").format(sql.Identifier(f"{schema}.qa_comparison")))
             rows = pg_cur.fetchall()
 
             logger.info("\t\t------------------------------------------------------------------------")
