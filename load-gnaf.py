@@ -80,16 +80,16 @@ def main():
     logger.info(f"Part 1 of 6 : Create schemas : {start_time}")
 
     if settings.raw_gnaf_schema != "public":
-        query = sql.SQL("CREATE SCHEMA {} AUTHORIZATION {}").format(sql.Identifier(settings.raw_gnaf_schema), sql.Identifier(settings.pg_user))
+        query = sql.SQL("CREATE SCHEMA IF NOT EXISTS {} AUTHORIZATION {}").format(sql.Identifier(settings.raw_gnaf_schema), sql.Identifier(settings.pg_user))
         pg_cur.execute(query)
     if settings.raw_admin_bdys_schema != "public":
-        query = sql.SQL("CREATE SCHEMA {} AUTHORIZATION {}").format(sql.Identifier(settings.raw_admin_bdys_schema), sql.Identifier(settings.pg_user))
+        query = sql.SQL("CREATE SCHEMA IF NOT EXISTS {} AUTHORIZATION {}").format(sql.Identifier(settings.raw_admin_bdys_schema), sql.Identifier(settings.pg_user))
         pg_cur.execute(query)
     if settings.admin_bdys_schema != "public":
-        query = sql.SQL("CREATE SCHEMA {} AUTHORIZATION {}").format(sql.Identifier(settings.admin_bdys_schema), sql.Identifier(settings.pg_user))
+        query = sql.SQL("CREATE SCHEMA IF NOT EXISTS {} AUTHORIZATION {}").format(sql.Identifier(settings.admin_bdys_schema), sql.Identifier(settings.pg_user))
         pg_cur.execute(query)
     if settings.gnaf_schema != "public":
-        query = sql.SQL("CREATE SCHEMA {} AUTHORIZATION {}").format(sql.Identifier(settings.gnaf_schema), sql.Identifier(settings.pg_user))
+        query = sql.SQL("CREATE SCHEMA IF NOT EXISTS {} AUTHORIZATION {}").format(sql.Identifier(settings.gnaf_schema), sql.Identifier(settings.pg_user))
         pg_cur.execute(query)
     logger.info(f"Part 1 of 6 : Schemas created! : {datetime.now().astimezone() - start_time}")
 
@@ -416,8 +416,8 @@ def clean_authority_files(pg_cur: psycopg.Cursor, schema_name: str, create_index
               FROM information_schema.tables
               WHERE table_schema='%s'
                   AND table_type='BASE TABLE'
-                  AND table_name LIKE '%_aut'"""
-    pg_cur.execute(sql_string, (schema_name,))
+                  AND table_name LIKE '%s'"""
+    pg_cur.execute(sql_string, (schema_name, "%_aut"))
 
     tables = pg_cur.fetchall()
 
