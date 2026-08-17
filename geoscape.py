@@ -8,7 +8,6 @@ import subprocess
 
 # import platform
 import psycopg
-from psycopg import sql
 
 import settings
 
@@ -106,7 +105,7 @@ def prep_sql(sql: str) -> str:
     return sql
 
 
-def split_sql_into_list(pg_cur: psycopg.Cursor, the_sql: str, table_schema: sql.Identifier, table_name: str, table_alias: str, table_gid: str, logger: logging.Logger) -> list[str]:
+def split_sql_into_list(pg_cur: psycopg.Cursor, the_sql: str, table_schema: str, table_name: str, table_alias: str, table_gid: str, logger: logging.Logger) -> list[str]:
     # get min max gid values from the table to split
     min_max_sql = "SELECT MIN(%s) AS min, MAX(%s) AS max FROM %s.%s"
     pg_cur.execute(min_max_sql, (table_gid, table_gid, table_schema, table_name))

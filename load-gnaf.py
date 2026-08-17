@@ -31,7 +31,6 @@ from datetime import datetime
 from typing import Any
 
 import psycopg
-from psycopg import sql
 
 import geoscape
 import settings  # gets global vars and runtime arguments
@@ -401,7 +400,7 @@ def load_raw_admin_boundaries(pg_cur: psycopg.Cursor):
         logger.info(f"\t- Step 1 of 3 : raw admin boundaries loaded : {datetime.now().astimezone() - start_time}")
 
 
-def clean_authority_files(pg_cur: psycopg.Cursor, schema_name: sql.Identifier, create_indexes: bool=False):
+def clean_authority_files(pg_cur: psycopg.Cursor, schema_name: str, create_indexes: bool=False):
     # ensure authority tables have unique values - admin bdys now have duplicates
 
     error_count = 0
