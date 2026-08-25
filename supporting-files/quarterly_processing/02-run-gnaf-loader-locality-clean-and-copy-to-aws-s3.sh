@@ -18,42 +18,42 @@ echo "--------------------------------------------------------------------------
 echo "Run gnaf-loader and locality boundary clean"
 echo "---------------------------------------------------------------------------------------------------------------------"
 
-# python3 "/Users/$(whoami)/git/minus34/gnaf-loader/load-gnaf.py" --pgport=5432 --pgdb=geo --max-processes=6 --gnaf-tables-path="${GNAF_PATH}" --admin-bdys-path="${BDYS_PATH}"
-python3 "/Users/$(whoami)/git/iag_geo/psma-admin-bdys/locality-clean.py" --pgport=5432 --pgdb=geo --max-processes=6 --output-path=${OUTPUT_FOLDER}
+python3 "/Users/$(whoami)/git/minus34/gnaf-loader/load-gnaf.py" --pgport=5432 --pgdb=geo --max-processes=6 --gnaf-tables-path="${GNAF_PATH}" --admin-bdys-path="${BDYS_PATH}"
+# python3 "/Users/$(whoami)/git/iag_geo/psma-admin-bdys/locality-clean.py" --pgport=5432 --pgdb=geo --max-processes=6 --output-path=${OUTPUT_FOLDER}
 
-# upload locality bdy files to S3
-aws --profile=${AWS_PROFILE} s3 sync ${OUTPUT_FOLDER} s3://minus34.com/opendata/geoscape-202608 --exclude "*" --include "*.zip" --acl public-read
+# # upload locality bdy files to S3
+# aws --profile=${AWS_PROFILE} s3 sync ${OUTPUT_FOLDER} s3://minus34.com/opendata/geoscape-202608 --exclude "*" --include "*.zip" --acl public-read
 
-echo "---------------------------------------------------------------------------------------------------------------------"
-echo "create concordance file"
-echo "---------------------------------------------------------------------------------------------------------------------"
+# echo "---------------------------------------------------------------------------------------------------------------------"
+# echo "create concordance file"
+# echo "---------------------------------------------------------------------------------------------------------------------"
 
-# create concordance file and upload to S3
+# # create concordance file and upload to S3
 
-mkdir -p "${OUTPUT_FOLDER}"
-python3 "/Users/$(whoami)/git/iag_geo/concord/create_concordance_file.py" --pgdb=geo --output-path=${OUTPUT_FOLDER}
-aws --profile=${AWS_PROFILE} s3 sync ${OUTPUT_FOLDER} s3://minus34.com/opendata/geoscape-202608 --exclude "*" --include "*.csv" --acl public-read
+# mkdir -p "${OUTPUT_FOLDER}"
+# python3 "/Users/$(whoami)/git/iag_geo/concord/create_concordance_file.py" --pgdb=geo --output-path=${OUTPUT_FOLDER}
+# aws --profile=${AWS_PROFILE} s3 sync ${OUTPUT_FOLDER} s3://minus34.com/opendata/geoscape-202608 --exclude "*" --include "*.csv" --acl public-read
 
-# copy concordance score file to GitHub repo local files
-cp "${OUTPUT_FOLDER}/boundary_concordance_score.csv" "/Users/$(whoami)/git/iag_geo/concord/data/"
+# # copy concordance score file to GitHub repo local files
+# cp "${OUTPUT_FOLDER}/boundary_concordance_score.csv" "/Users/$(whoami)/git/iag_geo/concord/data/"
 
-# copy files to GDA2020 local and S3 folders (files not processed for GDA2020 data as the result is 99.99999.....% the same)
-mkdir -p "${OUTPUT_FOLDER_2020}"
-cp ${OUTPUT_FOLDER}/boundary_concordance.csv ${OUTPUT_FOLDER_2020}/boundary_concordance.csv
-cp ${OUTPUT_FOLDER}/boundary_concordance_score.csv ${OUTPUT_FOLDER_2020}/boundary_concordance_score.csv
-aws --profile=${AWS_PROFILE} s3 sync ${OUTPUT_FOLDER_2020} s3://minus34.com/opendata/geoscape-202608-gda2020 --exclude "*" --include "*.csv" --acl public-read
+# # copy files to GDA2020 local and S3 folders (files not processed for GDA2020 data as the result is 99.99999.....% the same)
+# mkdir -p "${OUTPUT_FOLDER_2020}"
+# cp ${OUTPUT_FOLDER}/boundary_concordance.csv ${OUTPUT_FOLDER_2020}/boundary_concordance.csv
+# cp ${OUTPUT_FOLDER}/boundary_concordance_score.csv ${OUTPUT_FOLDER_2020}/boundary_concordance_score.csv
+# aws --profile=${AWS_PROFILE} s3 sync ${OUTPUT_FOLDER_2020} s3://minus34.com/opendata/geoscape-202608-gda2020 --exclude "*" --include "*.csv" --acl public-read
 
-echo "---------------------------------------------------------------------------------------------------------------------"
-echo "dump postgres schemas to a local folder"
-echo "---------------------------------------------------------------------------------------------------------------------"
+# echo "---------------------------------------------------------------------------------------------------------------------"
+# echo "dump postgres schemas to a local folder"
+# echo "---------------------------------------------------------------------------------------------------------------------"
 
-/Applications/Postgres.app/Contents/Versions/16/bin/pg_dump -Fc -d geo -n gnaf_202608 -p 5432 -U postgres -f "${OUTPUT_FOLDER}/gnaf-202608.dmp" --no-owner
-echo "GNAF schema exported to dump file"
-/Applications/Postgres.app/Contents/Versions/16/bin/pg_dump -Fc -d geo -n admin_bdys_202608 -p 5432 -U postgres -f "${OUTPUT_FOLDER}/admin-bdys-202608.dmp" --no-owner
-echo "Admin Bdys schema exported to dump file"
+# /Applications/Postgres.app/Contents/Versions/16/bin/pg_dump -Fc -d geo -n gnaf_202608 -p 5432 -U postgres -f "${OUTPUT_FOLDER}/gnaf-202608.dmp" --no-owner
+# echo "GNAF schema exported to dump file"
+# /Applications/Postgres.app/Contents/Versions/16/bin/pg_dump -Fc -d geo -n admin_bdys_202608 -p 5432 -U postgres -f "${OUTPUT_FOLDER}/admin-bdys-202608.dmp" --no-owner
+# echo "Admin Bdys schema exported to dump file"
 
-echo "---------------------------------------------------------------------------------------------------------------------"
-echo "copy Postgres dump files to AWS S3 and allow public read access (requires AWSCLI installed & AWS credentials setup)"
-echo "---------------------------------------------------------------------------------------------------------------------"
+# echo "---------------------------------------------------------------------------------------------------------------------"
+# echo "copy Postgres dump files to AWS S3 and allow public read access (requires AWSCLI installed & AWS credentials setup)"
+# echo "---------------------------------------------------------------------------------------------------------------------"
 
-aws --profile=${AWS_PROFILE} s3 sync ${OUTPUT_FOLDER} s3://minus34.com/opendata/geoscape-202608 --exclude "*" --include "*.dmp" --acl public-read
+# aws --profile=${AWS_PROFILE} s3 sync ${OUTPUT_FOLDER} s3://minus34.com/opendata/geoscape-202608 --exclude "*" --include "*.dmp" --acl public-read

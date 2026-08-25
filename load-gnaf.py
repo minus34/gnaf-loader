@@ -525,9 +525,10 @@ def prep_admin_bdys(pg_cur: psycopg.Cursor):
 
     # create tables using multiprocessing - using flag in file to split file up into sets of statements
     sql_list = geoscape.open_sql_file("02-02a-prep-admin-bdys-tables.sql").format(settings.srid).split("-- # --")
-    sql_list = sql_list + geoscape.open_sql_file("02-02c-prep-census-2026-bdys-tables.sql").split("-- # --")
+    sql_list = sql_list + geoscape.open_sql_file("02-02c-prep-census-2016-bdys-tables.sql").split("-- # --")
     sql_list = sql_list + geoscape.open_sql_file("02-02d-prep-census-2021-bdys-tables.sql").split("-- # --")
-
+    sql_list = sql_list + geoscape.open_sql_file("02-02e-prep-census-2026-bdys-tables.sql").split("-- # --")
+    
     # # Account for bdys that are not in states to load - not yet working
     # for sql_string in sql_list:
     #     if settings.states_to_load == ["OT"] and ".commonwealth_electorates " in sql_string:
