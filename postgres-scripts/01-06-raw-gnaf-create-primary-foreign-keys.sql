@@ -188,7 +188,7 @@ ALTER TABLE ONLY mb_2021
 --
 
 ALTER TABLE ONLY mb_2026
-    ADD CONSTRAINT mb_2026_pk PRIMARY KEY (mb_pid_2026);
+    ADD CONSTRAINT mb_2026_pk PRIMARY KEY (mb_2026_pid);
 
 
 --
@@ -444,7 +444,7 @@ ALTER TABLE ONLY address_mesh_block_2026
 --
 
 ALTER TABLE ONLY address_mesh_block_2026
-    ADD CONSTRAINT address_mesh_block_2026_fk2 FOREIGN KEY (mb_pid_2026) REFERENCES mb_2026(mb_pid_2026);
+    ADD CONSTRAINT address_mesh_block_2026_fk2 FOREIGN KEY (mb_2026_pid) REFERENCES mb_2026(mb_2026_pid);
 
 
 --

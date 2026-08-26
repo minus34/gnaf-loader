@@ -149,8 +149,8 @@ CREATE TABLE address_mesh_block_2026 (
     date_created date NOT NULL,
     date_retired date,
     address_detail_pid character varying(15) NOT NULL,
-    mb_pid_2026 character varying(15) NOT NULL,
-    mb_match_code character varying(15) NOT NULL
+    mb_match_code character varying(15) NOT NULL,
+    mb_2026_pid character varying(15) NOT NULL
 );
 
 
@@ -417,10 +417,10 @@ ALTER TABLE mb_2021 OWNER TO postgres;
 --
 
 CREATE TABLE mb_2026 (
-    mb_pid_2026 character varying(15) NOT NULL,
+    mb_2026_pid character varying(15) NOT NULL,
     date_created date NOT NULL,
     date_retired date,
-    mb_code_2026 character varying(11) NOT NULL
+    mb_2026_code character varying(11) NOT NULL
 );
 
 

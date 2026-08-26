@@ -2,7 +2,7 @@
 ---- Import MB counts CSV file
 --DROP TABLE IF EXISTS testing.mb_2026_counts;
 --CREATE TABLE testing.mb_2026_counts (
---    mb_code_2026 bigint,
+--    mb_2026_code bigint,
 --    mb_category_name_2026 text NOT NULL,
 --    area_albers_sqkm double precision,
 --    dwelling integer default 0,
@@ -10,25 +10,25 @@
 --	address_count integer default 0,
 --    state smallint NOT NULL,
 --    geom geometry(MultiPolygon, 4283),
---    CONSTRAINT abs_2011_mb_pk PRIMARY KEY (mb_code_2026)
+--    CONSTRAINT abs_2011_mb_pk PRIMARY KEY (mb_2026_code)
 --);
 --
---COPY testing.mb_2026_counts (mb_code_2026, mb_category_name_2026, area_albers_sqkm, dwelling, person, state)
+--COPY testing.mb_2026_counts (mb_2026_code, mb_category_name_2026, area_albers_sqkm, dwelling, person, state)
 --FROM '/Users/hugh.saalmans/git/minus34/gnaf-loader/supporting-files/2026 census mesh block counts.csv' WITH (FORMAT CSV, HEADER);
 --
 --ANALYSE testing.mb_2026_counts;
 --
 ---- Get address counts per meshblock -- 1 min
 --WITH counts AS (
---	SELECT mb_code_2026,
+--	SELECT mb_2026_code,
 --		   count(*) AS address_count
 --	FROM gnaf_202608.address_principals
---	GROUP BY mb_code_2026
+--	GROUP BY mb_2026_code
 --)
 --UPDATE testing.mb_2026_counts AS mb
 --  SET address_count = counts.address_count
 --  FROM counts
---  WHERE mb.mb_code_2026 = counts.mb_code_2026
+--  WHERE mb.mb_2026_code = counts.mb_2026_code
 --;
 --ANALYSE testing.mb_2026_counts;
 --
@@ -36,7 +36,7 @@
 --UPDATE testing.mb_2026_counts AS mb
 --  SET geom = bdys.geom
 --  FROM admin_bdys_202608.abs_2026_mb as bdys
---  WHERE mb.mb_code_2026 = bdys.mb_26code::bigint;
+--  WHERE mb.mb_2026_code = bdys.mb_26code::bigint;
 --
 --ANALYSE testing.mb_2026_counts;
 --
@@ -53,22 +53,22 @@ CREATE TABLE testing.address_principals_dwelling AS
 WITH adr AS (
 SELECT gnaf.gnaf_pid,
        gnaf.postcode,
-       gnaf.mb_code_2026,
+       gnaf.mb_2026_code,
        mb.dwelling,
        mb.person,
        mb.address_count,
        gnaf.geom
 FROM gnaf_202608.address_principals as gnaf
-INNER JOIN testing.mb_2026_counts AS mb on gnaf.mb_code_2026 = mb.mb_code_2026
+INNER JOIN testing.mb_2026_counts AS mb on gnaf.mb_2026_code = mb.mb_2026_code
 WHERE mb.address_count >= mb.dwelling
   AND mb.dwelling > 0
 ), row_nums as (
- SELECT *, row_number() OVER (PARTITION BY mb_code_2026 ORDER BY random()) as row_num
+ SELECT *, row_number() OVER (PARTITION BY mb_2026_code ORDER BY random()) as row_num
  FROM adr
 )
 SELECT gnaf_pid,
        postcode,
-       mb_code_2026,
+       mb_2026_code,
        address_count,
        dwelling,
        person,
@@ -76,7 +76,7 @@ SELECT gnaf_pid,
        geom
 FROM row_nums
 WHERE row_num <= dwelling
-ORDER BY mb_code_2026,
+ORDER BY mb_2026_code,
       row_num
 ;
 ANALYSE testing.address_principals_dwelling;
@@ -86,23 +86,23 @@ INSERT INTO testing.address_principals_dwelling
 WITH adr AS (
 SELECT gnaf.gnaf_pid,
        gnaf.postcode,
-       gnaf.mb_code_2026,
+       gnaf.mb_2026_code,
        mb.dwelling,
        mb.person,
        mb.address_count,
        gnaf.geom,
        generate_series(1, ceiling(mb.dwelling::float / mb.address_count::float)::integer) as duplicate_number
 FROM gnaf_202608.address_principals as gnaf
-INNER JOIN testing.mb_2026_counts AS mb on gnaf.mb_code_2026 = mb.mb_code_2026
+INNER JOIN testing.mb_2026_counts AS mb on gnaf.mb_2026_code = mb.mb_2026_code
 WHERE mb.address_count < mb.dwelling
     AND address_count > 0
 ), row_nums as (
- SELECT *, row_number() OVER (PARTITION BY mb_code_2026 ORDER BY duplicate_number, random()) as row_num
+ SELECT *, row_number() OVER (PARTITION BY mb_2026_code ORDER BY duplicate_number, random()) as row_num
  FROM adr
 )
 SELECT gnaf_pid,
        postcode,
-       mb_code_2026,
+       mb_2026_code,
        address_count,
        dwelling,
        person,
@@ -110,16 +110,16 @@ SELECT gnaf_pid,
        geom
 FROM row_nums
 WHERE row_num <= dwelling
-ORDER BY mb_code_2026,
+ORDER BY mb_2026_code,
       row_num
 ;
 ANALYSE testing.address_principals_dwelling;
 
 --   3. add random points in meshblocks that have no addresses (8,903 dwellings affected)
 INSERT INTO testing.address_principals_dwelling
-SELECT 'MB' || mb_code_2026::text || '_' || (row_number() OVER ())::text as gnaf_pid,
+SELECT 'MB' || mb_2026_code::text || '_' || (row_number() OVER ())::text as gnaf_pid,
        null::text as postcode,
-       mb_code_2026,
+       mb_2026_code,
        address_count,
        dwelling,
        person,
@@ -135,7 +135,7 @@ ANALYSE testing.address_principals_dwelling;
 CREATE INDEX basic_address_principals_dwelling_geom_idx ON testing.address_principals_dwelling USING gist (geom);
 ALTER TABLE testing.address_principals_dwelling CLUSTER ON basic_address_principals_dwelling_geom_idx;
 
-CREATE INDEX basic_address_principals_dwelling_mb_code_2026_idx ON testing.address_principals_dwelling USING btree(mb_code_2026);
+CREATE INDEX basic_address_principals_dwelling_mb_2026_code_idx ON testing.address_principals_dwelling USING btree(mb_2026_code);
 CREATE INDEX basic_address_principals_dwelling_postcode_idx ON testing.address_principals_dwelling USING btree(postcode);
 
 
@@ -148,22 +148,22 @@ CREATE TABLE testing.address_principals_persons AS
 WITH adr AS (
 	SELECT gnaf.gnaf_pid,
 		   gnaf.postcode,
-           gnaf.mb_code_2026,
+           gnaf.mb_2026_code,
 	       mb.dwelling,
 	       mb.person,
            mb.address_count,
            gnaf.geom
 	FROM testing.address_principals_dwelling as gnaf
-	INNER JOIN testing.mb_2026_counts AS mb on gnaf.mb_code_2026 = mb.mb_code_2026
+	INNER JOIN testing.mb_2026_counts AS mb on gnaf.mb_2026_code = mb.mb_2026_code
 	WHERE mb.dwelling >= mb.person
 	  AND mb.dwelling > 0
 ), row_nums as (
-    SELECT *, row_number() OVER (PARTITION BY mb_code_2026 ORDER BY random()) as row_num
+    SELECT *, row_number() OVER (PARTITION BY mb_2026_code ORDER BY random()) as row_num
     FROM adr
 )
 SELECT gnaf_pid,
        postcode,
-	   mb_code_2026,
+	   mb_2026_code,
 	   address_count,
 	   dwelling,
 	   person,
@@ -171,7 +171,7 @@ SELECT gnaf_pid,
 	   geom
 FROM row_nums
 WHERE row_num <= person
-ORDER BY mb_code_2026,
+ORDER BY mb_2026_code,
          row_num
 ;
 ANALYSE testing.address_principals_persons;
@@ -181,22 +181,22 @@ INSERT INTO testing.address_principals_persons
 WITH adr AS (
 	SELECT gnaf.gnaf_pid,
            gnaf.postcode,
-           gnaf.mb_code_2026,
+           gnaf.mb_2026_code,
 	       mb.dwelling,
 	       mb.person,
            mb.address_count,
            gnaf.geom,
 		   generate_series(1, ceiling(mb.person::float / mb.dwelling::float)::integer) as duplicate_number
 	FROM testing.address_principals_dwelling as gnaf
-	INNER JOIN testing.mb_2026_counts AS mb on gnaf.mb_code_2026 = mb.mb_code_2026
+	INNER JOIN testing.mb_2026_counts AS mb on gnaf.mb_2026_code = mb.mb_2026_code
 	WHERE mb.dwelling < mb.person
 ), row_nums as (
-    SELECT *, row_number() OVER (PARTITION BY mb_code_2026 ORDER BY duplicate_number, random()) as row_num
+    SELECT *, row_number() OVER (PARTITION BY mb_2026_code ORDER BY duplicate_number, random()) as row_num
     FROM adr
 )
 SELECT gnaf_pid,
        postcode,
-	   mb_code_2026,
+	   mb_2026_code,
 	   address_count,
 	   dwelling,
 	   person,
@@ -204,7 +204,7 @@ SELECT gnaf_pid,
 	   geom
 FROM row_nums
 WHERE row_num <= person
-ORDER BY mb_code_2026,
+ORDER BY mb_2026_code,
          row_num
 ;
 ANALYSE testing.address_principals_persons;
@@ -214,22 +214,22 @@ INSERT INTO testing.address_principals_persons
 WITH adr AS (
 	SELECT gnaf.gnaf_pid,
            gnaf.postcode,
-           gnaf.mb_code_2026,
+           gnaf.mb_2026_code,
 	       mb.dwelling,
 	       mb.person,
            mb.address_count,
            gnaf.geom
 	FROM gnaf_202608.address_principals as gnaf
-	INNER JOIN testing.mb_2026_counts AS mb on gnaf.mb_code_2026 = mb.mb_code_2026
+	INNER JOIN testing.mb_2026_counts AS mb on gnaf.mb_2026_code = mb.mb_2026_code
 	WHERE mb.address_count >= mb.person
 	  AND mb.dwelling = 0
 ), row_nums as (
-    SELECT *, row_number() OVER (PARTITION BY mb_code_2026 ORDER BY random()) as row_num
+    SELECT *, row_number() OVER (PARTITION BY mb_2026_code ORDER BY random()) as row_num
     FROM adr
 )
 SELECT gnaf_pid,
 	   postcode,
-	   mb_code_2026,
+	   mb_2026_code,
 	   address_count,
 	   dwelling,
 	   person,
@@ -237,7 +237,7 @@ SELECT gnaf_pid,
 	   geom
 FROM row_nums
 WHERE row_num <= person
-ORDER BY mb_code_2026,
+ORDER BY mb_2026_code,
          row_num
 ;
 ANALYSE testing.address_principals_persons;
@@ -247,24 +247,24 @@ INSERT INTO testing.address_principals_persons
 WITH adr AS (
 	SELECT gnaf.gnaf_pid,
            gnaf.postcode,
-           gnaf.mb_code_2026,
+           gnaf.mb_2026_code,
 	       mb.dwelling,
 	       mb.person,
            mb.address_count,
            gnaf.geom,
 		   generate_series(1, ceiling(mb.person::float / mb.address_count::float)::integer) as duplicate_number
 	FROM gnaf_202608.address_principals as gnaf
-	INNER JOIN testing.mb_2026_counts AS mb on gnaf.mb_code_2026 = mb.mb_code_2026
+	INNER JOIN testing.mb_2026_counts AS mb on gnaf.mb_2026_code = mb.mb_2026_code
 	WHERE mb.address_count < mb.person
 	  AND mb.address_count > 0
 	  AND mb.dwelling = 0
 ), row_nums as (
-    SELECT *, row_number() OVER (PARTITION BY mb_code_2026 ORDER BY duplicate_number, random()) as row_num
+    SELECT *, row_number() OVER (PARTITION BY mb_2026_code ORDER BY duplicate_number, random()) as row_num
     FROM adr
 )
 SELECT gnaf_pid,
 	   postcode,
-	   mb_code_2026,
+	   mb_2026_code,
 	   address_count,
 	   dwelling,
 	   person,
@@ -272,16 +272,16 @@ SELECT gnaf_pid,
 	   geom
 FROM row_nums
 WHERE row_num <= person
-ORDER BY mb_code_2026,
+ORDER BY mb_2026_code,
          row_num
 ;
 ANALYSE testing.address_principals_persons;
 
 --   5. add random points in meshblocks that have no addresses (8,903 dwellings affected)
 INSERT INTO testing.address_principals_persons
-SELECT 'MB' || mb_code_2026::text || '_' || (row_number() OVER ())::text as gnaf_pid,
+SELECT 'MB' || mb_2026_code::text || '_' || (row_number() OVER ())::text as gnaf_pid,
        null::text as postcode,
-	   mb_code_2026,
+	   mb_2026_code,
 	   address_count,
 	   dwelling,
 	   person,
@@ -298,7 +298,7 @@ ANALYSE testing.address_principals_persons;
 CREATE INDEX basic_address_principals_persons_geom_idx ON testing.address_principals_persons USING gist (geom);
 ALTER TABLE testing.address_principals_persons CLUSTER ON basic_address_principals_persons_geom_idx;
 
-CREATE INDEX basic_address_principals_persons_mb_code_2026_idx ON testing.address_principals_persons USING btree(mb_code_2026);
+CREATE INDEX basic_address_principals_persons_mb_2026_code_idx ON testing.address_principals_persons USING btree(mb_2026_code);
 CREATE INDEX basic_address_principals_persons_postcode_idx ON testing.address_principals_persons USING btree(postcode);
 
 
@@ -316,19 +316,19 @@ select count(*) from testing.address_principals_dwelling; -- 9,910,984
 
 -- 9 rows -- 2 with >10 addreses
 select * from testing.mb_2026_counts
-where mb_code_2026 NOT IN (select distinct mb_code_2026 from testing.address_principals_dwelling)
+where mb_2026_code NOT IN (select distinct mb_2026_code from testing.address_principals_dwelling)
 and geom is not null
 and dwelling > 0;
 
 
 -- dwelling count differences by MB
 with gnaf as (
-	select  mb_code_2026, count(*) as dwelling from testing.address_principals_dwelling group by mb_code_2026
+	select  mb_2026_code, count(*) as dwelling from testing.address_principals_dwelling group by mb_2026_code
 )
 select mb.dwelling - gnaf.dwelling as dwelling_diff,
        mb.*
 from testing.mb_2026_counts as mb
-inner join gnaf on mb.mb_code_2026 = gnaf.mb_code_2026
+inner join gnaf on mb.mb_2026_code = gnaf.mb_2026_code
     and mb.dwelling <> gnaf.dwelling
 order by dwelling_diff desc
 ;
@@ -340,19 +340,19 @@ select count(*) from testing.address_principals_persons; -- 23347751
 
 -- 16 rows -- 4 >=10 persons
 select * from testing.mb_2026_counts
-where mb_code_2026 NOT IN (select distinct mb_code_2026 from testing.address_principals_persons)
+where mb_2026_code NOT IN (select distinct mb_2026_code from testing.address_principals_persons)
 and geom is not null
 and person > 0
 ;
 
 -- MBs missing persons in the address points -- 184
 with gnaf as (
-	select  mb_code_2026, count(*) as person from testing.address_principals_persons group by mb_code_2026
+	select  mb_2026_code, count(*) as person from testing.address_principals_persons group by mb_2026_code
 )
 select mb.person - gnaf.person as person_diff,
        mb.*
 from testing.mb_2026_counts as mb
-inner join gnaf on mb.mb_code_2026 = gnaf.mb_code_2026
+inner join gnaf on mb.mb_2026_code = gnaf.mb_2026_code
 and mb.person <> gnaf.person
 order by person_diff desc
 ;

@@ -19,23 +19,23 @@ echo "Run gnaf-loader and locality boundary clean"
 echo "---------------------------------------------------------------------------------------------------------------------"
 
 python3 "/Users/$(whoami)/git/minus34/gnaf-loader/load-gnaf.py" --pgport=5432 --pgdb=geo --max-processes=6 --gnaf-tables-path="${GNAF_PATH}" --admin-bdys-path="${BDYS_PATH}"
-# python3 "/Users/$(whoami)/git/iag_geo/psma-admin-bdys/locality-clean.py" --pgport=5432 --pgdb=geo --max-processes=6 --output-path=${OUTPUT_FOLDER}
+python3 "/Users/$(whoami)/git/iag_geo/psma-admin-bdys/locality-clean.py" --pgport=5432 --pgdb=geo --max-processes=6 --output-path=${OUTPUT_FOLDER}
 
-# # upload locality bdy files to S3
-# aws --profile=${AWS_PROFILE} s3 sync ${OUTPUT_FOLDER} s3://minus34.com/opendata/geoscape-202608 --exclude "*" --include "*.zip" --acl public-read
+# upload locality bdy files to S3
+aws --profile=${AWS_PROFILE} s3 sync ${OUTPUT_FOLDER} s3://minus34.com/opendata/geoscape-202608 --exclude "*" --include "*.zip" --acl public-read
 
-# echo "---------------------------------------------------------------------------------------------------------------------"
-# echo "create concordance file"
-# echo "---------------------------------------------------------------------------------------------------------------------"
+echo "---------------------------------------------------------------------------------------------------------------------"
+echo "create concordance file"
+echo "---------------------------------------------------------------------------------------------------------------------"
 
-# # create concordance file and upload to S3
+# create concordance file and upload to S3
 
-# mkdir -p "${OUTPUT_FOLDER}"
-# python3 "/Users/$(whoami)/git/iag_geo/concord/create_concordance_file.py" --pgdb=geo --output-path=${OUTPUT_FOLDER}
-# aws --profile=${AWS_PROFILE} s3 sync ${OUTPUT_FOLDER} s3://minus34.com/opendata/geoscape-202608 --exclude "*" --include "*.csv" --acl public-read
+mkdir -p "${OUTPUT_FOLDER}"
+python3 "/Users/$(whoami)/git/iag_geo/concord/create_concordance_file.py" --pgdb=geo --output-path=${OUTPUT_FOLDER}
+aws --profile=${AWS_PROFILE} s3 sync ${OUTPUT_FOLDER} s3://minus34.com/opendata/geoscape-202608 --exclude "*" --include "*.csv" --acl public-read
 
-# # copy concordance score file to GitHub repo local files
-# cp "${OUTPUT_FOLDER}/boundary_concordance_score.csv" "/Users/$(whoami)/git/iag_geo/concord/data/"
+# copy concordance score file to GitHub repo local files
+cp "${OUTPUT_FOLDER}/boundary_concordance_score.csv" "/Users/$(whoami)/git/iag_geo/concord/data/"
 
 # # copy files to GDA2020 local and S3 folders (files not processed for GDA2020 data as the result is 99.99999.....% the same)
 # mkdir -p "${OUTPUT_FOLDER_2020}"

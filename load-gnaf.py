@@ -626,8 +626,14 @@ def create_reference_tables(pg_cur: psycopg.Cursor):
     # Step 7 of 14 : populate addresses, using multiprocessing
     start_time = datetime.now().astimezone()
     sql_string = geoscape.open_sql_file("03-07-reference-populate-addresses-1.sql").format(settings.srid) # type: ignore
+    
+    print(sql_string)
+    
     sql_list = geoscape.split_sql_into_list(pg_cur, sql_string, settings.gnaf_schema, "streets", "str", "gid", logger)
     if sql_list:
+        
+        print(sql_list[0])
+        
         geoscape.multiprocess_list("sql", sql_list, logger)
     pg_cur.execute(geoscape.prep_sql("ANALYZE gnaf.temp_addresses;")) # type: ignore
     logger.info(f"\t- Step  7 of 14 : addresses populated : {datetime.now().astimezone() - start_time}")
