@@ -1,16 +1,16 @@
 # takes the command line parameters and creates a dictionary of setting_dict
 
-import os
 import argparse
+import os
 import platform
-import psycopg
 import sys
-
 from datetime import datetime
+
+import psycopg
 
 
 # get latest Geoscape release version as YYYYMM, as of the date provided, as well as the prev. version 3 months prior
-def get_geoscape_version(date):
+def get_geoscape_version(date: datetime) -> tuple[str, str]:
     month = date.month
     year = date.year
 
@@ -87,7 +87,8 @@ parser.add_argument(
          "otherwise \"password\".")
 
 # schema names for the raw gnaf, flattened reference and admin boundary tables
-geoscape_version, previous_geoscape_version = get_geoscape_version(datetime.today())
+geoscape_version, previous_geoscape_version = get_geoscape_version(datetime.today())  # noqa: DTZ002
+
 parser.add_argument(
     "--geoscape-version", default=geoscape_version,
     help="Geoscape release version number as YYYYMM. Defaults to latest release year and month \""
@@ -162,19 +163,15 @@ srid = args.srid
 
 if srid not in (4283, 7844):
     print("Invalid coordinate system (SRID) - EXITING!\nValid values are 4283 (GDA94) and 7844 (GDA2020)")
-    exit()
+    sys.exit()
 
-raw_gnaf_schema = args.raw_gnaf_schema or "raw_gnaf_" + geoscape_version
-
-raw_admin_bdys_schema = args.raw_admin_schema or "raw_admin_bdys_" + geoscape_version
-
-gnaf_schema = args.gnaf_schema or "gnaf_" + geoscape_version
-
-admin_bdys_schema = args.admin_schema or "admin_bdys_" + geoscape_version
-
-previous_gnaf_schema = args.previous_gnaf_schema or "gnaf_" + previous_geoscape_version
-
-previous_admin_bdys_schema = args.previous_admin_schema or "admin_bdys_" + previous_geoscape_version
+# use SQL identifer here to avoid SQL injection
+raw_gnaf_schema = args.raw_gnaf_schema or f"raw_gnaf_{geoscape_version}"
+raw_admin_bdys_schema = args.raw_admin_schema or f"raw_admin_bdys_{geoscape_version}"
+gnaf_schema = args.gnaf_schema or f"gnaf_{geoscape_version}"
+admin_bdys_schema = args.admin_schema or f"admin_bdys_{geoscape_version}"
+previous_gnaf_schema = args.previous_gnaf_schema or f"gnaf_{previous_geoscape_version}"
+previous_admin_bdys_schema = args.previous_admin_schema or f"admin_bdys_{previous_geoscape_version}"
 
 gnaf_network_directory = args.gnaf_tables_path.replace("\\", "/")
 
@@ -189,7 +186,7 @@ log_path = args.log_path
 
 # create postgres connect string
 pg_host = args.pghost or os.getenv("PGHOST", "localhost")
-pg_port = args.pgport or os.getenv("PGPORT", 5432)
+pg_port = int(args.pgport or os.getenv("PGPORT", '5432'))
 pg_db = args.pgdb or os.getenv("PGDATABASE", "geoscape")
 pg_user = args.pguser or os.getenv("PGUSER", "postgres")
 pg_password = args.pgpassword or os.getenv("PGPASSWORD", "password")
@@ -200,7 +197,7 @@ pg_connect_string = f"dbname='{pg_db}' host='{pg_host}' port='{pg_port}' user='{
 sql_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), "postgres-scripts")
 
 # set the list of admin bdys to create analysis tables for and to boundary tag with
-admin_bdy_list = list()
+admin_bdy_list = list[list[str]]()
 admin_bdy_list.append(["state_bdys", "state_pid"])
 admin_bdy_list.append(["locality_bdys", "locality_pid"])
 
@@ -216,7 +213,6 @@ if states_to_load != ["OT"]:
 if "TAS" in states_to_load or "VIC" in states_to_load or "WA" in states_to_load:
     admin_bdy_list.append(["state_upper_house_electorates", "se_upper_pid"])
 
-
 # get Postgres, PostGIS & GEOS versions and flag if ST_Subdivide is supported
 
 # get Postgres connection & cursor
@@ -225,11 +221,11 @@ temp_pg_cur = temp_pg_conn.cursor()
 
 # get Postgres version
 temp_pg_cur.execute("SELECT version()")
-pg_version = temp_pg_cur.fetchone()[0].replace("PostgreSQL ", "").split(",")[0]
+pg_version = str(temp_pg_cur.fetchone()[0]).replace("PostgreSQL ", "").split(",")[0] # type: ignore
 
 # get PostGIS version
 temp_pg_cur.execute("SELECT PostGIS_full_version()")
-lib_strings = temp_pg_cur.fetchone()[0].replace("\"", "").split(" ")
+lib_strings = str(temp_pg_cur.fetchone()[0]).replace("\"", "").split(" ") # type: ignore
 
 temp_pg_cur.close()
 temp_pg_cur = None
@@ -242,6 +238,9 @@ geos_version = "UNKNOWN"
 geos_version_num = 0.0
 
 st_subdivide_supported = False
+
+postgis_version_num = list[int]()
+geos_version_num = list[int]()
 
 for lib_string in lib_strings:
     if lib_string[:8] == "POSTGIS=":

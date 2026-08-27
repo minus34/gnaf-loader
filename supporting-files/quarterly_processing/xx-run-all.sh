@@ -22,3 +22,6 @@ cd "${MAIN_SCRIPT_DIR}" || exit
 # URLs
 # https://github.com/minus34/gnaf-loader
 # https://hub.docker.com/r/minus34/gnafloader
+
+# Fix PROJ "transform: File not found or invalid" issue with GDA2020 (caused by incomplete PostGIS installation in Postgres.App)
+# cp -R "/opt/homebrew/Cellar/proj/9.8.1/share/proj/" "/Applications/Postgres.app/Contents/Versions/16/share/proj"

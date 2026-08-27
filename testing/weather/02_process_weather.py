@@ -123,7 +123,7 @@ def main():
     start_time = datetime.now()
 
     # open SRTM 3 second DEM of Australia (ESRI Binary Grid format)
-    dem_file_name = "/Users/hugh.saalmans/Downloads/3secSRTM_DEM/DEM_ESRI_GRID_16bit_Integer/dem3s_int/hdr.adf"
+    dem_file_name = "/Users/hugh.saalmans/Downloads/3secSRTM_DEM/DEM_ESRI_GRID_26bit_Integer/dem3s_int/hdr.adf"
     dem_dataset = gdal.Open(dem_file_name, gdal.GA_ReadOnly)
     dem_geotransform = dem_dataset.GetGeoTransform()
 
@@ -134,7 +134,7 @@ def main():
 
     # select GNAF coordinates - group by 3 decimal places to create a ~100m grid of addresses
     # sql = """SELECT latitude::numeric(5,3) as latitude, longitude::numeric(6,3) as longitude, count(*) as address_count
-    #          FROM gnaf_202605.address_principals
+    #          FROM gnaf_202608.address_principals
     #          GROUP BY latitude::numeric(5,3), longitude::numeric(6,3)"""
     sql = """SELECT * FROM testing.gnaf_points_with_pop_and_height"""
     gnaf_df = pandas.read_sql_query(sql, pg_conn)

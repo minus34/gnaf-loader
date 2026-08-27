@@ -1,17 +1,22 @@
 
 # import io
-import multiprocessing
+import logging
 import math
+import multiprocessing
 import os
+import subprocess
+
 # import platform
 import psycopg
+from psycopg import sql
+
 import settings
-import subprocess
+
 # import sys
 
 
 # takes a list of sql queries or command lines and runs them using multiprocessing
-def multiprocess_list(mp_type, work_list, logger):
+def multiprocess_list(mp_type: str, work_list: list[str], logger: logging.Logger) -> None:
     pool = multiprocessing.Pool(processes=settings.max_processes)
 
     num_jobs = len(work_list)
@@ -35,19 +40,19 @@ def multiprocess_list(mp_type, work_list, logger):
             logger.info(result)
 
 
-def run_sql_multiprocessing(the_sql):
+def run_sql_multiprocessing(the_sql: str):
     pg_conn = psycopg.connect(settings.pg_connect_string)
     pg_conn.autocommit = True
     pg_cur = pg_conn.cursor()
 
     # set raw gnaf database schema (it's needed for the primary and foreign key creation)
     if settings.raw_gnaf_schema != "public":
-        pg_cur.execute(f"SET search_path = {settings.raw_gnaf_schema}, public, pg_catalog")
+        pg_cur.execute(sql.SQL("SET search_path = {}, public, pg_catalog").format(sql.Identifier(settings.raw_gnaf_schema)))
 
     try:
-        pg_cur.execute(the_sql)
+        pg_cur.execute(the_sql) # type: ignore
         result = "SUCCESS"
-    except Exception as ex:
+    except psycopg.Error as ex:
         result = f"SQL FAILED! : {the_sql} : {ex}"
 
     pg_cur.close()
@@ -56,43 +61,42 @@ def run_sql_multiprocessing(the_sql):
     return result
 
 
-def run_command_line(cmd):
+def run_command_line(cmd: str) -> str:
     # run the command line without any output (it'll still tell you if it fails miserably)
-    try:
-        f_null = open(os.devnull, "w")
+    with open(os.devnull, "w") as f_null:
         returncode = subprocess.call(cmd, shell=True, stdout=f_null, stderr=subprocess.STDOUT)
         if returncode != 0:
             result = f"COMMAND FAILED! : {cmd} : exit code {returncode}"
         else:
             result = "SUCCESS"
-    except Exception as ex:
-        result = f"COMMAND FAILED! : {cmd} : {ex}"
 
     return result
 
 
-def open_sql_file(file_name):
-    sql = open(os.path.join(settings.sql_dir, file_name), "r").read()
-    return prep_sql(sql)
+def open_sql_file(file_name: str) -> str:
+    with open(os.path.join(settings.sql_dir, file_name), "r") as f:
+        sql_string = f.read()
+        
+    return prep_sql(sql_string)
 
 
 # change schema names in an array of SQL script if schemas not the default
-def prep_sql_list(sql_list):
-    output_list = []
-    for sql in sql_list:
-        output_list.append(prep_sql(sql))
+def prep_sql_list(sql_list: list[str]) -> list[str]:
+    output_list = list[str]()
+    for sql_string in sql_list:
+        output_list.append(prep_sql(sql_string))
     return output_list
 
 
 # set schema names in the SQL script
-def prep_sql(sql):
-    if settings.raw_gnaf_schema is not None:
+def prep_sql(sql: str) -> str:
+    if settings.raw_gnaf_schema:
         sql = sql.replace(" raw_gnaf.", f" {settings.raw_gnaf_schema}.")
-    if settings.raw_admin_bdys_schema is not None:
+    if settings.raw_admin_bdys_schema:
         sql = sql.replace(" raw_admin_bdys.", f" {settings.raw_admin_bdys_schema}.")
-    if settings.gnaf_schema is not None:
+    if settings.gnaf_schema:
         sql = sql.replace(" gnaf.", f" {settings.gnaf_schema}.")
-    if settings.admin_bdys_schema is not None:
+    if settings.admin_bdys_schema:
         sql = sql.replace(" admin_bdys.", f" {settings.admin_bdys_schema}.")
 
     if settings.pg_user != "postgres":
@@ -102,36 +106,41 @@ def prep_sql(sql):
     return sql
 
 
-def split_sql_into_list(pg_cur, the_sql, table_schema, table_name, table_alias, table_gid, logger):
+def split_sql_into_list(pg_cur: psycopg.Cursor, the_sql: str, table_schema: str, table_name: str, table_alias: str, table_gid: str, logger: logging.Logger) -> list[str]:
     # get min max gid values from the table to split
-    min_max_sql = f"SELECT MIN({table_gid}) AS min, MAX({table_gid}) AS max FROM {table_schema}.{table_name}"
-
+    min_max_sql = sql.SQL(
+        "SELECT MIN({gid_col}) AS min, MAX({gid_col}) AS max FROM {table_schema}.{table_name}"
+    ).format(
+        gid_col=sql.Identifier(table_gid),
+        table_schema=sql.Identifier(table_schema),
+        table_name=sql.Identifier(table_name),
+    )
     pg_cur.execute(min_max_sql)
 
     try:
         result = pg_cur.fetchone()
 
-        min_pkey = int(result[0])
-        max_pkey = int(result[1])
+        min_pkey = int(result[0]) # type: ignore
+        max_pkey = int(result[1]) # type: ignore
         diff = max_pkey - min_pkey
 
         # Number of records in each query
-        rows_per_request = int(math.floor(float(diff) / float(settings.max_processes))) + 1
+        rows_per_request = math.floor(float(diff) / float(settings.max_processes)) + 1
 
         # If less records than processes or rows per request,
         # reduce both to allow for a minimum of 15 records each process
         if float(diff) / float(settings.max_processes) < 10.0:
             rows_per_request = 10
-            processes = int(math.floor(float(diff) / 10.0)) + 1
+            processes = math.floor(float(diff) / 10.0) + 1
             logger.info(f"\t\t- running {processes} processes (adjusted due to low row count in table to split)")
         else:
             processes = settings.max_processes
 
         # create list of sql statements to run with multiprocessing
-        sql_list = []
+        sql_list = list[str]()
         start_pkey = min_pkey - 1
 
-        for i in range(0, processes):
+        for _ in range(processes):
             end_pkey = start_pkey + rows_per_request
 
             where_clause = \
@@ -156,12 +165,12 @@ def split_sql_into_list(pg_cur, the_sql, table_schema, table_name, table_alias, 
         # logger.info("\n".join(sql_list))
 
         return sql_list
-    except Exception as ex:
+    except Exception as ex:  # noqa: BLE001
         logger.fatal(f"Looks like the table in this query is empty: {min_max_sql}\n{ex}")
-        return None
+        return list[str]()
 
 
-def multiprocess_shapefile_load(work_list, logger):
+def multiprocess_shapefile_load(work_list: list[dict[str, str]], logger: logging.Logger):
     pool = multiprocessing.Pool(processes=settings.max_processes)
 
     num_jobs = len(work_list)
@@ -182,12 +191,12 @@ def multiprocess_shapefile_load(work_list, logger):
             logger.info(result)
 
 
-def intermediate_shapefile_load_step(work_dict):
+def intermediate_shapefile_load_step(work_dict: dict[str, str]) -> str:
     file_path = work_dict["file_path"]
     pg_table = work_dict["pg_table"]
     pg_schema = work_dict["pg_schema"]
-    delete_table = work_dict["delete_table"]
-    spatial = work_dict["spatial"]
+    delete_table = bool(work_dict["delete_table"])
+    spatial = bool(work_dict["spatial"])
 
     result = import_shapefile_to_postgres(file_path, pg_table, pg_schema, delete_table, spatial)
 
@@ -196,7 +205,7 @@ def intermediate_shapefile_load_step(work_dict):
 
 # imports a Shapefile into Postgres in 2 steps: SHP > SQL; SQL > Postgres
 # overcomes issues trying to use psql with PGPASSWORD set at runtime
-def import_shapefile_to_postgres(file_path, pg_table, pg_schema, delete_table, spatial):
+def import_shapefile_to_postgres(file_path: str, pg_table: str, pg_schema: str, delete_table: bool, spatial: bool) -> str:
     # delete target table or append to it?
     if delete_table:
         # add delete and spatial index flag
@@ -219,7 +228,8 @@ def import_shapefile_to_postgres(file_path, pg_table, pg_schema, delete_table, s
     try:
         process = subprocess.Popen(shp2pgsql_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
         sqlobj, err = process.communicate()
-    except Exception as ex:
+    except Exception as ex:  # noqa: BLE001
+        process.kill() # type: ignore
         return f"Importing {file_path} - Couldn't convert Shapefile to SQL : {ex}"
 
     # check shp2pgsql exit code — a non-zero return means the conversion failed
@@ -251,13 +261,13 @@ def import_shapefile_to_postgres(file_path, pg_table, pg_schema, delete_table, s
     pg_cur = pg_conn.cursor()
 
     try:
-        pg_cur.execute(sql)
-    except Exception as ex:
+        pg_cur.execute(sql) # type: ignore
+    except psycopg.Error as ex:
         # if import fails for some reason - output sql to file for debugging
         file_name = os.path.basename(file_path)
 
-        target = open(os.path.join(os.path.dirname(os.path.realpath(__file__)), f"error_debug_{file_name}.sql"), "w")
-        target.write(sql)
+        with open(os.path.join(os.path.dirname(os.path.realpath(__file__)), f"error_debug_{file_name}.sql"), "w") as target:
+            target.write(sql)
 
         pg_cur.close()
         pg_conn.close()
@@ -269,8 +279,8 @@ def import_shapefile_to_postgres(file_path, pg_table, pg_schema, delete_table, s
         sql = f"ALTER TABLE {pg_schema}.{pg_table} CLUSTER ON {pg_table}_geom_idx"
 
         try:
-            pg_cur.execute(sql)
-        except Exception as ex:
+            pg_cur.execute(sql) # type: ignore
+        except psycopg.Error as ex:
             pg_cur.close()
             pg_conn.close()
             return f"\tImporting {pg_table} - Couldn't cluster on spatial index : {ex}"
