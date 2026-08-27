@@ -21,7 +21,7 @@ python3 "/Users/$(whoami)/git/minus34/gnaf-loader/load-gnaf.py" --pgport=5432 --
 python3 "/Users/$(whoami)/git/iag_geo/psma-admin-bdys/locality-clean.py" --pgport=5432 --pgdb=geo --max-processes=6 --output-path=${OUTPUT_FOLDER_2020} --admin-schema admin_bdys_202608_gda2020
 
 # upload locality bdy files to S3
-aws --profile=${AWS_PROFILE} s3 sync ${OUTPUT_FOLDER_2020} s3://minus34.com/opendata/geoscape-202608-gda2020 --exclude "*" --include "*.zip" --acl public-read
+aws --profile=${AWS_PROFILE} s3 sync ${OUTPUT_FOLDER_2020} s3://minus34.com/opendata/geoscape-202608-gda2020 --exclude "*" --include "*.zip" --acl public-read --only-show-errors
 
 # done in GDA94 script (files not processed for GDA2020 data as the result is 99.99999% [estimated] the same)
 #echo "---------------------------------------------------------------------------------------------------------------------"
@@ -46,5 +46,5 @@ echo "--------------------------------------------------------------------------
 echo "copy Postgres dump files to AWS S3 and allow public read access (requires AWSCLI installed & AWS credentials setup)"
 echo "---------------------------------------------------------------------------------------------------------------------"
 
-aws --profile=${AWS_PROFILE} s3 sync ${OUTPUT_FOLDER_2020} s3://minus34.com/opendata/geoscape-202608-gda2020 --exclude "*" --include "*.dmp" --acl public-read
+aws --profile=${AWS_PROFILE} s3 sync ${OUTPUT_FOLDER_2020} s3://minus34.com/opendata/geoscape-202608-gda2020 --exclude "*" --include "*.dmp" --acl public-read --only-show-errors
 

@@ -23,7 +23,7 @@ rm -rf "${OUTPUT_FOLDER}/geoparquet"
 python "${THIS_SCRIPT_DIR}/../../spark/xx_export_gnaf_and_admin_bdys_to_geoparquet.py" --admin-schema="admin_bdys_202608" --gnaf-schema="gnaf_202608" --output-path="${OUTPUT_FOLDER}/geoparquet"
 
 aws --profile=${AWS_PROFILE} s3 rm s3://minus34.com/opendata/geoscape-202608/geoparquet/ --recursive
-aws --profile=${AWS_PROFILE} s3 sync "${OUTPUT_FOLDER}/geoparquet" "s3://minus34.com/opendata/geoscape-202608/geoparquet" --acl public-read
+aws --profile=${AWS_PROFILE} s3 sync "${OUTPUT_FOLDER}/geoparquet" "s3://minus34.com/opendata/geoscape-202608/geoparquet" --acl public-read --only-show-errors
 
 
 # disabled as currently only exporting the GDA94 version in WGS84 coordinates
