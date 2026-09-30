@@ -20,6 +20,7 @@ from psycopg import sql
 
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
 
 
 def load_loader():
@@ -155,6 +156,52 @@ class AuthorityCleanupTests(unittest.TestCase):
         self.loader.clean_authority_files(self.cursor, schema, True)
         self.assertEqual(self.rows(schema, "class_aut"), [("1", "Lower", "Class")])
         self.assertEqual(self.primary_key(schema, "class_aut"), ("PRIMARY KEY (code)",))
+
+    def test_ot_federal_prep_requires_act_and_nt_state_lookups(self):
+        raw = self.schema("raw_admin_bdys_ot")
+        prepared = self.schema("admin_bdys_ot")
+        self.cursor.execute(sql.SQL("""
+            CREATE TABLE {raw}.aus_state (state_pid text, st_abbrev text);
+            INSERT INTO {raw}.aus_state VALUES ('OT9', 'OT');
+            CREATE TABLE {raw}.aus_comm_electoral (
+                ce_pid text, name text, dt_gazetd date, state_pid text, redistyear text);
+            INSERT INTO {raw}.aus_comm_electoral VALUES
+                ('bean', 'Bean', DATE '2026-02-01', 'ACT8', '2025'),
+                ('fenner', 'Fenner', DATE '2026-02-01', 'ACT8', '2025'),
+                ('lingiari', 'Lingiari', DATE '2026-02-01', 'NT7', '2025');
+            CREATE TABLE {raw}.aus_comm_electoral_polygon (gid integer, ce_pid text, geom geometry);
+            INSERT INTO {raw}.aus_comm_electoral_polygon VALUES
+                (1, 'bean', ST_MakeEnvelope(167, -30, 168, -29, 7844)),
+                (2, 'fenner', ST_MakeEnvelope(150, -36, 151, -35, 7844)),
+                (3, 'lingiari', ST_MakeEnvelope(96, -13, 97, -12, 7844)),
+                (4, 'lingiari', ST_MakeEnvelope(105, -11, 106, -10, 7844));
+            CREATE TABLE {raw}.ot_points (locality text, geom geometry);
+            INSERT INTO {raw}.ot_points VALUES
+                ('Norfolk Island', ST_SetSRID(ST_Point(167.5, -29.5), 7844)),
+                ('Jervis Bay', ST_SetSRID(ST_Point(150.5, -35.5), 7844)),
+                ('Home Island', ST_SetSRID(ST_Point(96.5, -12.5), 7844)),
+                ('West Island', ST_SetSRID(ST_Point(96.6, -12.6), 7844)),
+                ('Christmas Island', ST_SetSRID(ST_Point(105.5, -10.5), 7844));
+        """).format(raw=sql.Identifier(raw)))
+        source = (ROOT / "postgres-scripts/02-02a-prep-admin-bdys-tables.sql").read_text()
+        start = source.index("DROP TABLE IF EXISTS admin_bdys.commonwealth_electorates CASCADE;")
+        marker = "ALTER TABLE admin_bdys.commonwealth_electorates CLUSTER ON commonwealth_electorates_geom_idx;"
+        statement = source[start:source.index(marker, start) + len(marker)]
+        statement = statement.replace("raw_admin_bdys.", sql.Identifier(raw).as_string() + ".")
+        statement = statement.replace("admin_bdys.", sql.Identifier(prepared).as_string() + ".")
+        self.cursor.execute(statement)
+        count = sql.SQL("SELECT COUNT(*) FROM {}.commonwealth_electorates").format(sql.Identifier(prepared))
+        self.assertEqual(self.cursor.execute(count).fetchone(), (0,))
+        self.cursor.execute(sql.SQL("INSERT INTO {}.aus_state VALUES ('ACT8', 'ACT'), ('NT7', 'NT')").format(sql.Identifier(raw)))
+        self.cursor.execute(statement)
+        self.assertEqual(self.cursor.execute(count).fetchone(), (4,))
+        assignments = self.cursor.execute(sql.SQL("""
+            SELECT p.locality, b.name FROM {raw}.ot_points p
+            JOIN {prepared}.commonwealth_electorates b ON ST_Intersects(p.geom, b.geom)
+            ORDER BY p.locality
+        """).format(raw=sql.Identifier(raw), prepared=sql.Identifier(prepared))).fetchall()
+        self.assertEqual(assignments, [("Christmas Island", "Lingiari"), ("Home Island", "Lingiari"),
+            ("Jervis Bay", "Fenner"), ("Norfolk Island", "Bean"), ("West Island", "Lingiari")])
 
     def test_actual_electoral_prep_has_populated_unique_polygons(self):
         raw = self.schema("raw_admin_bdys_202608")
