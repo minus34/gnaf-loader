@@ -11,6 +11,7 @@ import psycopg
 from psycopg import sql
 
 import settings
+from boundary_dates import apply_boundary_date
 
 # import sys
 
@@ -90,6 +91,7 @@ def prep_sql_list(sql_list: list[str]) -> list[str]:
 
 # set schema names in the SQL script
 def prep_sql(sql: str) -> str:
+    sql = apply_boundary_date(sql, settings.boundary_date)
     if settings.raw_gnaf_schema:
         sql = sql.replace(" raw_gnaf.", f" {settings.raw_gnaf_schema}.")
     if settings.raw_admin_bdys_schema:

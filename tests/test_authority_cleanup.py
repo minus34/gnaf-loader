@@ -21,6 +21,7 @@ from psycopg import sql
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
+from boundary_dates import apply_boundary_date
 
 
 def load_loader():
@@ -203,6 +204,49 @@ class AuthorityCleanupTests(unittest.TestCase):
         self.assertEqual(assignments, [("Christmas Island", "Lingiari"), ("Home Island", "Lingiari"),
             ("Jervis Bay", "Fenner"), ("Norfolk Island", "Bean"), ("West Island", "Lingiari")])
 
+    def test_electoral_snapshot_has_no_wall_clock_or_timezone_dependency(self):
+        raw = self.schema("raw_admin_bdys_snapshot")
+        prepared = self.schema("admin_bdys_snapshot")
+        self.cursor.execute(sql.SQL("""
+            CREATE TABLE {raw}.aus_state (state_pid text, st_abbrev text);
+            INSERT INTO {raw}.aus_state VALUES ('VIC', 'VIC');
+            CREATE TABLE {raw}.aus_state_electoral_class_aut (code text, name text);
+            INSERT INTO {raw}.aus_state_electoral_class_aut VALUES ('1', 'Lower'), ('3', 'Upper');
+            CREATE TABLE {raw}.aus_state_electoral (
+                se_pid text, name text, dt_gazetd date, eff_start timestamptz,
+                eff_end timestamptz, secl_code text, state_pid text);
+            INSERT INTO {raw}.aus_state_electoral
+            SELECT label || class, label, DATE '2026-01-01', starts::timestamptz,
+                   ends::timestamptz, class, 'VIC'
+            FROM (VALUES
+                ('finite', '2026-01-01 00:00+00', '2026-09-01 00:00+00'),
+                ('future', '2026-09-01 00:00+00', '2027-01-01 00:00+00'),
+                ('expired', '2026-01-01 00:00+00', '2026-08-30 00:00+00'),
+                ('starts', '2026-08-31 00:00+00', NULL),
+                ('ends', '2026-01-01 00:00+00', '2026-08-31 00:00+00'),
+                ('unbounded', NULL, NULL),
+                ('future_open', '2026-11-01 00:00+00', NULL)
+            ) dates(label, starts, ends) CROSS JOIN (VALUES ('1'), ('3')) classes(class);
+            CREATE TABLE {raw}.aus_state_electoral_polygon AS
+            SELECT row_number() OVER ()::integer AS gid, se_pid,
+                   ST_Multi(ST_MakeEnvelope(144, -38, 145, -37, 7844)) AS geom
+            FROM {raw}.aus_state_electoral;
+        """).format(raw=sql.Identifier(raw)))
+        source = (ROOT / "postgres-scripts/02-02a-prep-admin-bdys-tables.sql").read_text()
+        for zone in ('UTC', 'Pacific/Auckland'):
+            self.cursor.execute("SELECT set_config('TimeZone', %s, false)", (zone,))
+            for house in ('lower', 'upper'):
+                name = f"state_{house}_house_electorates"
+                start = source.index(f"DROP TABLE IF EXISTS admin_bdys.{name} CASCADE;")
+                marker = f"ALTER TABLE admin_bdys.{name} CLUSTER ON {name}_geom_idx;"
+                statement = source[start:source.index(marker, start) + len(marker)]
+                statement = statement.replace("raw_admin_bdys.", sql.Identifier(raw).as_string() + ".")
+                statement = statement.replace("admin_bdys.", sql.Identifier(prepared).as_string() + ".")
+                self.cursor.execute(apply_boundary_date(statement, "2026-08-31"))
+                result = self.cursor.execute(sql.SQL("SELECT name FROM {} ORDER BY name").format(sql.Identifier(prepared, name))).fetchall()
+                self.assertEqual(result, [('finite',), ('starts',), ('unbounded',)])
+        self.cursor.execute("SET TimeZone = 'UTC'")
+
     def test_actual_electoral_prep_has_populated_unique_polygons(self):
         raw = self.schema("raw_admin_bdys_202608")
         prepared = self.schema("admin_bdys_202608")
@@ -217,8 +261,8 @@ class AuthorityCleanupTests(unittest.TestCase):
                 se_pid text, name text, dt_gazetd date, eff_start timestamptz,
                 eff_end timestamptz, secl_code text, state_pid text);
             INSERT INTO {raw}.aus_state_electoral VALUES
-                ('lower', 'Lower electorate', CURRENT_DATE, now() - interval '1 year', NULL, '1', 'VIC'),
-                ('upper', 'Upper electorate', CURRENT_DATE, now() - interval '1 year', NULL, '3', 'VIC');
+                ('lower', 'Lower electorate', DATE '2026-02-01', TIMESTAMPTZ '2026-02-01 00:00:00+00', NULL, '1', 'VIC'),
+                ('upper', 'Upper electorate', DATE '2026-02-01', TIMESTAMPTZ '2026-02-01 00:00:00+00', NULL, '3', 'VIC');
             CREATE TABLE {raw}.aus_state_electoral_polygon (gid integer, se_pid text, geom geometry);
             INSERT INTO {raw}.aus_state_electoral_polygon
                 SELECT 1, 'lower', ST_Multi(ST_MakeEnvelope(144, -38, 145, -37, 7844))
@@ -233,7 +277,7 @@ class AuthorityCleanupTests(unittest.TestCase):
             end = source.index(end_marker, start) + len(end_marker)
             statement = source[start:end].replace("raw_admin_bdys.", sql.Identifier(raw).as_string() + ".")
             statement = statement.replace("admin_bdys.", sql.Identifier(prepared).as_string() + ".")
-            self.cursor.execute(statement)
+            self.cursor.execute(apply_boundary_date(statement, "2026-02-28"))
             result = self.cursor.execute(sql.SQL("SELECT COUNT(*), COUNT(DISTINCT gid), "
                 "MIN(electorate_class), bool_and(ST_IsValid(geom)) FROM {}").format(
                     sql.Identifier(prepared, name))).fetchone()
