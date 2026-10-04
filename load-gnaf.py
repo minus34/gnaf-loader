@@ -416,12 +416,13 @@ def clean_authority_files(pg_cur: psycopg.Cursor, schema_name: str, create_index
     error_count = 0
 
     # get table list for schema
-    sql_string = f"""SELECT table_name
+    sql_string = """SELECT table_name
               FROM information_schema.tables
-              WHERE table_schema='%{schema_name}'
+              WHERE table_schema = %s
                   AND table_type='BASE TABLE'
-                  AND table_name LIKE '%_aut'"""
-    pg_cur.execute(sql_string) # type: ignore
+                  AND table_name LIKE %s
+              ORDER BY table_name"""
+    pg_cur.execute(sql_string, (schema_name, r"%\_aut"))
 
     tables = pg_cur.fetchall()
 
