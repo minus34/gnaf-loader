@@ -281,7 +281,7 @@ ALTER TABLE admin_bdys.commonwealth_electorates CLUSTER ON commonwealth_electora
 
 
 -- # ----------------------------------------------------------------------------------------------
--- state electoral boundaries - choose bdys that will be current until at least 3 months from now
+-- state electoral boundaries - explicit snapshot date, or legacy look-ahead if omitted
 ---------------------------------------------------------------------------------------------------
 
 -- create lower house table
@@ -300,8 +300,7 @@ SELECT bdy.gid,
   INNER JOIN raw_admin_bdys.aus_state_electoral_polygon AS bdy ON tab.se_pid = bdy.se_pid
   INNER JOIN raw_admin_bdys.aus_state AS ste ON tab.state_pid = ste.state_pid
   INNER JOIN raw_admin_bdys.aus_state_electoral_class_aut AS aut ON tab.secl_code = aut.code
-  WHERE (tab.eff_end > now() + interval '3 months'
-    OR (tab.eff_start <= now() + interval '3 months' AND tab.eff_end IS NULL))
+  WHERE __LOWER_HOUSE_VALIDITY__
   AND tab.secl_code <> '3';
 
 ALTER TABLE admin_bdys.state_lower_house_electorates ADD CONSTRAINT state_lower_house_electorates_pk PRIMARY KEY (gid);
@@ -325,8 +324,7 @@ SELECT bdy.gid,
   INNER JOIN raw_admin_bdys.aus_state_electoral_polygon AS bdy ON tab.se_pid = bdy.se_pid
   INNER JOIN raw_admin_bdys.aus_state AS ste ON tab.state_pid = ste.state_pid
   INNER JOIN raw_admin_bdys.aus_state_electoral_class_aut AS aut ON tab.secl_code = aut.code
-  WHERE (tab.eff_end > now() + interval '3 months'
-    OR (tab.eff_start <= now() AND tab.eff_end IS NULL))
+  WHERE __UPPER_HOUSE_VALIDITY__
   AND tab.secl_code = '3'
   AND ste.st_abbrev NOT IN ('NSW', 'SA');
 

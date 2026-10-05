@@ -7,6 +7,7 @@ import sys
 from datetime import datetime
 
 import psycopg
+from boundary_dates import validate_boundary_date
 
 
 # get latest Geoscape release version as YYYYMM, as of the date provided, as well as the prev. version 3 months prior
@@ -61,6 +62,10 @@ parser.add_argument(
     help="DO NOT tag all addresses with admin boundary IDs for creating aggregates and choropleth maps. "
          "IMPORTANT: this will contribute 15-60 minutes to the process if you have PostGIS 2.2+. "
          "WARNING: if you have PostGIS 2.1 or lower - this process can take hours")
+parser.add_argument(
+    "--boundary-date", type=validate_boundary_date,
+    help="Select electoral boundaries valid at YYYY-MM-DD 00:00 UTC. Start is inclusive, end exclusive; "
+         "null endpoints are unbounded. Omit to retain the historical look-ahead policy.")
 parser.add_argument(
     "--srid", type=int, default=4283,
     help="Sets the coordinate system (SRID aka EPSG number) of the input data. "
@@ -140,6 +145,7 @@ parser.add_argument("--states", nargs="+", choices=["ACT", "NSW", "NT", "OT", "Q
 
 # global var containing all input parameters
 args = parser.parse_args()
+boundary_date = args.boundary_date
 
 # assign parameters to global settings
 
