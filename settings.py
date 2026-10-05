@@ -202,8 +202,8 @@ admin_bdy_list.append(["state_bdys", "state_pid"])
 admin_bdy_list.append(["locality_bdys", "locality_pid"])
 
 # only process bdys if states to load have them
-if states_to_load != ["OT"]:
-    admin_bdy_list.append(["commonwealth_electorates", "ce_pid"])
+# OT federal boundaries are supplied by ACT and NT dependency files.
+admin_bdy_list.append(["commonwealth_electorates", "ce_pid"])
 if states_to_load != ["ACT"]:
     admin_bdy_list.append(["local_government_areas", "lga_pid"])
 if "NT" in states_to_load or "SA" in states_to_load or "VIC" in states_to_load or "WA" in states_to_load:

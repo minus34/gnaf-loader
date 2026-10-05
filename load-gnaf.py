@@ -35,6 +35,7 @@ from psycopg import sql
 
 import geoscape
 import settings  # gets global vars and runtime arguments
+from admin_files import select_admin_files
 
 
 def qualified_table(schema_name: str, table_name: str) -> sql.Composed:
@@ -320,81 +321,20 @@ def analyse_raw_gnaf_tables(pg_cur: psycopg.Cursor):
 def load_raw_admin_boundaries(pg_cur: psycopg.Cursor):
     start_time = datetime.now().astimezone()
 
-    # drop existing views
+    # Validate cross-territory dependencies before dropping existing views.
+    selected = select_admin_files(settings.admin_bdys_local_directory,
+                                  settings.states_to_load, settings.raw_admin_bdys_schema)
+    create_list = [file for file in selected if file["delete_table"]]
+    append_list = [file for file in selected if not file["delete_table"]]
+
     sql_string = geoscape.open_sql_file("02-01-drop-admin-bdy-views.sql")
     pg_cur.execute(sql_string) # type: ignore
-
-    # add authority code tables
-    settings.states_to_load.extend(["authority_code"])
-
-    # get file list
-    table_list = list[str]()
-    create_list = list[dict[str, Any]]()
-    append_list = list[dict[str, Any]]()
-
-    for state in settings.states_to_load:
-        state = state.lower()
-        # get a dictionary of Shapefiles and DBFs matching the state
-        for root, dirs, files in os.walk(settings.admin_bdys_local_directory): # type: ignore
-            for file_name in files:
-                if file_name.lower().startswith(state + "_") and (
-                    file_name.lower().endswith(".shp") or file_name.lower().endswith("_shp.dbf")
-                ):
-                    file_dict = dict[str, Any]()
-
-                    # list .shp files and standalone .dbf files - ignore the rest
-                    if file_name.lower().endswith(".shp"):
-                        file_dict["spatial"] = True
-                        file_dict["file_path"] = os.path.join(root, file_name)
-                    elif file_name.lower().endswith(".dbf") and not file_name.lower().endswith("_polygon_shp.dbf") \
-                            and not file_name.lower().endswith("_point_shp.dbf"):
-                        file_dict["spatial"] = False
-                        file_dict["file_path"] = os.path.join(root, file_name)
-
-                    if file_dict.get("file_path") is not None:
-                        file_dict["pg_table"] = file_name.lower().replace(state + "_", "aus_", 1)\
-                            .replace(".dbf", "").replace(".shp", "").replace("_shp", "")
-
-                        file_dict["pg_schema"] = settings.raw_admin_bdys_schema
-
-                        # set command line parameters depending on whether this is the 1st state
-                        table_list_add = False
-
-                        if file_dict["pg_table"] not in table_list:
-                            table_list_add = True
-
-                            file_dict["delete_table"] = True
-                        else:
-                            file_dict["delete_table"] = False
-
-                        # if locality file from Towns folder: don't add - it's a duplicate
-                        if "town points" not in str(file_dict["file_path"]).lower(): # type: ignore
-                            if table_list_add:
-                                table_list.append(file_dict["pg_table"])
-                                create_list.append(file_dict)
-                            else:
-                                # # don't add duplicates if more than one Authority Code file per boundary type
-                                # if "_aut_" not in file_name.lower():
-                                append_list.append(file_dict)
-                        else:
-                            if not str(file_dict["file_path"]).lower().endswith("_locality_shp.dbf"): # type: ignore
-                                if table_list_add:
-                                    table_list.append(file_dict["pg_table"])
-                                    create_list.append(file_dict)
-                                else:
-                                    # # don't add duplicates if more than one Authority Code file per boundary type
-                                    # if "_aut_" not in file_name.lower():
-                                    append_list.append(file_dict)
-
-    # [print(table) for table in create_list]
-    # print("---------------------------------------------------------------------------------------")
-    # [print(table) for table in append_list]
 
     # are there any files to load?
     if len(create_list) == 0:
         logger.fatal("No admin boundary files found\nACTION: Check your 'admin-bdys-path' argument")
         pg_cur.close()
-        sys.exit()
+        raise RuntimeError("No admin boundary files found")
     else:
         # load files in separate processes
         geoscape.multiprocess_shapefile_load(create_list, logger)
@@ -405,7 +345,7 @@ def load_raw_admin_boundaries(pg_cur: psycopg.Cursor):
                                                            shp["delete_table"], shp["spatial"])
 
             if result != "SUCCESS":
-                logger.warning(result)
+                raise RuntimeError(result)
 
         logger.info(f"\t- Step 1 of 3 : raw admin boundaries loaded : {datetime.now().astimezone() - start_time}")
 
