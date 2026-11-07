@@ -96,7 +96,7 @@ class AuthorityCleanupTests(unittest.TestCase):
             (schema, table)).fetchone()
 
     def test_raw_gnaf_duplicates_without_creating_authority_keys(self):
-        schema = self.schema("raw_gnaf_202608")
+        schema = self.schema("raw_gnaf_202611")
         self.cursor.execute(sql.SQL("CREATE TABLE {} (code text, name text, description text)").format(
             sql.Identifier(schema, "street_type_aut")))
         self.cursor.execute(sql.SQL("INSERT INTO {} VALUES "
@@ -107,7 +107,7 @@ class AuthorityCleanupTests(unittest.TestCase):
         self.assertIsNone(self.primary_key(schema, "street_type_aut"))
 
     def test_legacy_dbf_columns_and_authority_primary_keys(self):
-        schema = self.schema("raw_admin_bdys_202608")
+        schema = self.schema("raw_admin_bdys_202611")
         variants = ["description", "dscpn_aut", "desc_aut", "descriptio"]
         for index, description in enumerate(variants):
             self.authority(schema, f"class_{index}_aut", True, description)
@@ -119,7 +119,7 @@ class AuthorityCleanupTests(unittest.TestCase):
                 self.assertEqual(self.primary_key(schema, table), ("PRIMARY KEY (code)",))
 
     def test_exact_schema_and_literal_authority_suffix(self):
-        schema = self.schema("raw_%gnaf_'202608")
+        schema = self.schema("raw_%gnaf_'202611")
         other = self.schema("prefix_" + schema)
         self.authority(schema, "class_aut")
         self.authority(other, "class_aut")
@@ -133,7 +133,7 @@ class AuthorityCleanupTests(unittest.TestCase):
         self.assertEqual(self.primary_key(other, "class_aut"), ("PRIMARY KEY (gid)",))
 
     def test_mesh_block_descriptions_are_normalized_before_deduplication(self):
-        schema = self.schema("raw_admin_bdys_202608")
+        schema = self.schema("raw_admin_bdys_202611")
         table = "aus_mb_category_class_aut"
         self.authority(schema, table)
         self.cursor.execute(sql.SQL("UPDATE {} SET description = 'Other' WHERE gid = 2").format(
@@ -143,7 +143,7 @@ class AuthorityCleanupTests(unittest.TestCase):
         self.assertEqual(self.primary_key(schema, table), ("PRIMARY KEY (code)",))
 
     def test_conflicting_authority_codes_still_fail(self):
-        schema = self.schema("raw_admin_bdys_202608")
+        schema = self.schema("raw_admin_bdys_202611")
         self.authority(schema, "class_aut")
         self.cursor.execute(sql.SQL("UPDATE {} SET name = 'Different' WHERE gid = 2").format(
             sql.Identifier(schema, "class_aut")))
@@ -151,7 +151,7 @@ class AuthorityCleanupTests(unittest.TestCase):
             self.loader.clean_authority_files(self.cursor, schema, True)
 
     def test_repeated_cleanup_is_idempotent(self):
-        schema = self.schema("raw_admin_bdys_202608")
+        schema = self.schema("raw_admin_bdys_202611")
         self.authority(schema, "class_aut", True, "desc_aut")
         self.loader.clean_authority_files(self.cursor, schema, True)
         self.loader.clean_authority_files(self.cursor, schema, True)
@@ -248,8 +248,8 @@ class AuthorityCleanupTests(unittest.TestCase):
         self.cursor.execute("SET TimeZone = 'UTC'")
 
     def test_actual_electoral_prep_has_populated_unique_polygons(self):
-        raw = self.schema("raw_admin_bdys_202608")
-        prepared = self.schema("admin_bdys_202608")
+        raw = self.schema("raw_admin_bdys_202611")
+        prepared = self.schema("admin_bdys_202611")
         table = "aus_state_electoral_class_aut"
         self.authority(raw, table, True, "desc_aut")
         self.cursor.execute(sql.SQL("INSERT INTO {} (code_aut, name_aut, desc_aut) VALUES "

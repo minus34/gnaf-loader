@@ -9,7 +9,7 @@ from boundary_dates import apply_boundary_date, validate_boundary_date
 class BoundaryDateTests(unittest.TestCase):
     def test_strict_calendar_dates(self):
         self.assertEqual(validate_boundary_date("2028-02-29"), "2028-02-29")
-        for value in ("2026-02-29", "20260831", "2026-13-01", "2026-08-31'", ""):
+        for value in ("2026-02-29", "20261131", "2026-13-01", "2026-08-31'", ""):
             with self.subTest(value=value), self.assertRaises(ValueError):
                 validate_boundary_date(value)
 
