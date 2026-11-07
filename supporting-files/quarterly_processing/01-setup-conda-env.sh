@@ -19,7 +19,7 @@ conda activate base
 conda env remove -y --name ${ENV_NAME}
 
 # update Conda
-yes | conda update --all
+yes | conda update -n base -c defaults conda
 
 # Create Conda environment
 conda create -y -n ${ENV_NAME} python=${PYTHON_VERSION}
