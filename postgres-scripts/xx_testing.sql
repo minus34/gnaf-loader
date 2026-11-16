@@ -1,4 +1,10 @@
 
+select * from gnaf_202611.address_principals limit 100;
+
+select count(*) from gnaf_202611.address_principals; -- 14,488,752
+
+
+
 select *
 from admin_bdys_202611.locality_bdys_display;
 
