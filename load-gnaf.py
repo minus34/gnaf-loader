@@ -1,4 +1,4 @@
-# *********************************************************************************************************************
+# *********************************************************************************************************************  # noqa: N999
 # load-gnaf.py
 # *********************************************************************************************************************
 #
@@ -28,7 +28,6 @@ import logging
 import os
 import sys
 from datetime import datetime
-from typing import Any
 
 import psycopg
 from psycopg import sql
@@ -337,7 +336,7 @@ def load_raw_admin_boundaries(pg_cur: psycopg.Cursor):
         raise RuntimeError("No admin boundary files found")
     else:
         # load files in separate processes
-        geoscape.multiprocess_shapefile_load(create_list, logger)
+        geoscape.multiprocess_shapefile_load(create_list, logger) # type: ignore
 
         # Run the appends one at a time (Can't multiprocess as sets of parallel INSERTs can cause database deadlocks)
         for shp in append_list:
@@ -466,7 +465,6 @@ def prep_admin_bdys(pg_cur: psycopg.Cursor):
 
     # create tables using multiprocessing - using flag in file to split file up into sets of statements
     sql_list = geoscape.open_sql_file("02-02a-prep-admin-bdys-tables.sql").format(settings.srid).split("-- # --")
-    sql_list = sql_list + geoscape.open_sql_file("02-02c-prep-census-2016-bdys-tables.sql").split("-- # --")
     sql_list = sql_list + geoscape.open_sql_file("02-02d-prep-census-2021-bdys-tables.sql").split("-- # --")
     sql_list = sql_list + geoscape.open_sql_file("02-02e-prep-census-2026-bdys-tables.sql").split("-- # --")
     

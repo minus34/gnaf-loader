@@ -1,5 +1,9 @@
 # Change Log
 
+## November 2026 Release
+
+- ABS Census 2016 boundaries and boundary tags have been REMOVED as they are no longer supported by Geoscape
+
 ## August 2026 Release
 
 - ABS Census 2026 boundaries have been ADDED (Mesh Block, GCCSA, SA1, SA2, SA3, SA4); as well as Mesh Block 2026 boundary tags for GNAF addresses
