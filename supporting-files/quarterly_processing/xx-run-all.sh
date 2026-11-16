@@ -4,7 +4,7 @@
 MAIN_SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
 cd "${MAIN_SCRIPT_DIR}" || exit
-. 01_setup_conda_env.sh
+. 01-setup-conda-env.sh
 
 cd "${MAIN_SCRIPT_DIR}" || exit
 . 02-run-gnaf-loader-locality-clean-and-copy-to-aws-s3.sh
