@@ -11,8 +11,8 @@ conda activate geo
 AWS_PROFILE="minus34"
 OUTPUT_FOLDER="/Users/$(whoami)/tmp/geoscape_202611"
 OUTPUT_FOLDER_2020="/Users/$(whoami)/tmp/geoscape_202611_gda2020"
-GNAF_PATH="/Users/$(whoami)/Downloads/g-naf_aug26_allstates_gda94_psv_110"
-BDYS_PATH="/Users/$(whoami)/Downloads/aug26_adminbounds_gda_94_shp"
+GNAF_PATH="/Users/$(whoami)/Downloads/g-naf_nov26_allstates_gda94_psv_120"
+BDYS_PATH="/Users/$(whoami)/Downloads/nov26_adminbounds_gda_94_shp"
 
 echo "---------------------------------------------------------------------------------------------------------------------"
 echo "Run gnaf-loader and locality boundary clean"
